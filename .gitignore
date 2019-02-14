@@ -1,2 +1,3 @@
-*.exe
-*.o
+windows/*
+windows64/*
+linux/*
