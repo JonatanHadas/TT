@@ -23,6 +23,14 @@ double ss_intersect(double x1, double y1,
 					double x3, double y3,
 					double x4, double y4);
 
+// rotates x,y by ang and adds to rx,ry
+void rotate_add(double ang,double x, double y, double& rx, double& ry);
+
+// if a radius r circle moves at vx,vy from ox,oy, when will it hit xs[],ys[] -1 if no colisions
+void circ_lines_coltime(double ox, double oy,
+						double vx, double vy,
+						double r,
+						double* xs, double* ys, int num, bool closed);
 
 
 #endif
