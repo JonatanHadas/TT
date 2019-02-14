@@ -61,7 +61,7 @@ $(EXEC): $(OBJS)
 	$(CC) $(CMP_FLG) $(OBJS) -o $(EXEC) $(LNK_FLG)
 
 .SECONDEXPANSION:
-$(DIR)main.o: $$(patsubst $(DIR)%, %, $$@).cpp $(HEADS)
+$(DIR)main.o: $$(patsubst $(DIR)%.o, %.cpp, $$@) $(HEADS)
 	$(CC) $(CMP_FLG) -c $< -o $@
 
 CEXEC = $(patsubst $(DIR)%,$(CDIR)%, $(EXEC))
