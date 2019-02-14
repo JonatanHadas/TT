@@ -63,6 +63,8 @@ $(EXEC): $(OBJS)
 .SECONDEXPANSION:
 $(DIR)main.o: $$(patsubst $(DIR)%.o, %.cpp, $$@) $(HEADS)
 	$(CC) $(CMP_FLG) -c $< -o $@
+$(DIR)geom.o: $$(patsubst $(DIR)%.o, %.cpp, $$@) geom.h
+	$(CC) $(CMP_FLG) -c $< -o $@
 
 CEXEC = $(patsubst $(DIR)%,$(CDIR)%, $(EXEC))
 COBJS = $(patsubst $(DIR)%,$(CDIR)%, $(OBJS))
