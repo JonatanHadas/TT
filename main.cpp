@@ -7,6 +7,8 @@
 #include <SDL2/SDL_mixer.h>
 #include <enet/enet.h>
 
+#include "geom_test.h"
+
 SDL_Window*  screen;
 SDL_Renderer* rend;
 
@@ -87,6 +89,7 @@ int main(int argc, char* argv[]){
 	SDL_SetHint(SDL_HINT_RENDER_SCALE_QUALITY, "best");
 	//SDL_RenderSetLogicalSize(rend, 1280, 960);
 	
+	test_intersection(rend);
 	/*Main* m = new Main(rend);
 	m->mainloop();
 	delete m;*/
