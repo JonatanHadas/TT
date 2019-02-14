@@ -1,0 +1,40 @@
+-basic game objects
+-maze generation
+-tank drawing
+-tank movement
+  -smooth collision
+-tank wall collision
+-shots
+-shot wall collision
+-shot tank collision
+-scoring
+-rounds
+-powerup generation
+-powerup pickup
+-powerup abilities
+  -gutling
+  -laser
+  -death ray
+  -bomb
+  -mines
+  -missile
+  -wi-fi missile
+    -missile movement
+    -wall collision
+    -tank collision
+-teams?
+-game end
+
+-game callbacks
+
+-extrapolation method
+-server
+-client
+
+-graphics
+  -missile tails
+  -death ray
+  -tank explosions
+  -gravel when stuck
+  -laser
+  -disappearing objects
