@@ -1,8 +1,8 @@
 #include "game.h"
 #include "geom.h"
 
-#define TANK_TURN_N 24
-#define TANK_TURN (2*M_PI/TAKE_TURN_N)
+#include "game_consts.h"
+#include "utils.h"
 
 Game::Game(int tank_num){
 	for(int i = 0; i<tank_num; i++) tanks.push_back(new Tank(this));
@@ -82,7 +82,7 @@ Round::~Round(){
 void Round::step(){
 	
 }
-Maze* get_maze(){
+Maze* Round::get_maze(){
 		return maze;
 }
 

@@ -13,7 +13,7 @@ OBJ_NAMES = $(patsubst %.h,%.o, $(HEADS1))
 OBJ_NAMES += main.o
 OBJS = $(patsubst %.o, $(DIR)%.o, $(OBJ_NAMES))
 
-HEADS = $(HEADS1) game_query.h
+HEADS = $(HEADS1) game_query.h game_consts.h
 
 ifeq ($(SYS), WINDOWS64)
 #windows64

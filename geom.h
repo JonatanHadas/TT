@@ -1,6 +1,8 @@
 #ifndef _GEOM_H
 #define _GEOM_H
 
+#define _USE_MATH_DEFINES
+#include "math.h"
 
 // positive if xy2 is left of xy1--xy2, negative if right
 double leftness(double x0, double y0,

@@ -39,6 +39,7 @@ class RoundDQ : public RoundQ{
 	Round* round;
 public:
 	RoundDQ(Round* round);
+	Maze* get_maze();
 };
 
 #endif

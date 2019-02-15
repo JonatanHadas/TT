@@ -1,6 +1,8 @@
 #ifndef _GAME_QUERY_H
 #define _GAME_QUERY_H
 
+#include "maze.h"
+
 class TankQ;
 class RoundQ;
 class GameQ;
@@ -36,6 +38,7 @@ public:
 };
 class RoundQ{
 public:
+	virtual Maze* get_maze() = 0;
 };
 
 #endif

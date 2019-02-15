@@ -45,4 +45,6 @@ bool TankDQ::is_dead(){
 RoundDQ::RoundDQ(Round* r){
 	round = r;
 }
-
+Maze* RoundDQ::get_maze(){
+	return round->get_maze();
+}

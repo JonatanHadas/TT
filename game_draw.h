@@ -21,6 +21,7 @@ class GameDrawer{
 	BoardDrawer* board;
 	SDL_Renderer* renderer;
 	SDL_Texture* board_t;
+	int w,h;
 public:
 	GameDrawer(GameQ* q, SDL_Renderer* rend);
 	~GameDrawer();
