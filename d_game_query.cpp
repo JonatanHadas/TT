@@ -17,12 +17,13 @@ RoundQ* GameDQ::get_round(){
 }
 GameQEvent* GameDQ::get_event(){
 	GameEvent* e = game->get_event();
-	switch(e->get_type()){
-	case GameEvent::TYPE_START_RND:
-		return new GameDQEventStartRnd((GameEventStartRnd*)e);
-	default:
-		return NULL;
+	if(e){
+		switch(e->get_type()){
+		case GameEvent::TYPE_START_RND:
+			return new GameDQEventStartRnd((GameEventStartRnd*)e);
+		}
 	}
+	return NULL;
 }
 
 TankDQ::TankDQ(Tank* t){

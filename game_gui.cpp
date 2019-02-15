@@ -4,6 +4,7 @@
 GameGui::GameGui(GameQ* q, Main* upper) : State(upper){
 	game = q;
 	drawer = new GameDrawer(q, upper->get_renderer());
+	upper->set_screen_size(GSCR_W, GSCR_H);
 }
 GameGui::~GameGui(){
 	delete drawer;
