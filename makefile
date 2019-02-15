@@ -65,7 +65,7 @@ $(EXEC): $(OBJS)
 .SECONDEXPANSION:
 $(DIR)main.o: $$(patsubst $(DIR)%.o, %.cpp, $$@) $(HEADS)
 	$(CC) $(CMP_FLG) -c $< -o $@
-$(DIR)util.o: $$(patsubst $(DIR)%.o, %.cpp, $$@) util.h
+$(DIR)utils.o: $$(patsubst $(DIR)%.o, %.cpp, $$@) utils.h
 	$(CC) $(CMP_FLG) -c $< -o $@
 $(DIR)geom.o: $$(patsubst $(DIR)%.o, %.cpp, $$@) geom.h
 	$(CC) $(CMP_FLG) -c $< -o $@
