@@ -2,6 +2,7 @@
 #define _GAME_H
 
 #include <vector>
+#include <queue>
 
 // a whole game
 class Game;
@@ -10,9 +11,23 @@ class Tank;
 // all round specific data
 class Round;
 
+
+class GameEvent{
+public:
+	enum Type{
+		TYPE_START_RND,
+	};
+	virtual Type get_type()=0;
+};
+
+class GameEventStartRnd : public GameEvent{
+	Type get_type(){return GameEvent::TYPE_START_RND;}
+};
+
 class Game{
 	std::vector<Tank*> tanks;
 	Round* round;
+	std::queue<GameEvent*> events;
 public:
 	Game(int tank_num);
 	~Game();
@@ -20,14 +35,15 @@ public:
 	Round* get_round();
 	Tank* get_tank(int i);
 	int get_tank_num();
+	GameEvent* get_event();
 };
 
 class Round{
 	Game* game;
 public:
-	Round(game* game);
+	Round(Game* game);
 	~Round();
-}
+};
 
 class Tank{
 	Game* game;
@@ -41,6 +57,6 @@ public:
 	double get_y();
 	double get_ang();
 	bool is_dead();
-}
+};
 
 #endif

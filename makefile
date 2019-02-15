@@ -7,11 +7,13 @@ endif
 
 DEF_CMP_FLG = $(DEBUG_FLG) $(INC_PTH)
 
-HEADS = geom.h gui.h clock.h
+HEADS1 = geom.h gui.h clock.h game.h game_draw.h d_game_query.h game_gui.h
 
-OBJ_NAMES = $(patsubst %.h,%.o, $(HEADS))
+OBJ_NAMES = $(patsubst %.h,%.o, $(HEADS1))
 OBJ_NAMES += main.o
 OBJS = $(patsubst %.o, $(DIR)%.o, $(OBJ_NAMES))
+
+HEADS = $(HEADS1) game_query.h
 
 ifeq ($(SYS), WINDOWS64)
 #windows64
@@ -68,6 +70,14 @@ $(DIR)geom.o: $$(patsubst $(DIR)%.o, %.cpp, $$@) geom.h
 $(DIR)clock.o: $$(patsubst $(DIR)%.o, %.cpp, $$@) clock.h
 	$(CC) $(CMP_FLG) -c $< -o $@
 $(DIR)gui.o: $$(patsubst $(DIR)%.o, %.cpp, $$@) $(HEADS)
+	$(CC) $(CMP_FLG) -c $< -o $@
+$(DIR)game.o: $$(patsubst $(DIR)%.o, %.cpp, $$@) $(HEADS)
+	$(CC) $(CMP_FLG) -c $< -o $@
+$(DIR)d_game_query.o: $$(patsubst $(DIR)%.o, %.cpp, $$@) $(HEADS)
+	$(CC) $(CMP_FLG) -c $< -o $@
+$(DIR)game_draw.o: $$(patsubst $(DIR)%.o, %.cpp, $$@) $(HEADS)
+	$(CC) $(CMP_FLG) -c $< -o $@
+$(DIR)game_gui.o: $$(patsubst $(DIR)%.o, %.cpp, $$@) $(HEADS)
 	$(CC) $(CMP_FLG) -c $< -o $@
 
 CEXEC = $(patsubst $(DIR)%,$(CDIR)%, $(EXEC))

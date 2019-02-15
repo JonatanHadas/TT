@@ -14,6 +14,7 @@ Game::~Game(){
 void Game::start_round(){
 	if(round) delete round;
 	round = new Round(this);
+	events.push(new GameEventStartRnd());
 }
 Round* Game::get_round(){
 	return round;
@@ -23,6 +24,14 @@ Tank* Game::get_tank(int i){
 }
 int Game::get_tank_num(){
 	return tanks.size();
+}
+GameEvent* Game::get_event(){
+	if(events.size()==0) return NULL;
+	else{
+		GameEvent* e = events.front();
+		events.pop();
+		return e;
+	}
 }
 
 Round::Round(Game* g){

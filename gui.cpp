@@ -2,14 +2,14 @@
 
 #define FPS 60
 
-#include "connect.h"
 #include "game_gui.h"
+#include "d_game_query.h"
 
 Main::Main(SDL_Renderer* renderer){
 	rend = renderer;
 	for_del = NULL;
 	chng_sz = false;
-	state = new ConnectState(this);
+	state = new GameGui(new GameDQ(new Game(2)),this);
 }
 Main::~Main(){
 	if(state) delete state;
