@@ -12,6 +12,6 @@ public:
 	~UnionFind();
 	bool unite(int i, int j);
 	bool same(int i, int j);
-}
+};
 
 #endif

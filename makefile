@@ -7,7 +7,7 @@ endif
 
 DEF_CMP_FLG = $(DEBUG_FLG) $(INC_PTH)
 
-HEADS = utils.h geom.h gui.h clock.h
+HEADS = utils.h geom.h gui.h clock.h images.h
 
 OBJ_NAMES = $(patsubst %.h,%.o, $(HEADS))
 OBJ_NAMES += main.o
@@ -68,6 +68,8 @@ $(DIR)utils.o: $$(patsubst $(DIR)%.o, %.cpp, $$@) utils.h
 $(DIR)geom.o: $$(patsubst $(DIR)%.o, %.cpp, $$@) geom.h
 	$(CC) $(CMP_FLG) -c $< -o $@
 $(DIR)clock.o: $$(patsubst $(DIR)%.o, %.cpp, $$@) clock.h
+	$(CC) $(CMP_FLG) -c $< -o $@
+$(DIR)images.o: $$(patsubst $(DIR)%.o, %.cpp, $$@) images.h
 	$(CC) $(CMP_FLG) -c $< -o $@
 $(DIR)gui.o: $$(patsubst $(DIR)%.o, %.cpp, $$@) $(HEADS)
 	$(CC) $(CMP_FLG) -c $< -o $@

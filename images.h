@@ -20,8 +20,10 @@ struct TankImg{
 	SDL_Texture* shards;
 	SDL_Texture* deathray;
 	SDL_Texture* broadcast;
-	TankImg();
+	SDL_Color col;
+	TankImg(SDL_Color c);
 	~TankImg();
+	bool check();
 };
 
 enum Img{
@@ -30,5 +32,12 @@ enum Img{
 };
 
 bool load_images(SDL_Renderer* rend);
+
+SDL_Color get_tank_col(int ind);
+
+SDL_Texture* tex_img(int ind, SDL_Surface* src, SDL_Renderer* rend, bool use_tex);
+void generate_tank(int ind, SDL_Renderer* rend, TankImg* img);
+
+SDL_Texture* get_img(Img i);
 
 #endif
