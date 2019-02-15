@@ -7,7 +7,7 @@ endif
 
 DEF_CMP_FLG = $(DEBUG_FLG) $(INC_PTH)
 
-HEADS = geom.h
+HEADS = geom.h gui.h clock.h
 
 OBJ_NAMES = $(patsubst %.h,%.o, $(HEADS))
 OBJ_NAMES += main.o
@@ -64,6 +64,10 @@ $(EXEC): $(OBJS)
 $(DIR)main.o: $$(patsubst $(DIR)%.o, %.cpp, $$@) $(HEADS)
 	$(CC) $(CMP_FLG) -c $< -o $@
 $(DIR)geom.o: $$(patsubst $(DIR)%.o, %.cpp, $$@) geom.h
+	$(CC) $(CMP_FLG) -c $< -o $@
+$(DIR)clock.o: $$(patsubst $(DIR)%.o, %.cpp, $$@) clock.h
+	$(CC) $(CMP_FLG) -c $< -o $@
+$(DIR)gui.o: $$(patsubst $(DIR)%.o, %.cpp, $$@) $(HEADS)
 	$(CC) $(CMP_FLG) -c $< -o $@
 
 CEXEC = $(patsubst $(DIR)%,$(CDIR)%, $(EXEC))
