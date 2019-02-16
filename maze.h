@@ -10,6 +10,8 @@ class Maze{
 public:
 	enum GenMethod{
 		GEN_NONE,
+		GEN_WALL_REM,
+		GEN_EXP_TREE,
 	};
 	Maze(int w, int h);
 	~Maze();
