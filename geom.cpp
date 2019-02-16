@@ -1,6 +1,7 @@
 #include "geom.h"
 
 #include <math.h>
+#include <stdio.h>
 
 double leftness(double x0, double y0,
 				double x1, double y1,
@@ -63,4 +64,52 @@ double circ_lines_coltime(double ox, double oy,
 		}
 	}
 	return t;
+}
+
+bool poly_coll(	double* x1s, double* y1s, int num1,
+				double* x2s, double* y2s, int num2,
+				double& nx, double& ny, double& dp,
+				double& px, double& py){
+	
+	for(int i = 0,j = num2; i<num1; i++){
+		double cdx = x1s[(i+1)%num1]-x1s[i], cdy = y1s[(i+1)%num1]-y1s[i];
+		while(	leftness(	x2s[(j+1)%num2]-x2s[(j)%num2],y2s[(j+1)%num2]-y2s[(j)%num2],
+							0,0,cdx,cdy) <= 0) j++;
+		while(	leftness(	x2s[(j-1)%num2]-x2s[(j)%num2],y2s[(j-1)%num2]-y2s[(j)%num2],
+							0,0,cdx,cdy) < 0) j--;
+		double l = sqrt(cdx*cdx+cdy*cdy);
+		cdx /= l; cdy /= l;
+		double cdp = (cdy * (x2s[j%num2]-x1s[i]) - cdx * (y2s[j%num2]-y1s[i]));
+		if(cdp >= 0) {
+			printf("%d %d\n",i,j);
+			return false;
+		}
+		if(-cdp < dp || i==0){
+			dp = -cdp;
+			nx = cdy; ny = -cdx;
+			px = x2s[j%num2]; py = y2s[j%num2];
+		}
+	}
+
+	for(int i = 0,j = num1; i<num2; i++){
+		double cdx = x2s[(i+1)%num2]-x2s[i], cdy = y2s[(i+1)%num2]-y2s[i];
+		while(	leftness(	x1s[(j+1)%num1]-x1s[(j)%num1],y1s[(j+1)%num1]-y1s[(j)%num1],
+							0,0,cdx,cdy) <= 0) j++;
+		while(	leftness(	x1s[(j-1)%num1]-x1s[(j)%num1],y1s[(j-1)%num1]-y1s[(j)%num1],
+							0,0,cdx,cdy) < 0) j--;
+		double l = sqrt(cdx*cdx+cdy*cdy);
+		cdx /= l; cdy /= l;
+		double cdp = (cdy * (x1s[j%num1]-x2s[i]) - cdx * (y1s[j%num1]-y2s[i]));
+		if(cdp >= 0){
+			printf(" %d %d\n",i,j);
+			return false;
+		}
+		if(-cdp < dp){
+			dp = -cdp;
+			nx = -cdy; ny = cdx;
+			px = x1s[j%num1]; py = y1s[j%num1];
+		}
+	}
+	
+	return true;
 }
