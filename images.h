@@ -21,7 +21,7 @@ struct TankImg{
 	SDL_Texture* deathray;
 	SDL_Texture* broadcast;
 	SDL_Color col;
-	TankImg(SDL_Color c);
+	TankImg();
 	~TankImg();
 	bool check();
 };

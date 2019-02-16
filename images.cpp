@@ -10,8 +10,9 @@
 #define UPG "upgrades/"
 #define PNG ".png"
 
-TankImg::TankImg(SDL_Color c){
-	col = c;
+#include <stdio.h>
+
+TankImg::TankImg(){
 	body = cannon = gutling[0] = gutling[1] = gutling[2] = laser = ray_gun0 = ray_gun1 = ray_gun2 = ray_gun3 = launcher = missile = thick_cannon = mine_off = mine_on = shards = deathray = broadcast = NULL;
 }
 TankImg::~TankImg(){
@@ -55,10 +56,13 @@ struct TankTex{
 		if(surf) SDL_FreeSurface(surf);
 	}
 	SDL_Color get_col(int x, int y, SDL_Color temp, bool use_tex){
-		int w = surf->w, h = surf->h, pt = surf->pitch;
-		unsigned int* px = (unsigned int*)surf->pixels;
 		SDL_Color cur,res;
-		if(use_tex && surf) SDL_GetRGBA(px[(x%w) + (y%h)*pt],surf->format, &cur.r, &cur.g, &cur.b, &cur.a);
+		if(use_tex && surf){
+			int w = surf->w, h = surf->h, pt = surf->pitch / 4;
+			unsigned int* px = (unsigned int*)surf->pixels;
+
+			SDL_GetRGBA(px[(x%w) + (y%h)*pt],surf->format, &cur.r, &cur.g, &cur.b, &cur.a);
+		}
 		else cur = col;
 		
 		int o = temp.r, r = temp.g;
@@ -66,6 +70,8 @@ struct TankTex{
 		res.r = (255 * r + cur.r * (o-r))/255;
 		res.g = (255 * r + cur.g * (o-r))/255;
 		res.b = (255 * r + cur.b * (o-r))/255;
+		
+		res.a = temp.a;
 		
 		return res;
 	}
@@ -118,7 +124,7 @@ bool load_tank_tx(const char* name){
 		
 		unsigned int* pixels = (unsigned int*)(surfs.back()->pixels);
 		SDL_PixelFormat* fmt = surfs.back()->format;
-		int w = surfs.back()->w, h = surfs.back()->h, p = surfs.back()->pitch; 
+		int w = surfs.back()->w, h = surfs.back()->h, p = surfs.back()->pitch / 4; 
 		
 		for(int i = 0; i < w; i++){
 			for(int j = 0; j < h; j++){
@@ -222,14 +228,15 @@ SDL_Texture* tex_img(int ind, SDL_Surface* src, SDL_Renderer* rend, bool use_tex
 													0x00ff0000,
 													0x0000ff00,
 													0x000000ff);
-													
 	if(dst == NULL) return NULL;
+
+	SDL_LockSurface(dst);
 	
-	int pts = src->pitch;
-	int ptd = dst->pitch;
+	int pts = src->pitch / 4;
+	int ptd = dst->pitch / 4;
 	unsigned int* pxs = (unsigned int*)src->pixels;
 	unsigned int* pxd = (unsigned int*)dst->pixels;
-	
+
 	for(int x = 0; x<w; x++){
 		for(int y = 0; y<h; y++){
 			SDL_Color cur;
@@ -238,12 +245,15 @@ SDL_Texture* tex_img(int ind, SDL_Surface* src, SDL_Renderer* rend, bool use_tex
 			pxd[x + ptd*y] = SDL_MapRGBA(dst->format, cur.r, cur.g, cur.b, cur.a);
 		}
 	}
+
+	SDL_UnlockSurface(dst);
 	SDL_Texture* ret = SDL_CreateTextureFromSurface(rend, dst);
 	SDL_FreeSurface(dst);
 	return ret;
 }
 
 void generate_tank(int ind, SDL_Renderer* rend, TankImg* img){
+	img->col = tts[ind]->col;
 	img->body = tex_img(ind, surfs[0], rend, true);
 	img->cannon = tex_img(ind, surfs[1], rend, true);
 	img->gutling[0] = tex_img(ind, surfs[2], rend, true);
