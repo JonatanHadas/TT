@@ -40,8 +40,9 @@ double circ_lines_coltime(double ox, double oy,
 	for(int i = 0; i<num; i++){
 		double x = xs[i]-ox, y = ys[i]-oy;
 		double a = vx*vx+vy*vy, b = 2*(vx*x+vy*y), c = x*x+y*y-r*r;
+		double tt;
 		if( b*b-4*a*c >= 0){
-			double tt = (b-sqrt(b*b-4*a*c))/(2*a)
+			tt = (b-sqrt(b*b-4*a*c))/(2*a);
 		}
 		if(tt>=0 && tt<t) t=tt;
 		
@@ -61,4 +62,5 @@ double circ_lines_coltime(double ox, double oy,
 			}
 		}
 	}
+	return t;
 }
