@@ -113,3 +113,20 @@ bool poly_coll(	double* x1s, double* y1s, int num1,
 	
 	return true;
 }
+
+
+void gen_rect(double x, double y ,double w, double h, double* xs, double* ys){
+	xs[0] = xs[3] = x;
+	xs[2] = xs[1] = x+w;
+	ys[0] = ys[1] = y;
+	ys[3] = ys[2] = y+h;
+}
+
+void gen_rot_rect(double cx, double cy ,double w, double h, double ang, double* xs, double* ys){
+	xs[0] = xs[1] = xs[2] = xs[3] = cx;
+	ys[0] = ys[1] = ys[2] = ys[3] = cy;
+	rotate_add(ang,-w/2,-h/2,xs[0],ys[0]);
+	rotate_add(ang,w/2,-h/2,xs[1],ys[1]);
+	rotate_add(ang,w/2,h/2,xs[2],ys[2]);
+	rotate_add(ang,-w/2,h/2,xs[3],ys[3]);
+}

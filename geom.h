@@ -39,6 +39,12 @@ bool poly_coll(	double* x1s, double* y1s, int num1,
 				double* x2s, double* y2s, int num2,
 				double& nx, double& ny, double& dp,
 				double& px, double& py);
+				
+// rects
+// xs and ys mus be of length 4+
+void gen_rect(double x, double y ,double w, double h, double* xs, double* ys);
+// xs and ys mus be of length 4+
+void gen_rot_rect(double cx, double cy ,double w, double h, double ang, double* xs, double* ys);
 
 
 #endif
