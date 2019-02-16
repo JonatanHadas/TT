@@ -1,6 +1,11 @@
 #ifndef _GEOM_H
 #define _GEOM_H
 
+#define _USE_MATH_DEFINES
+#include "math.h"
+
+#define DEG2RAD(x) ((x) * M_PI / 180.0)
+#define RAD2DEG(x) ((x) * 180.0 / M_PI)
 
 // positive if xy2 is left of xy1--xy2, negative if right
 double leftness(double x0, double y0,
@@ -32,5 +37,5 @@ void circ_lines_coltime(double ox, double oy,
 						double r,
 						double* xs, double* ys, int num, bool closed);
 
-
+						
 #endif

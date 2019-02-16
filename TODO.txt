@@ -1,8 +1,8 @@
 -game
-  -tank
+  ~tank
     -movement
 	-wall collision
-  -maze
+  ~maze
     -generation
   -shot
     -wall collision

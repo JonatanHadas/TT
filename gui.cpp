@@ -2,12 +2,16 @@
 
 #define FPS 60
 
+#include "game_gui.h"
+#include "d_game_query.h"
 
 Main::Main(SDL_Renderer* renderer){
 	rend = renderer;
 	for_del = NULL;
 	chng_sz = false;
-	state = NULL;
+	std::vector<int> img_inds;
+	for(int i = 0; i<4; i++) img_inds.push_back(i);
+	state = new GameGui(new GameDQ(new Game(2)),this, img_inds);
 }
 Main::~Main(){
 	if(state) delete state;
