@@ -9,7 +9,7 @@ class GameGui : public State{
 	GameQ* game;
 	GameDrawer* drawer;
 public:
-	GameGui(GameQ* q, Main* upper);
+	GameGui(GameQ* q, Main* upper, std::vector<int> img_inds);
 	~GameGui();
 	bool step();
 };

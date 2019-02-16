@@ -3,6 +3,7 @@
 
 #include <SDL2/SDL.h>
 #include "game_query.h"
+#include "images.h"
 
 #define GSCR_W 1280
 #define GSCR_H 960
@@ -11,8 +12,10 @@
 class BoardDrawer{
 	GameQ* game;
 	SDL_Renderer* renderer;
+	TankImg* tank_images;
 public:
-	BoardDrawer(GameQ* q, SDL_Renderer* rend);
+	BoardDrawer(GameQ* q, SDL_Renderer* rend, std::vector<int> img_inds);
+	~BoardDrawer();
 	void draw();
 };
 
@@ -23,7 +26,7 @@ class GameDrawer{
 	SDL_Texture* board_t;
 	int w,h;
 public:
-	GameDrawer(GameQ* q, SDL_Renderer* rend);
+	GameDrawer(GameQ* q, SDL_Renderer* rend, std::vector<int> img_inds);
 	~GameDrawer();
 	void draw();
 };
