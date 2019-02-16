@@ -64,3 +64,66 @@ double circ_lines_coltime(double ox, double oy,
 	}
 	return t;
 }
+
+bool poly_coll(	double* x1s, double* y1s, int num1,
+				double* x2s, double* y2s, int num2,
+				double& nx, double& ny, double& dp,
+				double& px, double& py){
+	
+	for(int i = 0,j = num2; i<num1; i++){
+		double cdx = x1s[(i+1)%num1]-x1s[i], cdy = y1s[(i+1)%num1]-y1s[i];
+		while(	leftness(	x2s[(j+1)%num2]-x2s[(j)%num2],y2s[(j+1)%num2]-y2s[(j)%num2],
+							0,0,cdx,cdy) <= 0) j++;
+		while(	leftness(	x2s[(j-1)%num2]-x2s[(j)%num2],y2s[(j-1)%num2]-y2s[(j)%num2],
+							0,0,cdx,cdy) < 0) j--;
+		double l = sqrt(cdx*cdx+cdy*cdy);
+		cdx /= l; cdy /= l;
+		double cdp = (cdy * (x2s[j%num2]-x1s[i]) - cdx * (y2s[j%num2]-y1s[i]));
+		if(cdp >= 0) {
+			return false;
+		}
+		if(-cdp < dp || i==0){
+			dp = -cdp;
+			nx = cdy; ny = -cdx;
+			px = x2s[j%num2]; py = y2s[j%num2];
+		}
+	}
+
+	for(int i = 0,j = num1; i<num2; i++){
+		double cdx = x2s[(i+1)%num2]-x2s[i], cdy = y2s[(i+1)%num2]-y2s[i];
+		while(	leftness(	x1s[(j+1)%num1]-x1s[(j)%num1],y1s[(j+1)%num1]-y1s[(j)%num1],
+							0,0,cdx,cdy) <= 0) j++;
+		while(	leftness(	x1s[(j-1)%num1]-x1s[(j)%num1],y1s[(j-1)%num1]-y1s[(j)%num1],
+							0,0,cdx,cdy) < 0) j--;
+		double l = sqrt(cdx*cdx+cdy*cdy);
+		cdx /= l; cdy /= l;
+		double cdp = (cdy * (x1s[j%num1]-x2s[i]) - cdx * (y1s[j%num1]-y2s[i]));
+		if(cdp >= 0){
+			return false;
+		}
+		if(-cdp < dp){
+			dp = -cdp;
+			nx = -cdy; ny = cdx;
+			px = x1s[j%num1]; py = y1s[j%num1];
+		}
+	}
+	
+	return true;
+}
+
+
+void gen_rect(double x, double y ,double w, double h, double* xs, double* ys){
+	xs[0] = xs[3] = x;
+	xs[2] = xs[1] = x+w;
+	ys[0] = ys[1] = y;
+	ys[3] = ys[2] = y+h;
+}
+
+void gen_rot_rect(double cx, double cy ,double w, double h, double ang, double* xs, double* ys){
+	xs[0] = xs[1] = xs[2] = xs[3] = cx;
+	ys[0] = ys[1] = ys[2] = ys[3] = cy;
+	rotate_add(ang,-w/2,-h/2,xs[0],ys[0]);
+	rotate_add(ang,w/2,-h/2,xs[1],ys[1]);
+	rotate_add(ang,w/2,h/2,xs[2],ys[2]);
+	rotate_add(ang,-w/2,h/2,xs[3],ys[3]);
+}
