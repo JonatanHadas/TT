@@ -10,8 +10,8 @@ Main::Main(SDL_Renderer* renderer){
 	for_del = NULL;
 	chng_sz = false;
 	std::vector<int> img_inds;
-	for(int i = 0; i<4; i++) img_inds.push_back(i);
-	state = new GameGui(new GameDQ(new Game(2)),this, img_inds);
+	for(int i = 0; i<30; i++) img_inds.push_back(i);
+	state = new GameGui(new GameDQ(new Game(13)),this, img_inds);
 }
 Main::~Main(){
 	if(state) delete state;

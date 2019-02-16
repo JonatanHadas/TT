@@ -7,6 +7,7 @@
 
 #define DIR "images/"
 #define TNK "tank/"
+#define TEX "textures/"
 #define UPG "upgrades/"
 #define PNG ".png"
 
@@ -190,6 +191,7 @@ bool load_images(SDL_Renderer* rend){
 	if(get_tex(DIR UPG "bomb" PNG, rend))
 	if(get_tex(DIR UPG "mine" PNG, rend))
 	if(get_tex(DIR "fragment" PNG, rend))
+	if(load_tank_tx(DIR TNK TEX "army" PNG))
 		return true;
 	return false;
 }
