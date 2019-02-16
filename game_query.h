@@ -2,6 +2,7 @@
 #define _GAME_QUERY_H
 
 #include "maze.h"
+#include "game.h"
 
 class TankQ;
 class RoundQ;
@@ -28,6 +29,8 @@ public:
 	virtual TankQ* get_tank(int i) = 0;
 	virtual RoundQ* get_round() = 0;
 	virtual GameQEvent* get_event() = 0;
+	
+	virtual void advance() = 0;
 };
 class TankQ{
 public:
@@ -35,6 +38,8 @@ public:
 	virtual double get_y() = 0;
 	virtual double get_ang() = 0;
 	virtual bool is_dead() = 0;
+	
+	virtual void push_ctrl(ControlState ctrl) = 0;
 };
 class RoundQ{
 public:

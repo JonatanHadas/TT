@@ -32,6 +32,9 @@ class Game{
 	std::queue<GameEvent*> events;
 	
 	long long int time;
+	
+	bool can_step();
+	void step();
 public:
 	Game(int tank_num);
 	~Game();
@@ -42,7 +45,7 @@ public:
 	GameEvent* get_event();
 	
 	long long int get_time();
-	void step();
+	void advance();
 };
 
 class Round{
@@ -55,11 +58,21 @@ public:
 	Maze* get_maze();
 };
 
+struct ControlState{
+	bool rt,lt,bk,fd,sht;
+};
+
 class Tank{
 	Game* game;
 	double x,y,ang;
+	std::queue<ControlState> ctrl;
+	ControlState p_ctrl;
 	bool dead;
 	friend Round;
+	friend Game;
+	
+	bool can_step();
+	void clear_control();
 public:
 	Tank(Game* game);
 	~Tank();
@@ -68,6 +81,8 @@ public:
 	double get_y();
 	double get_ang();
 	bool is_dead();
+	
+	void push_control(ControlState st);
 	
 	void step();
 };

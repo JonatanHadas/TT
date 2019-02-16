@@ -25,6 +25,8 @@ public:
 	TankQ* get_tank(int i);
 	RoundQ* get_round();
 	GameQEvent* get_event();
+	
+	void advance();
 };
 class TankDQ : public TankQ{
 	Tank* tank;
@@ -34,6 +36,8 @@ public:
 	double get_y();
 	double get_ang();
 	bool is_dead();
+	
+	void push_ctrl(ControlState ctrl);
 };
 class RoundDQ : public RoundQ{
 	Round* round;

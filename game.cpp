@@ -4,6 +4,8 @@
 #include "game_consts.h"
 #include "utils.h"
 
+#include <stdio.h>
+
 Game::Game(int tank_num){
 	for(int i = 0; i<tank_num; i++) tanks.push_back(new Tank(this));
 	round = NULL;
@@ -50,6 +52,15 @@ void Game::step(){
 	time++;
 }
 
+bool Game::can_step(){
+	for(int i = 0; i<get_tank_num(); i++) if(! get_tank(i)->can_step()) return false;
+	return true;
+}
+
+void Game::advance(){
+	while(can_step()) step();
+}
+
 Round::Round(Game* g){
 	game=g;
 	int min=10,max=20;
@@ -90,6 +101,7 @@ Tank::Tank(Game* g){
 	game = g;
 	x = y = ang = 0;
 	dead = false;
+	p_ctrl = {false,false,false,false,false};
 }
 Tank::~Tank(){
 	
@@ -108,4 +120,22 @@ bool Tank::is_dead(){
 }
 void Tank::step(){
 	
+	int turn = (ctrl.back().lt ? 1 : 0)-(ctrl.back().rt ? 1 : 0);
+	ang += turn * STEP_ANG;
+	
+	double step = STEP_DST * ((ctrl.back().fd ? 1 : 0) - (ctrl.back().bk ? REV_RAT : 0));
+	rotate_add(ang, step, 0, x, y);
+	
+	p_ctrl = ctrl.front();
+	ctrl.pop();
+}
+void Tank::push_control(ControlState st){
+	ctrl.push(st);
+}
+void Tank::clear_control(){
+	p_ctrl = ctrl.back();
+	while(ctrl.size()>0) ctrl.pop();
+}
+bool Tank::can_step(){
+	return ctrl.size()>0;
 }

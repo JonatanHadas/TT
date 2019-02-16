@@ -25,6 +25,9 @@ GameQEvent* GameDQ::get_event(){
 	}
 	return NULL;
 }
+void GameDQ::advance(){
+	game->advance();
+}
 
 TankDQ::TankDQ(Tank* t){
 	tank = t;
@@ -40,6 +43,9 @@ double TankDQ::get_ang(){
 }
 bool TankDQ::is_dead(){
 	return tank->is_dead();
+}
+void TankDQ::push_ctrl(ControlState ctrl){
+	tank->push_control(ctrl);
 }
 
 RoundDQ::RoundDQ(Round* r){
