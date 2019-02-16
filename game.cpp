@@ -160,8 +160,8 @@ bool Tank::check_wall_coll(double& nx, double& ny, double& px, double& py, doubl
 			if(game->get_round()->get_maze()->hwall(ix+i, iy+j) && poly_coll(txs,tys,4,wxs,wys,4,nx,ny,dp,px,py)){
 				return true;
 			}
-			gen_rect(ix+i-WALL_THK + 1, iy+j-WALL_THK, 2*WALL_THK, 2*WALL_THK + 1,wxs,wys);
-			if(game->get_round()->get_maze()->vwall(ix+i, iy+j) && poly_coll(txs,tys,4,wxs,wys,4,nx,ny,dp,px,py)){
+			gen_rect(ix+j-WALL_THK + 1, iy+i-WALL_THK, 2*WALL_THK, 2*WALL_THK + 1,wxs,wys);
+			if(game->get_round()->get_maze()->vwall(ix+j, iy+i) && poly_coll(txs,tys,4,wxs,wys,4,nx,ny,dp,px,py)){
 				return true;
 			}
 		}
