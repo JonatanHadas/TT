@@ -19,6 +19,7 @@ Game::~Game(){
 	if(round) delete round;
 }
 void Game::start_round(){
+	for(int i = 0; i<get_tank_num(); i++) get_tank(i)->clear_control();
 	if(round) delete round;
 	round = new Round(this);
 	events.push(new GameEventStartRnd());
@@ -119,12 +120,21 @@ bool Tank::is_dead(){
 	return dead;
 }
 void Tank::step(){
+	double nx,ny,dp,px,py;
+	
+	double pa = ang;
 	
 	int turn = (ctrl.back().lt ? 1 : 0)-(ctrl.back().rt ? 1 : 0);
 	ang += turn * STEP_ANG;
 	
+	if(check_wall_coll(nx,ny,px,py,dp)) ang = pa;
+	
+	double prx = x, pry = y;
+	
 	double step = STEP_DST * ((ctrl.back().fd ? 1 : 0) - (ctrl.back().bk ? REV_RAT : 0));
 	rotate_add(ang, step, 0, x, y);
+
+	if(check_wall_coll(nx,ny,px,py,dp)) {x=prx; y=pry;}
 	
 	p_ctrl = ctrl.front();
 	ctrl.pop();
@@ -133,9 +143,28 @@ void Tank::push_control(ControlState st){
 	ctrl.push(st);
 }
 void Tank::clear_control(){
-	p_ctrl = ctrl.back();
+	if(ctrl.size()>0) p_ctrl = ctrl.back();
 	while(ctrl.size()>0) ctrl.pop();
 }
 bool Tank::can_step(){
 	return ctrl.size()>0;
+}
+
+bool Tank::check_wall_coll(double& nx, double& ny, double& px, double& py, double& dp){
+	double txs[4],tys[4],wxs[4],wys[4];
+	int ix = x, iy = y;
+	gen_rot_rect(x,y,TANK_H, TANK_W, ang, txs,tys);
+	for(int i = -1; i<=1; i++){
+		for(int j = -1; j<1; j++){
+			gen_rect(ix+i-WALL_THK, iy+j-WALL_THK + 1, 2*WALL_THK + 1, 2*WALL_THK,wxs,wys);
+			if(game->get_round()->get_maze()->hwall(ix+i, iy+j) && poly_coll(txs,tys,4,wxs,wys,4,nx,ny,dp,px,py)){
+				return true;
+			}
+			gen_rect(ix+i-WALL_THK + 1, iy+j-WALL_THK, 2*WALL_THK, 2*WALL_THK + 1,wxs,wys);
+			if(game->get_round()->get_maze()->vwall(ix+i, iy+j) && poly_coll(txs,tys,4,wxs,wys,4,nx,ny,dp,px,py)){
+				return true;
+			}
+		}
+	}
+	return false;
 }

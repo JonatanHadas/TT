@@ -73,6 +73,8 @@ class Tank{
 	
 	bool can_step();
 	void clear_control();
+	
+	bool check_wall_coll(double& nx, double& ny, double& px, double& py, double& dp);
 public:
 	Tank(Game* game);
 	~Tank();

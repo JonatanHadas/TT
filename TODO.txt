@@ -1,7 +1,7 @@
 -game
   ~tank
-    -movement
-	-wall collision
+    =movement
+	~wall collision
   ~maze
     -generation
   -shot
@@ -16,10 +16,11 @@
 -geometry
   =line intersection
   -circle collision
-  -polygon collision
+  =polygon collision
   
--loading images
-  -tank parts
+~loading images
+  =tank parts
+  -add non-uniform textures
 -loading sounds
 
 
