@@ -34,6 +34,10 @@ double circ_poly_coltime(double ox, double oy,
 						double r,
 						double* xs, double* ys, int num,
 						double& nx, double& ny);
+// is a radius r circle at ox,oy inside convex polygon xs[],ys[]  
+bool circ_poly_colcheck(double ox, double oy,
+						double r,
+						double* xs, double* ys, int num);
 				
 // check convex polygon collision, nxy receive normal to collision, dp receive collision depth, pxy receive collision position
 bool poly_coll(	double* x1s, double* y1s, int num1,

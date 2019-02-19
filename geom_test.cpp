@@ -56,6 +56,7 @@ void test_circ(SDL_Renderer* rend){
 		SDL_RenderClear(rend);
 		
 		SDL_SetRenderDrawColor(rend, 0,0,0,255);
+		if(xs.size()>3 && circ_poly_colcheck(x,y,rd,&(xs[0]), &(ys[0]), xs.size())) SDL_SetRenderDrawColor(rend,0,128,0,255);
 		SDL_RenderDrawLines(rend, &(p[0]), p.size());
 		
 		SDL_SetRenderDrawColor(rend, 0,0,128,255);
