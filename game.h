@@ -86,6 +86,10 @@ class Tank{
 	friend Game;
 	
 	int ind;
+	
+	int shot_num;
+	
+	friend RegShot;
 		
 	bool can_step();
 	void clear_control();

@@ -122,6 +122,7 @@ Tank::Tank(Game* g, int i){
 	dead = false;
 	p_ctrl = {false,false,false,false,false};
 	ind = i;
+	shot_num = 0;
 }
 Tank::~Tank(){
 	
@@ -139,6 +140,8 @@ bool Tank::is_dead(){
 	return dead;
 }
 void Tank::step(){
+	if(is_dead()) return;
+	
 	double nx,ny,dp,px,py;
 	
 	double pa = ang;
@@ -157,7 +160,7 @@ void Tank::step(){
 	
 	
 	if(ctrl.back().sht && !p_ctrl.sht){
-		game->get_round()->add_shot(new RegShot(game, this));
+		if(shot_num < MAX_SHOTS) game->get_round()->add_shot(new RegShot(game, this));
 	}
 	
 	p_ctrl = ctrl.front();
@@ -199,6 +202,7 @@ int Tank::get_ind(){
 void Tank::reset(double xx, double yy, double a){
 	x = xx; y=yy; ang=a;
 	clear_control();
+	dead = false;
 }
 
 GenShot::GenShot(Game* g, Tank* t){
@@ -276,7 +280,7 @@ void Shot::advance(){
 		reflect();
 	}
 	if(!check_tank(get_tank(),false)) out_of_tank = false;
-	//if(tm > get_ttl()) game->get_round()->delete_shot(this);
+	if(tm > get_ttl()) get_game()->get_round()->delete_shot(this);
 }
 double Shot::get_ang(){
 	return atan2(vy,vx);
@@ -293,10 +297,10 @@ std::vector<std::pair<double,double>>& Shot::get_colls(){
 }
 
 RegShot::RegShot(Game* game, Tank* tank) : Shot(game, tank, 0, STEP_SHOT){
-	
+	get_tank()->shot_num++;
 }
 RegShot::~RegShot(){
-	
+	get_tank()->shot_num--;
 }
 double RegShot::get_r(){
 	return SHOT_R;
