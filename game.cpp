@@ -7,7 +7,7 @@
 #include <stdio.h>
 
 Game::Game(int tank_num){
-	for(int i = 0; i<tank_num; i++) tanks.push_back(new Tank(this));
+	for(int i = 0; i<tank_num; i++) tanks.push_back(new Tank(this, i));
 	round = NULL;
 	start_round();
 	
@@ -19,7 +19,6 @@ Game::~Game(){
 	if(round) delete round;
 }
 void Game::start_round(){
-	for(int i = 0; i<get_tank_num(); i++) get_tank(i)->clear_control();
 	if(round) delete round;
 	round = new Round(this);
 	events.push(new GameEventStartRnd());
@@ -48,7 +47,7 @@ long long int Game::get_time(){
 void Game::step(){
 	round->step();
 	for(int i = 0; i<get_tank_num(); i++){
-		get_tank(i)->step();
+		if(!get_tank(i)->is_dead()) get_tank(i)->step();
 	}
 	time++;
 }
@@ -81,9 +80,8 @@ Round::Round(Game* g){
 		}
 		tnks.push_back(p);
 		
-		game->get_tank(i)->x = p.first+0.5;
-		game->get_tank(i)->y = p.second+0.5;
-		game->get_tank(i)->ang = rand_range(0,TANK_TURN_N-1) * TANK_TURN;
+		game->get_tank(i)->reset(p.first+0.5, p.second+0.5, rand_range(0,TANK_TURN_N-1) * TANK_TURN);
+		
 	}
 	
 	maze->generate(tnks, Maze::GEN_WALL_REM);
@@ -98,11 +96,12 @@ Maze* Round::get_maze(){
 		return maze;
 }
 
-Tank::Tank(Game* g){
+Tank::Tank(Game* g, int i){
 	game = g;
 	x = y = ang = 0;
 	dead = false;
 	p_ctrl = {false,false,false,false,false};
+	ind = i;
 }
 Tank::~Tank(){
 	
@@ -167,4 +166,12 @@ bool Tank::check_wall_coll(double& nx, double& ny, double& px, double& py, doubl
 		}
 	}
 	return false;
+}
+int Tank::get_ind(){
+	return ind;
+}
+
+void Tank::reset(double xx, double yy, double a){
+	x = xx; y=yy; ang=a;
+	clear_control();
 }

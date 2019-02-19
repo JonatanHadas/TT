@@ -19,8 +19,11 @@ public:
 
 class GameDQ : public GameQ{
 	Game* game;
+	RoundDQ* round;
+	std::vector<TankDQ*> tanks;
 public:
 	GameDQ(Game* game);
+	~GameDQ();
 	int get_tank_num();
 	TankQ* get_tank(int i);
 	RoundQ* get_round();
@@ -36,6 +39,8 @@ public:
 	double get_y();
 	double get_ang();
 	bool is_dead();
+	
+	int get_ind();
 	
 	void push_ctrl(ControlState ctrl);
 };

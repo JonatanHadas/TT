@@ -71,18 +71,24 @@ class Tank{
 	friend Round;
 	friend Game;
 	
+	int ind;
+		
 	bool can_step();
 	void clear_control();
 	
 	bool check_wall_coll(double& nx, double& ny, double& px, double& py, double& dp);
+	
+	void reset(double x, double y, double ang);
 public:
-	Tank(Game* game);
+	Tank(Game* game, int i);
 	~Tank();
 	
 	double get_x();
 	double get_y();
 	double get_ang();
 	bool is_dead();
+	
+	int get_ind();
 	
 	void push_control(ControlState st);
 	

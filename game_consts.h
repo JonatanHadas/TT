@@ -11,3 +11,6 @@
 #define STEP_ANG TANK_TURN
 #define STEP_DST 0.03
 #define REV_RAT 0.5
+
+
+#define CANNON_L 0.2

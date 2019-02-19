@@ -7,6 +7,7 @@
 class TankQ;
 class RoundQ;
 class GameQ;
+class ShotQ;
 
 class GameQEvent;
 class GameQEventStartRnd;
@@ -39,11 +40,14 @@ public:
 	virtual double get_ang() = 0;
 	virtual bool is_dead() = 0;
 	
+	virtual int get_ind() = 0;
+	
 	virtual void push_ctrl(ControlState ctrl) = 0;
 };
 class RoundQ{
 public:
 	virtual Maze* get_maze() = 0;
 };
+
 
 #endif

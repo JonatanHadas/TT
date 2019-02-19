@@ -15,7 +15,7 @@
   -upgrades
 -geometry
   =line intersection
-  -circle collision
+  =circle collision
   =polygon collision
   
 ~loading images

@@ -5,15 +5,21 @@ GameDQEventStartRnd::~GameDQEventStartRnd(){ delete e; }
 
 GameDQ::GameDQ(Game* g){
 	game = g;
+	round = new RoundDQ(game->get_round());
+	for(int i = 0; i<get_tank_num(); i++) tanks.push_back(new TankDQ(game->get_tank(i)));
+}
+GameDQ::~GameDQ(){
+	delete round;
+	for(int i = 0; i<get_tank_num(); i++) delete tanks[i];
 }
 int GameDQ::get_tank_num(){
 	return game->get_tank_num();
 }
 TankQ* GameDQ::get_tank(int i){
-	return new TankDQ(game->get_tank(i));
+	return tanks[i];
 }
 RoundQ* GameDQ::get_round(){
-	return new RoundDQ(game->get_round());
+	return round;
 }
 GameQEvent* GameDQ::get_event(){
 	GameEvent* e = game->get_event();
@@ -46,6 +52,9 @@ bool TankDQ::is_dead(){
 }
 void TankDQ::push_ctrl(ControlState ctrl){
 	tank->push_control(ctrl);
+}
+int TankDQ::get_ind(){
+	return tank->get_ind();
 }
 
 RoundDQ::RoundDQ(Round* r){
