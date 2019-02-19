@@ -49,6 +49,18 @@ class RoundDQ : public RoundQ{
 public:
 	RoundDQ(Round* round);
 	Maze* get_maze();
+	std::set<GenShotQ*> get_shots();
 };
 
+class ShotDQ : public ShotQ{
+	Shot* shot;
+public:
+	ShotDQ(Shot* shot);
+	double get_r();
+	std::vector<std::pair<double,double>>& get_colls();
+	double get_x();
+	double get_y();
+	double get_ang();
+	GenShot::Type get_type();
+};
 #endif

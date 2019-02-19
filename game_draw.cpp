@@ -1,6 +1,8 @@
 #include "game_draw.h"
 #include "game_consts.h"
 
+#include "gui_util.h"
+
 #include "geom.h"
 #include <vector>
 
@@ -27,9 +29,12 @@ BoardDrawer::BoardDrawer(GameQ* q, SDL_Renderer* r, std::vector<int> img_inds){
 	for(int i = 0; i<q->get_tank_num(); i++) {
 		generate_tank(img_inds[i], r, tank_images + i);
 	}
+	SDL_SetRenderDrawColor(r, 255,255,255,255);
+	circ = gen_circle(r,20.0);
 }
 BoardDrawer::~BoardDrawer(){
 	delete[] tank_images;
+	SDL_DestroyTexture(circ);
 }
 void BoardDrawer::draw(){
 	SDL_SetRenderDrawColor(renderer, 240,240,240,255);
@@ -55,6 +60,23 @@ void BoardDrawer::draw(){
 		}
 	}
 	
+	auto shots = game->get_round()->get_shots();
+	for(auto it = shots.begin(); it != shots.end(); it++){
+		SDL_Rect r;
+		ShotQ* sht;
+		switch((*it)->get_type()){
+		case GenShot::TYPE_REG:
+			sht = (ShotQ*)(*it);
+			r.w = r.h = DRC(2*sht->get_r());
+			r.x = WALL_D_T + DRC(sht->get_x()) - r.w/2;
+			r.y = WALL_D_T + DRC(sht->get_y()) - r.w/2;
+			SDL_SetTextureColorMod(circ, 0,0,0);
+			SDL_RenderCopy(renderer, circ, NULL, &r);
+			break;
+		}
+		
+		delete (*it);
+	}
 	
 	for(int i = 0; i < game->get_tank_num(); i++){
 		TankQ* t = game->get_tank(i);

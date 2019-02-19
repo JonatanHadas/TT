@@ -88,12 +88,32 @@ Round::Round(Game* g){
 }
 Round::~Round(){
 	delete maze;
+	for(auto it = get_shots(); it != end_shots(); it++) delete (*it);
 }
 void Round::step(){
-	
+	for(auto it = get_shots(); it != end_shots(); it++){
+		(*it)->advance();
+	}
+	for(auto it = shts_fd.begin(); it != shts_fd.end(); it++){
+		delete (*it);
+		shots.erase(*it);
+	}
+	shts_fd.clear();
 }
 Maze* Round::get_maze(){
 		return maze;
+}
+void Round::add_shot(GenShot* shot){
+	shots.insert(shot);
+}
+void Round::delete_shot(GenShot* shot){
+	shts_fd.insert(shot);
+}
+std::set<GenShot*>::iterator Round::get_shots(){
+	return shots.begin();
+}
+std::set<GenShot*>::iterator Round::end_shots(){
+	return shots.end();
 }
 
 Tank::Tank(Game* g, int i){
@@ -135,6 +155,11 @@ void Tank::step(){
 
 	if(check_wall_coll(nx,ny,px,py,dp)) {x=prx; y=pry;}
 	
+	
+	if(ctrl.back().sht && !p_ctrl.sht){
+		game->get_round()->add_shot(new RegShot(game, this));
+	}
+	
 	p_ctrl = ctrl.front();
 	ctrl.pop();
 }
@@ -174,4 +199,111 @@ int Tank::get_ind(){
 void Tank::reset(double xx, double yy, double a){
 	x = xx; y=yy; ang=a;
 	clear_control();
+}
+
+GenShot::GenShot(Game* g, Tank* t){
+	game = g;
+	tank = t;
+}
+GenShot::~GenShot(){}
+Tank* GenShot::get_tank(){
+	return tank;
+}
+Game* GenShot::get_game(){
+	return game;
+}
+
+
+bool GenShot::is_reusable(){
+	return false;
+}
+
+
+
+Shot::Shot(Game* game, Tank* tank, double div, double spd) : GenShot(game, tank){
+	vx=vy=0;
+	x = tank->get_x();
+	y = tank->get_y();
+	rotate_add(tank->get_ang(), CANNON_L,0, x,y);
+	rotate_add(tank->get_ang() + rand_range(-5,6)*div/5, spd,0, vx,vy);
+	
+	tm = 0;
+	found = false;
+}
+double Shot::check_wall(){
+	return get_ttl();
+}
+void Shot::reflect(){
+	double col_x = x+col_t*vx;
+	double col_y = y+col_t*vy;
+	
+	
+	// reflect
+	colls.push_back({col_x, col_y});
+	if(found){
+		double old_vx = vx, old_vy = vy;
+		
+		if(ny == 0) vx = -vx;
+		if(nx == 0) vy = -vy;
+		
+		x = col_x - col_t*vx;
+		y = col_y - col_t*vy;
+		out_of_tank = true;
+	}
+	
+	found = false;
+	
+	// find maze collision
+	double ctm = check_wall();
+	
+	
+	if(found) col_t += ctm;
+	
+	else{
+		col_t = (double)tm;
+		if(hits.size() == 0) colls.push_back({get_x(), get_y()});
+	}
+}
+bool Shot::check_tank(Tank* t, bool igm){
+	if(t == get_tank() && !out_of_tank && !igm) return false;
+	return (hits.count(t)>0 && hits[t]<=tm);
+}
+void Shot::advance(){
+	colls.clear();
+	colls.push_back({get_x(), get_y()});
+	tm++;
+	while(col_t < tm && hits.size()==0) {
+		reflect();
+	}
+	if(!check_tank(get_tank(),false)) out_of_tank = false;
+	//if(tm > get_ttl()) game->get_round()->delete_shot(this);
+}
+double Shot::get_ang(){
+	return atan2(vy,vx);
+}
+double Shot::get_x(){
+	return x + tm*vx;
+}
+double Shot::get_y(){
+	return y + tm*vy;
+}
+
+std::vector<std::pair<double,double>>& Shot::get_colls(){
+	return colls;
+}
+
+RegShot::RegShot(Game* game, Tank* tank) : Shot(game, tank, 0, STEP_SHOT){
+	
+}
+RegShot::~RegShot(){
+	
+}
+double RegShot::get_r(){
+	return SHOT_R;
+}
+int RegShot::get_ttl(){
+	return SHOT_TTL;
+}
+GenShot::Type RegShot::get_type(){
+	return GenShot::TYPE_REG;
 }

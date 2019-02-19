@@ -13,6 +13,7 @@ class BoardDrawer{
 	GameQ* game;
 	SDL_Renderer* renderer;
 	TankImg* tank_images;
+	SDL_Texture* circ;
 public:
 	BoardDrawer(GameQ* q, SDL_Renderer* rend, std::vector<int> img_inds);
 	~BoardDrawer();

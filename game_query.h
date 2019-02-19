@@ -7,6 +7,8 @@
 class TankQ;
 class RoundQ;
 class GameQ;
+
+class GenShotQ;
 class ShotQ;
 
 class GameQEvent;
@@ -47,7 +49,20 @@ public:
 class RoundQ{
 public:
 	virtual Maze* get_maze() = 0;
+	virtual std::set<GenShotQ*> get_shots() = 0;
+};
+class GenShotQ{
+public:
+	virtual double get_x() = 0;
+	virtual double get_y() = 0;
+	virtual double get_ang() = 0;
+	virtual GenShot::Type get_type() = 0;
 };
 
+class ShotQ : public GenShotQ{
+public:
+	virtual double get_r() = 0;
+	virtual std::vector<std::pair<double,double>>& get_colls() = 0;
+};
 
 #endif

@@ -63,3 +63,36 @@ RoundDQ::RoundDQ(Round* r){
 Maze* RoundDQ::get_maze(){
 	return round->get_maze();
 }
+std::set<GenShotQ*> RoundDQ::get_shots(){
+	std::set<GenShotQ*> ret;
+	for(auto it = round->get_shots(); it!=round->end_shots(); it++){
+		switch((*it)->get_type()){
+		case GenShot::TYPE_REG:
+			ret.insert(new ShotDQ((Shot*)(*it)));
+			break;
+		}
+	}
+	return ret;
+}
+
+ShotDQ::ShotDQ(Shot* s){
+	shot = s;
+}
+double ShotDQ::get_r(){
+	return ((Shot*)shot)->get_r();
+}
+std::vector<std::pair<double,double>>& ShotDQ::get_colls(){
+	return ((Shot*)shot)->get_colls();
+}
+double ShotDQ::get_x(){
+	return shot->get_x();
+}
+double ShotDQ::get_y(){
+	return shot->get_y();
+}
+double ShotDQ::get_ang(){
+	return shot->get_ang();
+}
+GenShot::Type ShotDQ::get_type(){
+	return shot->get_type();
+}

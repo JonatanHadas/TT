@@ -14,3 +14,8 @@
 
 
 #define CANNON_L 0.2
+
+#define STEP_SHOT 0.04
+#define SHOT_TTL 1200
+
+#define SHOT_R 0.03
