@@ -37,7 +37,8 @@ void rotate_add(double ang,double x, double y, double& rx, double& ry);
 double circ_poly_coltime(double ox, double oy,
 						double vx, double vy,
 						double r,
-						double* xs, double* ys, int num);
+						double* xs, double* ys, int num,
+						double& nx, double& ny);
 				
 // check convex polygon collision, nxy receive normal to collision, dp receive collision depth, pxy receive collision position
 bool poly_coll(	double* x1s, double* y1s, int num1,
