@@ -43,17 +43,18 @@ Maze::Maze(int wd, int ht){
 	hwalls = new bool*[w];
 	vwalls = new bool*[w-1];
 	for(int i = 0; i<w; i++){
-		if(w>0) vwalls[i-1] = new bool[h];
+		if(i>0) vwalls[i-1] = new bool[h];
 		hwalls[i] = new bool[h-1];
 		for(int j = 0; j<h; j++){
-			if(w>0) vwalls[i-1][j] = false;
-			if(h>0) hwalls[i][j-1] = false;
+			if(i>0) vwalls[i-1][j] = false;
+			if(j>0) hwalls[i][j-1] = false;
 		}
 	}
 }
+#include <stdio.h>
 Maze::~Maze(){
 	for(int i = 0; i<w; i++){
-		if(w>0) delete[] vwalls[i-1];
+		if(i>0) delete[] vwalls[i-1];
 		delete[] hwalls[i];
 	}
 	delete[] hwalls;

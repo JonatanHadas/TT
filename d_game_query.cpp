@@ -30,6 +30,8 @@ GameQEvent* GameDQ::get_event(){
 	if(e){
 		switch(e->get_type()){
 		case GameEvent::TYPE_START_RND:
+			delete round;
+			round = new RoundDQ(game->get_round());
 			return new GameDQEventStartRnd((GameEventStartRnd*)e);
 		case GameEvent::TYPE_TANK_DEAD:
 			return new GameDQEventTankDeath((GameEventTankDeath*)e);

@@ -11,7 +11,8 @@ Main::Main(SDL_Renderer* renderer){
 	chng_sz = false;
 	std::vector<int> img_inds;
 	for(int i = 0; i<30; i++) img_inds.push_back(i);
-	state = new GameGui(new GameDQ(new Game(12)),this, img_inds);
+	int teams[30] = {0,0,0,1,1,1,2,2,2,3,3,3,4,4,4,5,5,5,6,6,6,7,7,7,8,8,8,9,9,9};
+	state = new GameGui(new GameDQ(new Game(12,4,teams)),this, img_inds);
 }
 Main::~Main(){
 	if(state) delete state;

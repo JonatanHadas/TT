@@ -13,20 +13,38 @@ int GameEventTankDeath::get_ind(){
 	return ind;
 }
 
-Game::Game(int tank_num){
-	for(int i = 0; i<tank_num; i++) tanks.push_back(new Tank(this, i));
+Team::Team(){
+	num_tot = num_alive = score = 0;
+}
+void Team::reset(){
+	num_alive = num_tot;
+}
+void Team::add_score(int diff){
+	score += diff;
+}
+int Team::get_alive(){
+	return num_alive;
+}
+
+Game::Game(int tank_num, int team_num, int* team_inds){
+	for(int i = 0; i<team_num; i++) teams.push_back(new Team());
+	for(int i = 0; i<tank_num; i++) tanks.push_back(new Tank(this, i, teams[team_inds[i]]));
 	round = NULL;
+
 	start_round();
-	
+
 	time = 0;
 }
 
 Game::~Game(){
 	for(int i = 0; i<tanks.size(); i++) delete tanks[i];
+	for(int i = 0; i<teams.size(); i++) delete teams[i];
 	if(round) delete round;
 }
 void Game::start_round(){
+	end_timer = -1;
 	if(round) delete round;
+	for(int i = 0; i<get_team_num(); i++) get_team(i)->reset();
 	round = new Round(this);
 	events.push(new GameEventStartRnd());
 }
@@ -38,6 +56,12 @@ Tank* Game::get_tank(int i){
 }
 int Game::get_tank_num(){
 	return tanks.size();
+}
+Team* Game::get_team(int i){
+	return teams[i];
+}
+int Game::get_team_num(){
+	return teams.size();
 }
 GameEvent* Game::get_event(){
 	if(events.size()==0) return NULL;
@@ -57,6 +81,15 @@ void Game::step(){
 		get_tank(i)->step();
 	}
 	time++;
+	if(end_timer < 0){
+		int alv = 0;
+		for(int i = 0; i<get_team_num(); i++) if(get_team(i)->get_alive()>0) alv++;
+		if(alv<=1) end_timer = END_TIME;
+	}
+	else if(end_timer > 0) end_timer--;
+	else{
+		start_round();
+	}
 }
 
 bool Game::can_step(){
@@ -136,7 +169,9 @@ std::set<GenShot*>::iterator Round::end_shots(){
 	return shots.end();
 }
 
-Tank::Tank(Game* g, int i){
+Tank::Tank(Game* g, int i, Team* t){
+	team = t;
+	team->num_tot++;
 	game = g;
 	x = y = ang = 0;
 	dead = false;
@@ -226,6 +261,7 @@ void Tank::reset(double xx, double yy, double a){
 }
 void Tank::kill(){
 	dead = true;
+	team->num_alive--;
 }
 
 GenShot::GenShot(Game* g, Tank* t){

@@ -19,6 +19,8 @@ class GenShot;
 class Shot;
 class RegShot;
 
+//for scoring
+class Team;
 
 class GameEvent{
 public:
@@ -41,22 +43,39 @@ public:
 	int get_ind();
 };
 
+class Team{
+	int score;
+	int num_alive;
+	int num_tot;
+	
+	friend Tank;
+public:
+	Team();
+	void reset();
+	void add_score(int diff);
+	int get_alive();
+};
+
 class Game{
 	std::vector<Tank*> tanks;
+	std::vector<Team*> teams;
 	Round* round;
 	std::queue<GameEvent*> events;
 	
 	long long int time;
+	int end_timer;
 	
 	bool can_step();
 	void step();
 public:
-	Game(int tank_num);
+	Game(int tank_num, int team_num, int* team_inds);
 	~Game();
 	void start_round();
 	Round* get_round();
 	Tank* get_tank(int i);
 	int get_tank_num();
+	Team* get_team(int i);
+	int get_team_num();
 	GameEvent* get_event();
 	
 	long long int get_time();
@@ -89,6 +108,7 @@ struct ControlState{
 
 class Tank{
 	Game* game;
+	Team* team;
 	double x,y,ang;
 	std::queue<ControlState> ctrl;
 	ControlState p_ctrl;
@@ -109,7 +129,7 @@ class Tank{
 	
 	void reset(double x, double y, double ang);
 public:
-	Tank(Game* game, int i);
+	Tank(Game* game, int i, Team* t);
 	~Tank();
 	
 	double get_x();

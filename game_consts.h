@@ -19,3 +19,5 @@
 #define SHOT_TTL 1200
 
 #define SHOT_R 0.03
+
+#define END_TIME 300
