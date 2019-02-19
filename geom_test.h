@@ -3,6 +3,8 @@
 
 #include<SDL2/SDL.h>
 
+void test_circ(SDL_Renderer* rend);
+
 void test_poly(SDL_Renderer* rend);
 
 void test_intersection(SDL_Renderer* rend);

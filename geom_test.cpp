@@ -4,6 +4,87 @@
 #include <stdio.h>
 #include <vector>
 
+void test_circ(SDL_Renderer* rend){
+	std::vector<double> xs,ys;
+	std::vector<SDL_Point> p;
+	double x=0,y=0,vx=0,vy=0;
+	
+	p.push_back({0,0});
+	
+	double rd = 30;
+	while(true){
+		SDL_Event e;
+		if(SDL_WaitEvent(&e)){
+			switch(e.type){
+			case SDL_QUIT:
+				return;
+			case SDL_MOUSEBUTTONDOWN:
+				switch(e.button.button){
+				case SDL_BUTTON_MIDDLE:
+					xs.clear(); ys.clear(); p.clear();
+					p.push_back({0,0});
+					break;
+				case SDL_BUTTON_LEFT:
+					p[0].x = e.button.x;
+					p[0].y = e.button.y;
+					p.push_back(p[0]);
+					xs.push_back(p[0].x);
+					ys.push_back(p[0].y);
+					break;
+				case SDL_BUTTON_RIGHT:
+					x = e.button.x;
+					y = e.button.y;
+					break;
+				}
+			case SDL_MOUSEBUTTONUP:
+				if(e.button.button == SDL_BUTTON_RIGHT){
+					vx = e.button.x - x;
+					vy = e.button.y - y;
+				}
+				break;
+			case SDL_MOUSEMOTION:
+				if(e.motion.state & SDL_BUTTON_RMASK){
+					vx = e.motion.x - x;
+					vy = e.motion.y - y;
+				}
+				break;
+			}
+		}
+		SDL_Rect r;
+		
+		SDL_SetRenderDrawColor(rend, 255,255,255,255);
+		SDL_RenderClear(rend);
+		
+		SDL_SetRenderDrawColor(rend, 0,0,0,255);
+		SDL_RenderDrawLines(rend, &(p[0]), p.size());
+		
+		SDL_SetRenderDrawColor(rend, 0,0,128,255);
+		r.w=r.h=4;
+		r.x = x-(r.w/2);
+		r.y = y-(r.h/2);
+		SDL_RenderFillRect(rend, &r);
+		
+		SDL_SetRenderDrawColor(rend, 0,0,255,255);
+		SDL_RenderDrawLine(rend, x, y, x+vx, y+vy);
+		
+		if(xs.size()>3){
+			double nx,ny, t = circ_poly_coltime(x,y, vx,vy, rd, &(xs[0]), &(ys[0]), xs.size(), nx,ny);
+		
+			SDL_SetRenderDrawColor(rend, 255,0,0,255);
+			r.w=r.h=4;
+			r.x = x+t*vx-(r.w/2);
+			r.y = y+t*vy-(r.h/2);
+			SDL_RenderFillRect(rend, &r);
+			
+			SDL_SetRenderDrawColor(rend, 128,0,0,255);
+			SDL_RenderDrawLine(rend, x+t*vx, y+t*vy, x+t*vx-nx*rd, y+t*vy-ny*rd);
+		}
+		
+		
+		SDL_RenderPresent(rend);
+	}
+}
+
 void test_poly(SDL_Renderer* rend){
 	std::vector<double> x1s,y1s,x2s,y2s;
 	std::vector<SDL_Point> p1,p2;

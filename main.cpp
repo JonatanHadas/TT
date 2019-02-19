@@ -89,7 +89,7 @@ int main(int argc, char* argv[]){
 	SDL_SetHint(SDL_HINT_RENDER_SCALE_QUALITY, "best");
 	//SDL_RenderSetLogicalSize(rend, 1280, 960);
 	
-	test_poly(rend);
+	test_circ(rend);
 	/*Main* m = new Main(rend);
 	m->mainloop();
 	delete m;*/

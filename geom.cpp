@@ -32,39 +32,52 @@ void rotate_add(double ang,double x, double y, double& rx, double& ry){
 	ry += x*sin(ang) + y*cos(ang);
 }
 
-double circ_lines_coltime(double ox, double oy,
+double circ_poly_coltime(double ox, double oy,
 						double vx, double vy,
 						double r,
-						double* xs, double* ys, int num, bool closed){
+						double* xs, double* ys, int num,
+						double& nx, double& ny){
 	
 	double t = -1;
+	bool first = true;
 	for(int i = 0; i<num; i++){
-		double x = xs[i]-ox, y = ys[i]-oy;
-		double a = vx*vx+vy*vy, b = 2*(vx*x+vy*y), c = x*x+y*y-r*r;
-		double tt;
-		if( b*b-4*a*c >= 0){
-			tt = (b-sqrt(b*b-4*a*c))/(2*a);
-		}
-		if(tt>=0 && tt<t) t=tt;
-		
-		if(i<num-1 || closed){
-			double xx = xs[(i+1)%num]-ox, yy = ys[(i+1)%num]-oy;
-			double lsq = (x-xx)*(x-xx)+(y-yy)*(y-yy);
-			double dx = r*(y-yy)/sqrt(lsq), dy = -r*(x-xx)/sqrt(lsq);
-			if(leftness(0,0,x+dx,y+dy,xx+dx,yy+dy)*leftness(0,0,x-dx,y-dy,xx-dx,yy-dy) > 0){
-				if(ls_intersect(0,0,vx,vy,x+dx,y+dy,xx+dx,yy+dy)){
-					tt = ((x+dx)*dx + (y+dy)*dy)/(vx*dx-vy*dy);
-					if(tt>0 && tt<t) t=tt;
-				}
-				if(ls_intersect(0,0,vx,vy,x-dx,y-dy,xx-dx,yy-dy)){
-					tt = ((x-dx)*dx + (y-dy)*dy)/(vx*dx-vy*dy);
-					if(tt>0 && tt<t) t=tt;
-				}
+		// corner
+		double x = ox-xs[i], y = oy-ys[i];
+		double a = vx*vx + vy*vy;
+		double b = vx*x + vy*y;
+		double c = x*x + y*y - r*r;
+		if(b*b > a*c){
+			double tt = -(b + sqrt(b*b-a*c))/a;
+			if( first || tt<t){
+				t = tt;
+				nx = x + t*vx;
+				ny = y + t*vy;
+				nx/=r;
+				ny/=r;
+				first = false;
 			}
+		}
+		
+		//edge
+		double dx = xs[(i+1)%num] - xs[i];
+		double dy = ys[(i+1)%num] - ys[i];
+		
+		double nnx = dy;
+		double nny = -dx;
+		double l = sqrt(nnx*nnx+nny*nny);
+		nnx/=l; nny/=l;
+		if(vx*nnx + vy*nny == 0) continue;
+		double tt = (r - x*nnx - y*nny) / (vx*nnx + vy*nny);
+		if( (first || tt<t) && ls_intersect(x,y,x+vx,y+vy,nnx*r,nny*r,dx+nnx*r,dy+nny*r) ){
+			t = tt;
+			nx = nnx;
+			ny = nny;
+			first = false;
 		}
 	}
 	return t;
 }
+				
 
 bool poly_coll(	double* x1s, double* y1s, int num1,
 				double* x2s, double* y2s, int num2,
@@ -81,7 +94,6 @@ bool poly_coll(	double* x1s, double* y1s, int num1,
 		cdx /= l; cdy /= l;
 		double cdp = (cdy * (x2s[j%num2]-x1s[i]) - cdx * (y2s[j%num2]-y1s[i]));
 		if(cdp >= 0) {
-			printf("%d %d\n",i,j);
 			return false;
 		}
 		if(-cdp < dp || i==0){
@@ -101,7 +113,6 @@ bool poly_coll(	double* x1s, double* y1s, int num1,
 		cdx /= l; cdy /= l;
 		double cdp = (cdy * (x1s[j%num1]-x2s[i]) - cdx * (y1s[j%num1]-y2s[i]));
 		if(cdp >= 0){
-			printf(" %d %d\n",i,j);
 			return false;
 		}
 		if(-cdp < dp){
