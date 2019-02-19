@@ -31,6 +31,16 @@ void rotate_add(double ang,double x, double y, double& rx, double& ry){
 	ry += x*sin(ang) + y*cos(ang);
 }
 
+bool circ_poly_colcheck(double ox, double oy,
+						double r,
+						double* xs, double* ys, int num){
+	
+	double nx,ny,ct = circ_poly_coltime(ox,oy,1,0,r,xs,ys,num,nx,ny);
+	if( ct > 0) return false; // outside
+	if( circ_poly_coltime(ox,oy,-1,0,r,xs,ys,num,nx,ny) > 0) return false; // outside
+	if( circ_poly_coltime(ox+1,oy,1,0,r,xs,ys,num,nx,ny) == ct) return false; // no collision horizontal line, so outside
+	return true; // horizontal line collides with polygon on both sides so inside
+}
 double circ_poly_coltime(double ox, double oy,
 						double vx, double vy,
 						double r,
