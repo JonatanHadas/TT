@@ -18,12 +18,17 @@ class GameQEvent{
 public:
 	enum Type{
 		TYPE_RND_START,
+		TYPE_TANK_DEAD,
 	};
 	virtual Type get_type() = 0;
 };
 
 class GameQEventStartRnd : public GameQEvent{
 	Type get_type(){return GameQEvent::TYPE_RND_START;}
+};
+class GameQEventTankDeath : public GameQEvent{
+	Type get_type(){return GameQEvent::TYPE_TANK_DEAD;}
+	virtual int get_ind() = 0;
 };
 
 class GameQ{

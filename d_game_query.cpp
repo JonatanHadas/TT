@@ -3,6 +3,10 @@
 GameDQEventStartRnd::GameDQEventStartRnd(GameEventStartRnd* event){ e = event; }
 GameDQEventStartRnd::~GameDQEventStartRnd(){ delete e; }
 
+GameDQEventTankDeath::GameDQEventTankDeath(GameEventTankDeath* event){ e = event; }
+GameDQEventTankDeath::~GameDQEventTankDeath() { delete e; }
+int GameDQEventTankDeath::get_ind(){ return e->get_ind(); }
+
 GameDQ::GameDQ(Game* g){
 	game = g;
 	round = new RoundDQ(game->get_round());
@@ -27,6 +31,8 @@ GameQEvent* GameDQ::get_event(){
 		switch(e->get_type()){
 		case GameEvent::TYPE_START_RND:
 			return new GameDQEventStartRnd((GameEventStartRnd*)e);
+		case GameEvent::TYPE_TANK_DEAD:
+			return new GameDQEventTankDeath((GameEventTankDeath*)e);
 		}
 	}
 	return NULL;

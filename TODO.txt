@@ -5,8 +5,8 @@
   ~maze
     -generation
   -shot
-    -wall collision
-	-tank collision
+    ~wall collision (sometimes doesn't collide(related to tank collisions))
+	=tank collision
   -upgrades
 -drawing
   -tank

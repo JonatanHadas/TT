@@ -6,6 +6,13 @@
 
 #include <stdio.h>
 
+GameEventTankDeath::GameEventTankDeath(int i){
+	ind = i;
+}
+int GameEventTankDeath::get_ind(){
+	return ind;
+}
+
 Game::Game(int tank_num){
 	for(int i = 0; i<tank_num; i++) tanks.push_back(new Tank(this, i));
 	round = NULL;
@@ -47,7 +54,7 @@ long long int Game::get_time(){
 void Game::step(){
 	round->step();
 	for(int i = 0; i<get_tank_num(); i++){
-		if(!get_tank(i)->is_dead()) get_tank(i)->step();
+		get_tank(i)->step();
 	}
 	time++;
 }
@@ -59,6 +66,10 @@ bool Game::can_step(){
 
 void Game::advance(){
 	while(can_step()) step();
+}
+void Game::kill_tank(int i){
+	tanks[i]->kill();
+	events.push(new GameEventTankDeath(i));
 }
 
 Round::Round(Game* g){
@@ -91,8 +102,17 @@ Round::~Round(){
 	for(auto it = get_shots(); it != end_shots(); it++) delete (*it);
 }
 void Round::step(){
+	
 	for(auto it = get_shots(); it != end_shots(); it++){
 		(*it)->advance();
+		
+		for(int i = 0; i<game->get_tank_num(); i++){
+			Tank* t = game->get_tank(i);
+			if(!t->is_dead() && (*it)->check_tank(t,true)){
+				if(!(*it)->is_reusable()) delete_shot(*it);
+				game->kill_tank(i);
+			}
+		}
 	}
 	for(auto it = shts_fd.begin(); it != shts_fd.end(); it++){
 		delete (*it);
@@ -140,27 +160,27 @@ bool Tank::is_dead(){
 	return dead;
 }
 void Tank::step(){
-	if(is_dead()) return;
-	
-	double nx,ny,dp,px,py;
-	
-	double pa = ang;
-	
-	int turn = (ctrl.back().lt ? 1 : 0)-(ctrl.back().rt ? 1 : 0);
-	ang += turn * STEP_ANG;
-	
-	if(check_wall_coll(nx,ny,px,py,dp)) ang = pa;
-	
-	double prx = x, pry = y;
-	
-	double step = STEP_DST * ((ctrl.back().fd ? 1 : 0) - (ctrl.back().bk ? REV_RAT : 0));
-	rotate_add(ang, step, 0, x, y);
+	if(!is_dead()){
+		double nx,ny,dp,px,py;
+		
+		double pa = ang;
+		
+		int turn = (ctrl.back().lt ? 1 : 0)-(ctrl.back().rt ? 1 : 0);
+		ang += turn * STEP_ANG;
+		
+		if(check_wall_coll(nx,ny,px,py,dp)) ang = pa;
+		
+		double prx = x, pry = y;
+		
+		double step = STEP_DST * ((ctrl.back().fd ? 1 : 0) - (ctrl.back().bk ? REV_RAT : 0));
+		rotate_add(ang, step, 0, x, y);
 
-	if(check_wall_coll(nx,ny,px,py,dp)) {x=prx; y=pry;}
-	
-	
-	if(ctrl.back().sht && !p_ctrl.sht){
-		if(shot_num < MAX_SHOTS) game->get_round()->add_shot(new RegShot(game, this));
+		if(check_wall_coll(nx,ny,px,py,dp)) {x=prx; y=pry;}
+		
+		
+		if(ctrl.back().sht && !p_ctrl.sht){
+			if(shot_num < MAX_SHOTS) game->get_round()->add_shot(new RegShot(game, this));
+		}
 	}
 	
 	p_ctrl = ctrl.front();
@@ -204,6 +224,9 @@ void Tank::reset(double xx, double yy, double a){
 	clear_control();
 	dead = false;
 }
+void Tank::kill(){
+	dead = true;
+}
 
 GenShot::GenShot(Game* g, Tank* t){
 	game = g;
@@ -234,6 +257,7 @@ Shot::Shot(Game* game, Tank* tank, double div, double spd) : GenShot(game, tank)
 	tm = 0;
 	col_t = 0;
 	found = false;
+	out_of_tank = false;
 }
 double Shot::check_wall(){
 	double xx = x + col_t*vx,yy = y + col_t*vy;
@@ -298,6 +322,26 @@ void Shot::reflect(){
 	// find maze collision
 	double ctm = check_wall();
 	
+	double tx,ty;
+	double txs[4],tys[4];
+	
+	for(int i = 0; i < get_game()->get_tank_num(); i++){
+		Tank* tn = get_game()->get_tank(i);
+		gen_rot_rect(tn->get_x(), tn->get_y(), TANK_W, TANK_H, tn->get_ang(), txs, tys);
+		double ctt = circ_poly_coltime(col_x, col_y, vx,vy, get_r(), txs,tys,4, tx,ty);
+		if(ctt >= 0 && (found ? (ctt<=ctm) : (ctt+col_t<=tm))){
+			hits.insert(std::pair<Tank*, double>({tn,col_t+ctt}));
+			double cx = col_x + vx*ctt, cy = col_y+vy*ctt;
+			colls.push_back({cx,cy});
+		}
+	}
+	gen_rot_rect(get_tank()->get_x(), get_tank()->get_y(), TANK_W, TANK_H, get_tank()->get_ang(), txs, tys);
+	if(	out_of_tank && 
+		circ_poly_colcheck(col_x, col_y, get_r(), txs,tys,4)){
+			
+		hits.insert(std::pair<Tank*, double>({get_tank(),col_t}));
+		colls.push_back({col_x, col_y});
+	}
 	
 	if(found) col_t += ctm;
 	

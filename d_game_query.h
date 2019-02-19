@@ -16,6 +16,13 @@ public:
 	GameDQEventStartRnd(GameEventStartRnd* event);
 	~GameDQEventStartRnd();
 };
+class GameDQEventTankDeath : public GameQEventTankDeath{
+	GameEventTankDeath* e;
+public:
+	GameDQEventTankDeath(GameEventTankDeath* event);
+	~GameDQEventTankDeath();
+	int get_ind();
+};
 
 class GameDQ : public GameQ{
 	Game* game;

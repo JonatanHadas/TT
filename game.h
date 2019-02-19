@@ -24,12 +24,21 @@ class GameEvent{
 public:
 	enum Type{
 		TYPE_START_RND,
+		TYPE_TANK_DEAD,
 	};
 	virtual Type get_type()=0;
 };
 
 class GameEventStartRnd : public GameEvent{
+public:
 	Type get_type(){return GameEvent::TYPE_START_RND;}
+};
+class GameEventTankDeath : public GameEvent{
+	int ind;
+public:
+	GameEventTankDeath(int i);
+	Type get_type(){return GameEvent::TYPE_TANK_DEAD;}
+	int get_ind();
 };
 
 class Game{
@@ -52,6 +61,8 @@ public:
 	
 	long long int get_time();
 	void advance();
+	
+	void kill_tank(int i);
 };
 
 class Round{
@@ -111,6 +122,8 @@ public:
 	void push_control(ControlState st);
 	
 	void step();
+	
+	void kill();
 };
 
 
