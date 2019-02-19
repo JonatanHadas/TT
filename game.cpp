@@ -327,6 +327,7 @@ void Shot::reflect(){
 	
 	for(int i = 0; i < get_game()->get_tank_num(); i++){
 		Tank* tn = get_game()->get_tank(i);
+		if(tn->is_dead()) continue;
 		gen_rot_rect(tn->get_x(), tn->get_y(), TANK_W, TANK_H, tn->get_ang(), txs, tys);
 		double ctt = circ_poly_coltime(col_x, col_y, vx,vy, get_r(), txs,tys,4, tx,ty);
 		if(ctt >= 0 && (found ? (ctt<=ctm) : (ctt+col_t<=tm))){
@@ -337,6 +338,7 @@ void Shot::reflect(){
 	}
 	gen_rot_rect(get_tank()->get_x(), get_tank()->get_y(), TANK_W, TANK_H, get_tank()->get_ang(), txs, tys);
 	if(	out_of_tank && 
+		!get_tank()->is_dead() &&
 		circ_poly_colcheck(col_x, col_y, get_r(), txs,tys,4)){
 			
 		hits.insert(std::pair<Tank*, double>({get_tank(),col_t}));
