@@ -232,10 +232,48 @@ Shot::Shot(Game* game, Tank* tank, double div, double spd) : GenShot(game, tank)
 	rotate_add(tank->get_ang() + rand_range(-5,6)*div/5, spd,0, vx,vy);
 	
 	tm = 0;
+	col_t = 0;
 	found = false;
 }
 double Shot::check_wall(){
-	return get_ttl();
+	double xx = x + col_t*vx,yy = y + col_t*vy;
+	int ix = xx;
+	int iy = yy;
+	int ixx = vx>0 ? 1 : 0;
+	int iyy = vy<0 ? 1 : 0;
+	int idx = vx>0 ? 1 : -1;
+	int idy = vy<0 ? 1 : -1;
+	int vsg = -idx*idy;
+	double wxs[4],wys[4],nnx,nny;
+	double t = -1;
+	while(abs(ix - (int)xx)+abs(iy - (int)yy) <= sqrt(vx*vx+vy*vy)*(tm-col_t+1)){
+		double tt;
+		for(int i = -1; i<=1; i++){
+			for(int j = -1; j<1; j++){
+				gen_rect(ix+i-WALL_THK, iy+j-WALL_THK + 1, 2*WALL_THK + 1, 2*WALL_THK,wxs,wys);
+				if(get_game()->get_round()->get_maze()->hwall(ix+i, iy+j)){
+					tt = circ_poly_coltime(xx,yy,vx,vy,get_r(), wxs,wys,4,nnx,nny);
+					if(tt+col_t <= tm && tt >= 0 && (tt < t || t < 0)){
+						found = true;
+						t = tt;
+						nx = nnx; ny = nny;
+					}
+				}
+				gen_rect(ix+j-WALL_THK + 1, iy+i-WALL_THK, 2*WALL_THK, 2*WALL_THK + 1,wxs,wys);
+				if(get_game()->get_round()->get_maze()->vwall(ix+j, iy+i)){
+					tt = circ_poly_coltime(xx,yy,vx,vy,get_r(), wxs,wys,4,nnx,nny);
+					if(tt+col_t < tm && tt >= 0 && (tt < t || t < 0)){
+						found = true;
+						t = tt;
+						nx = nnx; ny = nny;
+					}
+				}
+			}
+		}
+		if( vsg * leftness(ix+ixx,iy+iyy,x,y,x+vx,y+vy) > 0) iy += idy;
+		else ix += idx;
+	}
+	return t;
 }
 void Shot::reflect(){
 	double col_x = x+col_t*vx;
@@ -247,8 +285,8 @@ void Shot::reflect(){
 	if(found){
 		double old_vx = vx, old_vy = vy;
 		
-		if(ny == 0) vx = -vx;
-		if(nx == 0) vy = -vy;
+		if(nx*vx<0) vx = -vx;
+		if(ny*vy<0) vy = -vy;
 		
 		x = col_x - col_t*vx;
 		y = col_y - col_t*vy;

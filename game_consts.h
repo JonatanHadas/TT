@@ -13,7 +13,7 @@
 #define REV_RAT 0.5
 
 
-#define CANNON_L 0.2
+#define CANNON_L 0.17
 
 #define STEP_SHOT 0.04
 #define SHOT_TTL 1200
