@@ -14,7 +14,7 @@
 #include <stdio.h>
 
 TankImg::TankImg(){
-	body = cannon = gutling[0] = gutling[1] = gutling[2] = laser = ray_gun0 = ray_gun1 = ray_gun2 = ray_gun3 = launcher = missile = thick_cannon = mine_off = mine_on = shards = deathray = broadcast = NULL;
+	body = cannon = gutling[0] = gutling[1] = gutling[2] = laser = ray_gun0 = ray_gun1 = ray_gun2 = ray_gun3 = launcher = missile = thick_cannon = mine_off = mine_on = shards = deathray = broadcast = image = NULL;
 }
 TankImg::~TankImg(){
 	if(body) SDL_DestroyTexture(body);
@@ -35,15 +35,16 @@ TankImg::~TankImg(){
 	if(shards) SDL_DestroyTexture(shards);
 	if(deathray) SDL_DestroyTexture(deathray);
 	if(broadcast) SDL_DestroyTexture(broadcast);
+	if(image) SDL_DestroyTexture(image);
 }
 bool TankImg::check(){
-	return body && cannon && gutling[0] && gutling[1] && gutling[2] && laser && ray_gun0 && ray_gun1 && ray_gun2 && ray_gun3 && launcher && missile && thick_cannon && mine_off && mine_on && shards && deathray && broadcast;
+	return body && cannon && gutling[0] && gutling[1] && gutling[2] && laser && ray_gun0 && ray_gun1 && ray_gun2 && ray_gun3 && launcher && missile && thick_cannon && mine_off && mine_on && shards && deathray && broadcast && image;
 }
 
 // gutling_sym, laser_sym, death_ray_sym, wifi_sym, missile_sym, bomb_sym, mine_sym, fragment
 std::vector<SDL_Texture*> texts;
 
-// body, cannon, gutling0..2, laser, ray_gun 0..3, launcher, missile, thick_cannon, mine_on, mine_off, shards, deathray, broadcast
+// body, cannon, gutling0..2, laser, ray_gun 0..3, launcher, missile, thick_cannon, mine_on, mine_off, shards, deathray, broadcast, image
 std::vector<SDL_Surface*> surfs;
 
 struct TankTex{
@@ -183,6 +184,7 @@ bool load_images(SDL_Renderer* rend){
 	if(get_surf(DIR TNK "shards" PNG))
 	if(get_surf(DIR TNK "deathray" PNG))
 	if(get_surf(DIR TNK "broadcast" PNG))
+	if(get_surf(DIR TNK "image" PNG))
 	if(get_tex(DIR UPG "gutling" PNG, rend))
 	if(get_tex(DIR UPG "laser" PNG, rend))
 	if(get_tex(DIR UPG "deathray" PNG, rend))
@@ -274,6 +276,7 @@ void generate_tank(int ind, SDL_Renderer* rend, TankImg* img){
 	img->shards = tex_img(ind, surfs[15], rend, true);
 	img->deathray = tex_img(ind, surfs[16], rend, true);
 	img->broadcast = tex_img(ind, surfs[17], rend, true);
+	img->image = tex_img(ind, surfs[18], rend, true);
 }
 
 
