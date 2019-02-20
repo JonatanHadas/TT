@@ -29,6 +29,21 @@ std::vector<int>& GameEventEndGame::get_scores(){
 		return scores;
 }
 
+GameEventCreateShot::GameEventCreateShot(GenShot* s){
+	shot = s;
+}
+GenShot* GameEventCreateShot::get_shot(){
+	return shot;
+}
+
+GameEventRemoveShot::GameEventRemoveShot(GenShot* s){
+	id = s->get_id();
+}
+int GameEventRemoveShot::get_id(){
+	return id;
+}
+
+
 Team::Team(int i){
 	ind = i;
 	num_tot = num_alive = score = 0;
@@ -58,6 +73,8 @@ Game::Game(GameConfig& cf){
 	start_round();
 
 	time = 0;
+	
+	cid = 0;
 }
 
 Game::~Game(){
@@ -196,6 +213,9 @@ void Game::add_score(int ind, int diff){
 	teams[ind]->add_score(diff);
 	events.push(new GameEventScore(ind, diff));
 }
+int Game::get_new_id(){
+	return cid++;
+}
 
 Round::Round(Game* g){
 	game=g;
@@ -249,9 +269,11 @@ Maze* Round::get_maze(){
 		return maze;
 }
 void Round::add_shot(GenShot* shot){
+	game->events.push(new GameEventCreateShot(shot));
 	shots.insert(shot);
 }
 void Round::delete_shot(GenShot* shot){
+	game->events.push(new GameEventRemoveShot(shot));
 	shts_fd.insert(shot);
 }
 std::set<GenShot*>::iterator Round::get_shots(){
@@ -359,6 +381,7 @@ void Tank::kill(){
 GenShot::GenShot(Game* g, Tank* t){
 	game = g;
 	tank = t;
+	id = game->get_new_id();
 }
 GenShot::~GenShot(){}
 Tank* GenShot::get_tank(){
@@ -366,6 +389,9 @@ Tank* GenShot::get_tank(){
 }
 Game* GenShot::get_game(){
 	return game;
+}
+int GenShot::get_id(){
+	return id;
 }
 
 

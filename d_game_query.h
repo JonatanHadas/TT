@@ -12,6 +12,8 @@ class GameDQEventStartRnd;
 class GameDQEventTankDeath;
 class GameDQEventScore;
 class GameDQEventEndGame;
+class GameQEventCreateShot;
+class GameQEventRemoveShot;
 
 class GameDQEventStartRnd : public GameQEventStartRnd{
 	GameEventStartRnd* e;
@@ -40,6 +42,25 @@ public:
 	GameDQEventEndGame(GameEventEndGame* event);
 	~GameDQEventEndGame();
 	std::vector<int>& get_scores();
+};
+class GameDQEventCreateShot : public GameQEventCreateShot{
+	GameEventCreateShot* e;
+public:
+	GameDQEventCreateShot(GameEventCreateShot* event);
+	~GameDQEventCreateShot();
+	int get_id();
+	GenShot::Type get_stype();
+	double get_x();
+	double get_y();
+	double get_ang();
+	int get_tank_ind();
+};
+class GameDQEventRemoveShot : public GameQEventRemoveShot{
+	GameEventRemoveShot* e;
+public:
+	GameDQEventRemoveShot(GameEventRemoveShot* event);
+	~GameDQEventRemoveShot();
+	int get_id();
 };
 
 

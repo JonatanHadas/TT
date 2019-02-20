@@ -16,6 +16,19 @@ GameDQEventEndGame::GameDQEventEndGame(GameEventEndGame* event){ e = event; }
 GameDQEventEndGame::~GameDQEventEndGame(){ delete e; }
 std::vector<int>& GameDQEventEndGame::get_scores(){ return e->get_scores(); }
 
+GameDQEventCreateShot::GameDQEventCreateShot(GameEventCreateShot* event){ e = event; }
+GameDQEventCreateShot::~GameDQEventCreateShot(){ delete e; }
+int GameDQEventCreateShot::get_id(){ return e->get_shot()->get_id(); }
+GenShot::Type GameDQEventCreateShot::get_stype(){ return e->get_shot()->get_type(); }
+double GameDQEventCreateShot::get_x(){ return e->get_shot()->get_x(); }
+double GameDQEventCreateShot::get_y(){ return e->get_shot()->get_y(); }
+double GameDQEventCreateShot::get_ang(){ return e->get_shot()->get_ang(); }
+int GameDQEventCreateShot::get_tank_ind(){ return e->get_shot()->get_tank()->get_ind(); }
+
+GameDQEventRemoveShot::GameDQEventRemoveShot(GameEventRemoveShot* event){ e = event; }
+GameDQEventRemoveShot::~GameDQEventRemoveShot(){ delete e; }
+int GameDQEventRemoveShot::get_id(){ return e->get_id(); }
+
 GameDQ::GameDQ(Game* g){
 	game = g;
 	round = new RoundDQ(game->get_round());
@@ -48,6 +61,10 @@ GameQEvent* GameDQ::get_event(){
 			return new GameDQEventScore((GameEventScore*)e);
 		case GameEvent::TYPE_END_GAME:
 			return new GameDQEventEndGame((GameEventEndGame*)e);
+		case GameEvent::TYPE_SHOT_CRT:
+			return new GameDQEventCreateShot((GameEventCreateShot*)e);
+		case GameEvent::TYPE_SHOT_RMV:
+			return new GameDQEventRemoveShot((GameEventRemoveShot*)e);
 		}
 	}
 	return NULL;

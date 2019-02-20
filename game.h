@@ -30,6 +30,7 @@ public:
 		TYPE_TANK_DEAD,
 		TYPE_SCORE,
 		TYPE_END_GAME,
+		TYPE_SHOT_CRT, TYPE_SHOT_RMV,
 	};
 	virtual Type get_type()=0;
 };
@@ -61,6 +62,21 @@ public:
 	Type get_type(){return GameEvent::TYPE_END_GAME;}
 	std::vector<int>& get_scores();
 };
+class GameEventCreateShot : public GameEvent{
+	GenShot* shot;
+public:
+	GameEventCreateShot(GenShot* s);
+	Type get_type(){return GameEvent::TYPE_SHOT_CRT;}
+	GenShot* get_shot();
+};
+class GameEventRemoveShot : public GameEvent{
+	int id;
+public:
+	GameEventRemoveShot(GenShot* s);
+	Type get_type(){return GameEvent::TYPE_SHOT_RMV;}
+	int get_id();
+};
+
 
 class Team{
 	int score;
@@ -84,6 +100,7 @@ class Game{
 	std::vector<Team*> teams;
 	Round* round;
 	std::queue<GameEvent*> events;
+	friend Round;
 	
 	long long int time;
 	int end_timer;
@@ -92,6 +109,8 @@ class Game{
 	void step();
 	GameSettings set;
 	int round_num;
+	
+	int cid;
 public:
 	Game(GameConfig& cf);
 	~Game();
@@ -109,6 +128,8 @@ public:
 	
 	void kill_tank(int i);
 	void add_score(int ind, int diff);
+	
+	int get_new_id();
 };
 
 class Round{
@@ -182,6 +203,7 @@ public:
 private:
 	Tank* tank;
 	Game* game;
+	int id;
 protected:
 	bool out_of_tank;
 	Game* get_game();
@@ -198,6 +220,8 @@ public:
 	virtual double get_y() = 0;
 	
 	virtual bool is_reusable(); // destoyed by killing tank
+	
+	int get_id();
 };
 class Shot : public GenShot{
 private:
