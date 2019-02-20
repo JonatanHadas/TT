@@ -4,6 +4,7 @@
 #include <SDL2/SDL.h>
 #include "game_query.h"
 #include "images.h"
+#include "texts.h"
 
 #define GSCR_W 1280
 #define GSCR_H 960
@@ -18,6 +19,7 @@ public:
 	BoardDrawer(GameQ* q, SDL_Renderer* rend, std::vector<int> img_inds);
 	~BoardDrawer();
 	void draw();
+	TankImg* get_img(int i);
 };
 
 class GameDrawer{
@@ -25,11 +27,14 @@ class GameDrawer{
 	BoardDrawer* board;
 	SDL_Renderer* renderer;
 	SDL_Texture* board_t;
+	
+	std::vector<Msg*> scores;
 	int w,h;
 public:
 	GameDrawer(GameQ* q, SDL_Renderer* rend, std::vector<int> img_inds);
 	~GameDrawer();
 	void draw();
+	void update_score(int ind);
 };
 
 #endif

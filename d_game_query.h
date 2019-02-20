@@ -7,6 +7,7 @@
 class TankDQ;
 class RoundDQ;
 class GameDQ;
+class TeamDQ;
 
 class GameDQEventStartRnd;
 class GameDQEventTankDeath;
@@ -68,26 +69,42 @@ class GameDQ : public GameQ{
 	Game* game;
 	RoundDQ* round;
 	std::vector<TankDQ*> tanks;
+	std::vector<TeamDQ*> teams;
 public:
 	GameDQ(Game* game);
 	~GameDQ();
 	int get_tank_num();
 	TankQ* get_tank(int i);
+	int get_team_num();
+	TeamQ* get_team(int i);
 	RoundQ* get_round();
 	GameQEvent* get_event();
 	
 	void advance();
 };
+class TeamDQ : public TeamQ{
+	Team* team;
+	std::vector<TankDQ*> tanks;
+	friend TankDQ;
+public:
+	TeamDQ(Team* team);
+	int get_ind();
+	int get_score();
+	int get_tank_num();
+	TankQ* get_tank(int i);
+};
 class TankDQ : public TankQ{
 	Tank* tank;
+	TeamDQ* team;
 public:
-	TankDQ(Tank* tank);
+	TankDQ(Tank* tank, GameDQ* game);
 	double get_x();
 	double get_y();
 	double get_ang();
 	bool is_dead();
 	
 	int get_ind();
+	TeamQ* get_team();
 	
 	void push_ctrl(ControlState ctrl);
 };

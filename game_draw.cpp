@@ -109,7 +109,9 @@ void BoardDrawer::draw(){
 		}
 	}
 }
-
+TankImg* BoardDrawer::get_img(int i){
+	return tank_images+i;
+}
 
 
 GameDrawer::GameDrawer(GameQ* q, SDL_Renderer* r, std::vector<int> img_inds){
@@ -117,10 +119,23 @@ GameDrawer::GameDrawer(GameQ* q, SDL_Renderer* r, std::vector<int> img_inds){
 	renderer = r;
 	board = new BoardDrawer(q,r,img_inds);
 	board_t = NULL;
+	for(int i = 0; i<game->get_team_num(); i++){
+		scores.push_back(NULL);
+		update_score(i);
+	}
 }
 GameDrawer::~GameDrawer(){
 	if(board) delete board;
 	if(board_t) SDL_DestroyTexture(board_t);
+	for(int i = 0; i<game->get_team_num(); i++){
+		if(scores[i]) delete scores[i];
+	}
+}
+void GameDrawer::update_score(int i){
+	if(scores[i]) delete scores[i];
+	char txt[100];
+	sprintf(txt,"%d",game->get_team(i)->get_score());
+	scores[i] = new Msg(txt, {0,0,0,255}, FONT_MID, renderer);
 }
 
 #define BOARD_Y 45
@@ -128,22 +143,64 @@ GameDrawer::~GameDrawer(){
 #define BOARD_W 1010
 
 
+#define SCORE_MAR 0
+#define SCORE_Y 930
+
+#define TKIMG_W 60
+#define TKIMG_H 33
+#define TKIMG_R 50
+#define TKIMG_A (M_PI/4)
+
 void GameDrawer::draw(){
 	GameQEvent* event;
 	while(event = game->get_event()){
+		Maze* maze;
 		switch(event->get_type()){
 		case GameQEvent::TYPE_RND_START:
 			if(board_t) SDL_DestroyTexture(board_t);
-			Maze* maze = game->get_round()->get_maze();
+			maze = game->get_round()->get_maze();
 			printf("%p\n", game->get_round());
 			w = WALL_D_T*2 + BLOCK_SIZE*maze->get_w();
 			h = WALL_D_T*2 + BLOCK_SIZE*maze->get_h();
 			board_t = SDL_CreateTexture(renderer,SDL_PIXELFORMAT_UNKNOWN,SDL_TEXTUREACCESS_TARGET, w,h);
 			break;
+		case GameQEvent::TYPE_SCORE:
+			update_score(((GameQEventScore*)event)->get_ind());
+			break;
 		}
 	}
 	SDL_SetRenderDrawColor(renderer, 255,255,255,255);
 	SDL_RenderClear(renderer);
+	
+	int num = 0;
+	std::vector<int> nums;
+	for(int i = 0; i<game->get_team_num(); i++){
+		nums.push_back(num);
+		num += game->get_team(i)->get_tank_num();
+	}
+	nums.push_back(num);
+	
+	double dx = (GSCR_W - 2*SCORE_MAR)/num;
+	
+	for(int i = 0; i<game->get_team_num(); i++){
+		scores[i]->render_centered(SCORE_MAR + (int)(0.5*dx*(nums[i]+nums[i+1])),SCORE_Y,AL_CENTER);
+		
+		int nd = (game->get_team(i)->get_tank_num()-1);
+		double da = nd==0 ? 0 : (M_PI - TKIMG_A*2)/nd;
+		double ia = nd==0 ? M_PI/2 : M_PI - TKIMG_A;
+		for(int j = 0; j<game->get_team(i)->get_tank_num(); j++){
+			double x = SCORE_MAR + dx * (nums[i]+j+0.5), y = SCORE_Y;
+			
+			rotate_add(ia - da*j, -TKIMG_R, 0, x,y);
+			SDL_Rect r;
+			r.w = TKIMG_W; r.h = TKIMG_H;
+			r.x = x-r.w/2; r.y = y-r.h/2;
+			SDL_RenderCopyEx(	renderer, board->get_img(game->get_team(i)->get_tank(j)->get_ind())->image,
+								NULL, &r,
+								0,NULL,
+								(j > game->get_team(i)->get_tank_num()/2) ? SDL_FLIP_HORIZONTAL : SDL_FLIP_NONE);
+		}
+	}
 	
 	if(board_t){
 		SDL_Texture* tex = SDL_GetRenderTarget(renderer);

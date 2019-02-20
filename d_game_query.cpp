@@ -32,17 +32,25 @@ int GameDQEventRemoveShot::get_id(){ return e->get_id(); }
 GameDQ::GameDQ(Game* g){
 	game = g;
 	round = new RoundDQ(game->get_round());
-	for(int i = 0; i<get_tank_num(); i++) tanks.push_back(new TankDQ(game->get_tank(i)));
+	for(int i = 0; i<get_team_num(); i++) teams.push_back(new TeamDQ(game->get_team(i)));
+	for(int i = 0; i<get_tank_num(); i++) tanks.push_back(new TankDQ(game->get_tank(i), this));
 }
 GameDQ::~GameDQ(){
 	delete round;
 	for(int i = 0; i<get_tank_num(); i++) delete tanks[i];
+	for(int i = 0; i<get_team_num(); i++) delete teams[i];
 }
 int GameDQ::get_tank_num(){
 	return game->get_tank_num();
 }
 TankQ* GameDQ::get_tank(int i){
 	return tanks[i];
+}
+int GameDQ::get_team_num(){
+	return game->get_team_num();
+}
+TeamQ* GameDQ::get_team(int i){
+	return teams[i];
 }
 RoundQ* GameDQ::get_round(){
 	return round;
@@ -73,8 +81,26 @@ void GameDQ::advance(){
 	game->advance();
 }
 
-TankDQ::TankDQ(Tank* t){
+TeamDQ::TeamDQ(Team* t){
+	team = t;
+}
+int TeamDQ::get_ind(){
+	return team->get_ind();
+}
+int TeamDQ::get_score(){
+	return team->get_score();
+}
+int TeamDQ::get_tank_num(){
+	return tanks.size();
+}
+TankQ* TeamDQ::get_tank(int i){
+	return tanks[i];
+}
+
+TankDQ::TankDQ(Tank* t, GameDQ* game){
 	tank = t;
+	team = (TeamDQ*)game->get_team(tank->get_team()->get_ind());
+	team->tanks.push_back(this);
 }
 double TankDQ::get_x(){
 	return tank->get_x();
@@ -93,6 +119,9 @@ void TankDQ::push_ctrl(ControlState ctrl){
 }
 int TankDQ::get_ind(){
 	return tank->get_ind();
+}
+TeamQ* TankDQ::get_team(){
+	return team;
 }
 
 RoundDQ::RoundDQ(Round* r){

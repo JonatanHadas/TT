@@ -7,6 +7,7 @@
 class TankQ;
 class RoundQ;
 class GameQ;
+class TeamQ;
 
 class GenShotQ;
 class ShotQ;
@@ -71,10 +72,19 @@ class GameQ{
 public:
 	virtual int get_tank_num() = 0;
 	virtual TankQ* get_tank(int i) = 0;
+	virtual int get_team_num() = 0;
+	virtual TeamQ* get_team(int i) = 0;
 	virtual RoundQ* get_round() = 0;
 	virtual GameQEvent* get_event() = 0;
 	
 	virtual void advance() = 0;
+};
+class TeamQ{
+public:
+	virtual int get_ind() = 0;
+	virtual int get_score() = 0;
+	virtual int get_tank_num() = 0;
+	virtual TankQ* get_tank(int i) = 0;
 };
 class TankQ{
 public:
@@ -84,6 +94,7 @@ public:
 	virtual bool is_dead() = 0;
 	
 	virtual int get_ind() = 0;
+	virtual TeamQ* get_team() = 0;
 	
 	virtual void push_ctrl(ControlState ctrl) = 0;
 };

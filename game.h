@@ -180,6 +180,8 @@ public:
 	Tank(Game* game, int i, Team* t);
 	~Tank();
 	
+	Team* get_team();
+	
 	double get_x();
 	double get_y();
 	double get_ang();

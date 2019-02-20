@@ -168,7 +168,7 @@ void Game::step(){
 		bool b_end_game = false;
 		int max_scr=-1,sec_scr=-2;
 		for(int j = 0; j<get_team_num(); j++){
-			int scr = get_team(i)->get_score();
+			int scr = get_team(j)->get_score();
 			if(scr > sec_scr){
 				if(scr > max_scr){
 					sec_scr = max_scr;
@@ -179,10 +179,10 @@ void Game::step(){
 		}
 		switch(set.end_mth){
 		case GameSettings::END_ROUND:
-			if(round_num == set.lim) b_end_game = true;
+			if(round_num >= set.lim) b_end_game = true;
 			break;
 		case GameSettings::END_SCORE:
-			if(max_scr > set.lim) b_end_game = true;
+			if(max_scr >= set.lim) b_end_game = true;
 		}
 		
 		//check for ties
@@ -295,6 +295,9 @@ Tank::Tank(Game* g, int i, Team* t){
 }
 Tank::~Tank(){
 	
+}
+Team* Tank::get_team(){
+	return team;
 }
 double Tank::get_x(){
 	return x;
