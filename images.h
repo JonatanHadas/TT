@@ -20,6 +20,7 @@ struct TankImg{
 	SDL_Texture* shards;
 	SDL_Texture* deathray;
 	SDL_Texture* broadcast;
+	SDL_Texture* image;
 	SDL_Color col;
 	TankImg();
 	~TankImg();
