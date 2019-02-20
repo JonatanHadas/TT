@@ -5,6 +5,7 @@
 #include "utils.h"
 
 #include <stdio.h>
+#include <vector>
 
 GameEventTankDeath::GameEventTankDeath(int i){
 	ind = i;
@@ -12,8 +13,24 @@ GameEventTankDeath::GameEventTankDeath(int i){
 int GameEventTankDeath::get_ind(){
 	return ind;
 }
+GameEventScore::GameEventScore(int i, int d){
+	ind = i; diff = d;
+}
+int GameEventScore::get_ind(){
+	return ind;
+}
+int GameEventScore::get_diff(){
+	return diff;
+}
+GameEventEndGame::GameEventEndGame(const std::vector<Team*>& teams){
+	for(int i = 0; i<teams.size(); i++) scores.push_back(teams[i]->get_score());
+}
+std::vector<int>& GameEventEndGame::get_scores(){
+		return scores;
+}
 
-Team::Team(){
+Team::Team(int i){
+	ind = i;
 	num_tot = num_alive = score = 0;
 }
 void Team::reset(){
@@ -25,12 +42,19 @@ void Team::add_score(int diff){
 int Team::get_alive(){
 	return num_alive;
 }
+int Team::get_score(){
+	return score;
+}
+int Team::get_ind(){
+	return ind;
+}
 
-Game::Game(int tank_num, int team_num, int* team_inds){
-	for(int i = 0; i<team_num; i++) teams.push_back(new Team());
-	for(int i = 0; i<tank_num; i++) tanks.push_back(new Tank(this, i, teams[team_inds[i]]));
+Game::Game(GameConfig& cf){
+	set = cf.set;
+	for(int i = 0; i<cf.team_num; i++) teams.push_back(new Team(i));
+	for(int i = 0; i<cf.tank_num; i++) tanks.push_back(new Tank(this, i, teams[cf.team_inds[i]]));
 	round = NULL;
-
+	round_num = 0;
 	start_round();
 
 	time = 0;
@@ -41,7 +65,12 @@ Game::~Game(){
 	for(int i = 0; i<teams.size(); i++) delete teams[i];
 	if(round) delete round;
 }
+void Game::end_game(){
+	end_timer = -2;
+	events.push(new GameEventEndGame(teams));
+}
 void Game::start_round(){
+	round_num++;
 	end_timer = -1;
 	if(round) delete round;
 	for(int i = 0; i<get_team_num(); i++) get_team(i)->reset();
@@ -76,19 +105,78 @@ long long int Game::get_time(){
 	return time;
 }
 void Game::step(){
+	std::vector<int> dead(get_team_num(), 0);
+	for(int i = 0; i<get_team_num(); i++) dead[i] += get_team(i)->get_alive(); // add all potential deaths
 	round->step();
 	for(int i = 0; i<get_tank_num(); i++){
 		get_tank(i)->step();
 	}
+	for(int i = 0; i<get_team_num(); i++) dead[i] -= get_team(i)->get_alive(); // remove all those who stayed alive
+	
+	
+	// scoring
+	int cnt = 0;
+	switch(set.scr_mth){
+	case GameSettings::SCR_ORDER:
+		for(int i = 0; i<get_team_num(); i++) if(get_team(i)->get_alive() == 0 && dead[i]>0) cnt++; // team wiped off at this step
+		for(int i = 0; i<get_team_num(); i++) if(get_team(i)->get_alive()>0) add_score(i, cnt); // add to all remaining teams one point for each one that died
+		break;
+	case GameSettings::SCR_DEATH:
+		for(int i = 0; i<get_team_num(); i++) cnt += dead[i]; // count dead
+		for(int i = 0; i<get_team_num(); i++) if(get_team(i)->get_alive()>0) add_score(i, cnt-dead[i]); // add to all remaining teams one point for each tank that died
+		break;
+	}
+	
 	time++;
+	
+	//end round
 	if(end_timer < 0){
-		int alv = 0;
-		for(int i = 0; i<get_team_num(); i++) if(get_team(i)->get_alive()>0) alv++;
-		if(alv<=1) end_timer = END_TIME;
+		if(end_timer==-1){
+			int alv = 0;
+			for(int i = 0; i<get_team_num(); i++) if(get_team(i)->get_alive()>0) alv++;
+			if(alv<=1) end_timer = END_TIME;
+		}
 	}
 	else if(end_timer > 0) end_timer--;
 	else{
-		start_round();
+		int i = -1;
+		for(int j = 0; j<get_team_num(); j++) if(get_team(j)->get_alive()>0) i=j;
+		//score
+		switch(set.scr_mth){
+		case GameSettings::SCR_LAST:
+			if(i>=0) add_score(i,1);
+			break;
+		}
+		//check end_game
+		bool b_end_game = false;
+		int max_scr=-1,sec_scr=-2;
+		for(int j = 0; j<get_team_num(); j++){
+			int scr = get_team(i)->get_score();
+			if(scr > sec_scr){
+				if(scr > max_scr){
+					sec_scr = max_scr;
+					max_scr = scr;
+				}
+				else sec_scr = scr;
+			}
+		}
+		switch(set.end_mth){
+		case GameSettings::END_ROUND:
+			if(round_num == set.lim) b_end_game = true;
+			break;
+		case GameSettings::END_SCORE:
+			if(max_scr > set.lim) b_end_game = true;
+		}
+		
+		//check for ties
+		if(max_scr - sec_scr < set.allow_dif) b_end_game = false;
+		
+		if(b_end_game){
+			end_game();
+		}
+		else{
+			start_round();
+		}
 	}
 }
 
@@ -103,6 +191,10 @@ void Game::advance(){
 void Game::kill_tank(int i){
 	tanks[i]->kill();
 	events.push(new GameEventTankDeath(i));
+}
+void Game::add_score(int ind, int diff){
+	teams[ind]->add_score(diff);
+	events.push(new GameEventScore(ind, diff));
 }
 
 Round::Round(Game* g){

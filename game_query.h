@@ -13,22 +13,40 @@ class ShotQ;
 
 class GameQEvent;
 class GameQEventStartRnd;
+class GameQEventTankDeath;
+class GameQEventScore;
+class GameQEventEndGame;
 
 class GameQEvent{
 public:
 	enum Type{
 		TYPE_RND_START,
 		TYPE_TANK_DEAD,
+		TYPE_SCORE,
+		TYPE_END_GAME
 	};
 	virtual Type get_type() = 0;
 };
 
 class GameQEventStartRnd : public GameQEvent{
+public:
 	Type get_type(){return GameQEvent::TYPE_RND_START;}
 };
 class GameQEventTankDeath : public GameQEvent{
+public:
 	Type get_type(){return GameQEvent::TYPE_TANK_DEAD;}
 	virtual int get_ind() = 0;
+};
+class GameQEventScore : public GameQEvent{
+public:
+	Type get_type(){return GameQEvent::TYPE_SCORE;}
+	virtual int get_ind() = 0;
+	virtual int get_diff() = 0;
+};
+class GameQEventEndGame : public GameQEvent{
+public:
+	Type get_type(){return GameQEvent::TYPE_END_GAME;}
+	virtual std::vector<int>& get_scores() = 0;
 };
 
 class GameQ{

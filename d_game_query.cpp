@@ -7,6 +7,15 @@ GameDQEventTankDeath::GameDQEventTankDeath(GameEventTankDeath* event){ e = event
 GameDQEventTankDeath::~GameDQEventTankDeath() { delete e; }
 int GameDQEventTankDeath::get_ind(){ return e->get_ind(); }
 
+GameDQEventScore::GameDQEventScore(GameEventScore* event){ e=event; }
+GameDQEventScore::~GameDQEventScore(){ delete e; }
+int GameDQEventScore::get_ind() { return e->get_ind(); }
+int GameDQEventScore::get_diff() { return e->get_diff(); }
+
+GameDQEventEndGame::GameDQEventEndGame(GameEventEndGame* event){ e = event; }
+GameDQEventEndGame::~GameDQEventEndGame(){ delete e; }
+std::vector<int>& GameDQEventEndGame::get_scores(){ return e->get_scores(); }
+
 GameDQ::GameDQ(Game* g){
 	game = g;
 	round = new RoundDQ(game->get_round());
@@ -35,6 +44,10 @@ GameQEvent* GameDQ::get_event(){
 			return new GameDQEventStartRnd((GameEventStartRnd*)e);
 		case GameEvent::TYPE_TANK_DEAD:
 			return new GameDQEventTankDeath((GameEventTankDeath*)e);
+		case GameEvent::TYPE_SCORE:
+			return new GameDQEventScore((GameEventScore*)e);
+		case GameEvent::TYPE_END_GAME:
+			return new GameDQEventEndGame((GameEventEndGame*)e);
 		}
 	}
 	return NULL;

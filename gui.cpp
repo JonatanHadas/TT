@@ -11,8 +11,15 @@ Main::Main(SDL_Renderer* renderer){
 	chng_sz = false;
 	std::vector<int> img_inds;
 	for(int i = 0; i<30; i++) img_inds.push_back(i);
-	int teams[30] = {0,0,0,1,1,1,2,2,2,3,3,3,4,4,4,5,5,5,6,6,6,7,7,7,8,8,8,9,9,9};
-	state = new GameGui(new GameDQ(new Game(12,4,teams)),this, img_inds);
+	
+	GameConfig cf(12,4);
+	for(int i = 0; i<cf.tank_num; i++) cf.team_inds[i] = i/3;
+	cf.set.scr_mth = GameSettings::SCR_LAST;
+	cf.set.end_mth = GameSettings::END_NONE;
+	cf.set.lim = 10;
+	cf.set.allow_dif = 0;
+	
+	state = new GameGui(new GameDQ(new Game(cf)),this, img_inds);
 }
 Main::~Main(){
 	if(state) delete state;

@@ -7,6 +7,7 @@
 #include <queue>
 
 #include "maze.h"
+#include "game_config.h"
 
 // a whole game
 class Game;
@@ -27,6 +28,8 @@ public:
 	enum Type{
 		TYPE_START_RND,
 		TYPE_TANK_DEAD,
+		TYPE_SCORE,
+		TYPE_END_GAME,
 	};
 	virtual Type get_type()=0;
 };
@@ -42,18 +45,38 @@ public:
 	Type get_type(){return GameEvent::TYPE_TANK_DEAD;}
 	int get_ind();
 };
+class GameEventScore : public GameEvent{
+	int ind;
+	int diff;
+public:
+	GameEventScore(int i, int diff);
+	Type get_type(){return GameEvent::TYPE_SCORE;}
+	int get_ind();
+	int get_diff();
+};
+class GameEventEndGame : public GameEvent{
+	std::vector<int> scores;
+public:
+	GameEventEndGame(const std::vector<Team*>& teams);
+	Type get_type(){return GameEvent::TYPE_END_GAME;}
+	std::vector<int>& get_scores();
+};
 
 class Team{
 	int score;
 	int num_alive;
 	int num_tot;
 	
+	int ind;
+	
 	friend Tank;
 public:
-	Team();
+	Team(int i);
 	void reset();
 	void add_score(int diff);
 	int get_alive();
+	int get_score();
+	int get_ind();
 };
 
 class Game{
@@ -67,10 +90,13 @@ class Game{
 	
 	bool can_step();
 	void step();
+	GameSettings set;
+	int round_num;
 public:
-	Game(int tank_num, int team_num, int* team_inds);
+	Game(GameConfig& cf);
 	~Game();
 	void start_round();
+	void end_game();
 	Round* get_round();
 	Tank* get_tank(int i);
 	int get_tank_num();
@@ -82,6 +108,7 @@ public:
 	void advance();
 	
 	void kill_tank(int i);
+	void add_score(int ind, int diff);
 };
 
 class Round{

@@ -9,6 +9,9 @@ class RoundDQ;
 class GameDQ;
 
 class GameDQEventStartRnd;
+class GameDQEventTankDeath;
+class GameDQEventScore;
+class GameDQEventEndGame;
 
 class GameDQEventStartRnd : public GameQEventStartRnd{
 	GameEventStartRnd* e;
@@ -23,6 +26,22 @@ public:
 	~GameDQEventTankDeath();
 	int get_ind();
 };
+class GameDQEventScore : public GameQEventScore{
+	GameEventScore* e;
+public:
+	GameDQEventScore(GameEventScore* event);
+	~GameDQEventScore();
+	int get_ind();
+	int get_diff();
+};
+class GameDQEventEndGame : public GameQEventEndGame{
+	GameEventEndGame* e;
+public:
+	GameDQEventEndGame(GameEventEndGame* event);
+	~GameDQEventEndGame();
+	std::vector<int>& get_scores();
+};
+
 
 class GameDQ : public GameQ{
 	Game* game;
