@@ -3,24 +3,24 @@
     =movement
 	~wall collision
   ~maze
-    -generation
+    ~generation
   -shot
     ~wall collision (sometimes doesn't collide(related to tank collisions))
 	=tank collision
   -upgrades
--drawing
-  -tank
-  -maze
-  -shot
+~drawing
+  =tank
+  =maze
+  =shot
   -upgrades
--geometry
+=geometry
   =line intersection
   =circle collision
   =polygon collision
   
 ~loading images
   =tank parts
-  -add non-uniform textures
+  ~add non-uniform textures
 -loading sounds
 
 
