@@ -3,7 +3,9 @@
 #define FPS 60
 
 #include "game_gui.h"
-#include "d_game_query.h"
+#include "e_game_query.h"
+#include "game.h"
+#include "direct_ex.h"
 
 Main::Main(SDL_Renderer* renderer){
 	rend = renderer;
@@ -19,7 +21,12 @@ Main::Main(SDL_Renderer* renderer){
 	cf.set.lim = 10;
 	cf.set.allow_dif = 0;
 	
-	state = new GameGui(new GameDQ(new Game(cf)),this, img_inds);
+	Game* g = new Game(cf);
+	ExInEvents* xq = new DirectEx(g);
+	GameExtrap* x = new GameExtrap(cf, xq);
+	GameQ* q = new GameEQ(x);
+	
+	state = new GameGui(q,this, img_inds);
 }
 Main::~Main(){
 	if(state) delete state;
