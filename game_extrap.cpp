@@ -156,6 +156,7 @@ void GameExtrap::step(){
 		case ExInEvent::TYPE_END_GAME:
 			break;
 		case ExInEvent::TYPE_SHT_CRT:
+			create_shot((ExInEventCreateShot*)e);
 			break;
 		case ExInEvent::TYPE_SHT_RMV:
 			break;
@@ -191,6 +192,13 @@ void GameExtrap::add_score(int ind, int diff){
 void GameExtrap::push_ctrl(ControlState ctrl, int ind){
 	in->push_ctrl(ctrl, ind, round_num);
 }
+void GameExtrap::create_shot(ExInEventCreateShot* e){
+	if(e->get_round() == round_num){
+		ShotExtrap* shot = new ShotExtrap(this,e);
+		round->add_shot(shot);
+		events.push(new ExEventCreateShot(shot));
+	}
+}
 
 RoundExtrap::RoundExtrap(GameExtrap* g,Maze* m){
 	game = g;
@@ -204,6 +212,15 @@ std::map<int, GenShotExtrap*>::iterator RoundExtrap::get_shots(){
 }
 std::map<int, GenShotExtrap*>::iterator RoundExtrap::end_shots(){
 	return shots.end();
+}
+GenShotExtrap* RoundExtrap::get_shot(int id){
+	return shots.count(id)>0 ? shots[id] : NULL;
+}
+void RoundExtrap::add_shot(GenShotExtrap* shot){
+	shots.insert({shot->get_id(), shot});
+}
+void RoundExtrap::del_shot(int id){
+	shots.erase(id);
 }
 
 TankExtrap::TankExtrap(GameExtrap* g,int i, TeamExtrap* t){
@@ -318,7 +335,12 @@ TankExtrap* GenShotExtrap::get_tank(){ return tank; }
 int GenShotExtrap::get_id(){ return id; }
 GenShot::Type GenShotExtrap::get_type(){ return type; }
 
-ShotExtrap::ShotExtrap(GameExtrap* game, TankExtrap* tank, int id, GenShot::Type type) : GenShotExtrap(game, tank, id, type){
+ShotExtrap::ShotExtrap(GameExtrap* game, ExInEventCreateShot* e) : GenShotExtrap(game, game->get_tank(e->get_tank_ind()), e->get_id(), e->get_stype()){
+	x = e->get_x();
+	y = e->get_y();
+	vx = e->get_vx();
+	vy = e->get_vy();
+	ctime = e->get_time();
 }
 double ShotExtrap::get_r(){
 	switch(get_type()){
@@ -327,6 +349,16 @@ double ShotExtrap::get_r(){
 	}
 
 }
+double ShotExtrap::get_x(){
+	return (get_game()->get_time() - ctime)*vx + x;
+}
+double ShotExtrap::get_y(){
+	return (get_game()->get_time() - ctime)*vy + y;
+}
+double ShotExtrap::get_ang(){
+	return atan2(vy,vx);
+}
+
 std::vector<std::pair<double, double>>& ShotExtrap::get_colls(){
 	return colls;
 }

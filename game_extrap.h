@@ -124,6 +124,8 @@ private:
 	void start_round(ExInEventStartRound* e);
 	void kill_tank(int ind);
 	void add_score(int ind, int diff);
+	
+	void create_shot(ExInEventCreateShot* e);
 };
 
 class RoundExtrap{
@@ -138,6 +140,11 @@ public:
 	
 	std::map<int, GenShotExtrap*>::iterator get_shots();
 	std::map<int, GenShotExtrap*>::iterator end_shots();
+	
+	GenShotExtrap* get_shot(int id);
+
+	void add_shot(GenShotExtrap* shot);
+	void del_shot(int id);
 };
 
 class TankExtrap{
@@ -194,9 +201,14 @@ public:
 
 class ShotExtrap : public GenShotExtrap{
 	std::vector<std::pair<double, double>> colls;
+	double x,y,vx,vy,nx,ny;
+	long long int ctime; double col_t;
 public:
-	ShotExtrap(GameExtrap* game, TankExtrap* tank, int id, GenShot::Type type);
+	ShotExtrap(GameExtrap* game, ExInEventCreateShot* e);
 	double get_r();
+	double get_x();
+	double get_y();
+	double get_ang();
 	std::vector<std::pair<double, double>>& get_colls();
 };
 

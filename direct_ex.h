@@ -56,6 +56,7 @@ public:
 	double get_y();
 	double get_vx();
 	double get_vy();
+	int get_tank_ind();
 	long long int get_time();
 	int get_round();
 };

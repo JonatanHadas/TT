@@ -55,6 +55,7 @@ public:
 	virtual double get_y() = 0;
 	virtual double get_vx() = 0;
 	virtual double get_vy() = 0;
+	virtual int get_tank_ind() = 0;
 	virtual long long int get_time() = 0;
 	virtual int get_round() = 0;
 };

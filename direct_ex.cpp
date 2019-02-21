@@ -66,6 +66,7 @@ double DExInEventCreateShot::get_x(){ return e->get_shot()->get_x(); }
 double DExInEventCreateShot::get_y(){ return e->get_shot()->get_y(); }
 double DExInEventCreateShot::get_vx(){ return ((Shot*)(e->get_shot()))->get_vx(); }
 double DExInEventCreateShot::get_vy(){ return ((Shot*)(e->get_shot()))->get_vy(); }
+int DExInEventCreateShot::get_tank_ind(){ return e->get_shot()->get_tank()->get_ind(); }
 long long int DExInEventCreateShot::get_time(){ return e->get_shot()->get_ctime(); }
 int DExInEventCreateShot::get_round(){ return e->get_shot()->get_cround(); }
 
