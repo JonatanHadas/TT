@@ -126,6 +126,7 @@ private:
 	void add_score(int ind, int diff);
 	
 	void create_shot(ExInEventCreateShot* e);
+	void remove_shot(int id);
 };
 
 class RoundExtrap{

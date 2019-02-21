@@ -159,6 +159,7 @@ void GameExtrap::step(){
 			create_shot((ExInEventCreateShot*)e);
 			break;
 		case ExInEvent::TYPE_SHT_RMV:
+			remove_shot(((ExInEventRemoveShot*)e)->get_id());
 			break;
 		}
 		delete e;
@@ -199,6 +200,12 @@ void GameExtrap::create_shot(ExInEventCreateShot* e){
 		ShotExtrap* shot = new ShotExtrap(this,e);
 		round->add_shot(shot);
 		events.push(new ExEventCreateShot(shot));
+	}
+}
+void GameExtrap::remove_shot(int id){
+	if(round->get_shot(id)){
+		events.push(new ExEventRemoveShot(round->get_shot(id)));
+		round->del_shot(id);
 	}
 }
 
