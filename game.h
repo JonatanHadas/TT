@@ -23,59 +23,13 @@ class RegShot;
 //for scoring
 class Team;
 
-class GameEvent{
-public:
-	enum Type{
-		TYPE_START_RND,
-		TYPE_TANK_DEAD,
-		TYPE_SCORE,
-		TYPE_END_GAME,
-		TYPE_SHOT_CRT, TYPE_SHOT_RMV,
-	};
-	virtual Type get_type()=0;
-};
-
-class GameEventStartRnd : public GameEvent{
-public:
-	Type get_type(){return GameEvent::TYPE_START_RND;}
-};
-class GameEventTankDeath : public GameEvent{
-	int ind;
-public:
-	GameEventTankDeath(int i);
-	Type get_type(){return GameEvent::TYPE_TANK_DEAD;}
-	int get_ind();
-};
-class GameEventScore : public GameEvent{
-	int ind;
-	int diff;
-public:
-	GameEventScore(int i, int diff);
-	Type get_type(){return GameEvent::TYPE_SCORE;}
-	int get_ind();
-	int get_diff();
-};
-class GameEventEndGame : public GameEvent{
-	std::vector<int> scores;
-public:
-	GameEventEndGame(const std::vector<Team*>& teams);
-	Type get_type(){return GameEvent::TYPE_END_GAME;}
-	std::vector<int>& get_scores();
-};
-class GameEventCreateShot : public GameEvent{
-	GenShot* shot;
-public:
-	GameEventCreateShot(GenShot* s);
-	Type get_type(){return GameEvent::TYPE_SHOT_CRT;}
-	GenShot* get_shot();
-};
-class GameEventRemoveShot : public GameEvent{
-	int id;
-public:
-	GameEventRemoveShot(GenShot* s);
-	Type get_type(){return GameEvent::TYPE_SHOT_RMV;}
-	int get_id();
-};
+class GameEvent;
+class GameEventStartRnd;
+class GameEventTankDeath;
+class GameEventScore;
+class GameEventEndGame;
+class GameEventCreateShot;
+class GameEventRemoveShot;
 
 
 class Team{
@@ -130,6 +84,8 @@ public:
 	void add_score(int ind, int diff);
 	
 	int get_new_id();
+
+	int get_round_num();
 };
 
 class Round{
@@ -206,6 +162,8 @@ private:
 	Tank* tank;
 	Game* game;
 	int id;
+	long long int ctime;
+	int cround;
 protected:
 	bool out_of_tank;
 	Game* get_game();
@@ -224,6 +182,8 @@ public:
 	virtual bool is_reusable(); // destoyed by killing tank
 	
 	int get_id();
+	long long int get_ctime();
+	int get_cround();
 };
 class Shot : public GenShot{
 private:
@@ -246,6 +206,9 @@ public:
 	double get_ang();
 	double get_x();
 	double get_y();
+
+	double get_vx();
+	double get_vy();
 	
 	virtual double get_r() = 0;
 	virtual int get_ttl() = 0;
@@ -263,5 +226,70 @@ public:
 	int get_ttl();
 	GenShot::Type get_type();
 };
+
+
+
+
+class GameEvent{
+public:
+	enum Type{
+		TYPE_START_RND,
+		TYPE_TANK_DEAD,
+		TYPE_SCORE,
+		TYPE_END_GAME,
+		TYPE_SHOT_CRT, TYPE_SHOT_RMV,
+	};
+	virtual Type get_type()=0;
+};
+
+class GameEventStartRnd : public GameEvent{
+public:
+	Type get_type(){return GameEvent::TYPE_START_RND;}
+};
+class GameEventTankDeath : public GameEvent{
+	int ind;
+public:
+	GameEventTankDeath(int i);
+	Type get_type(){return GameEvent::TYPE_TANK_DEAD;}
+	int get_ind();
+};
+class GameEventScore : public GameEvent{
+	int ind;
+	int diff;
+public:
+	GameEventScore(int i, int diff);
+	Type get_type(){return GameEvent::TYPE_SCORE;}
+	int get_ind();
+	int get_diff();
+};
+class GameEventEndGame : public GameEvent{
+	std::vector<int> scores;
+public:
+	GameEventEndGame(const std::vector<Team*>& teams);
+	Type get_type(){return GameEvent::TYPE_END_GAME;}
+	std::vector<int>& get_scores();
+};
+class GameEventCreateShot : public GameEvent{
+	GenShot* shot;
+public:
+	GameEventCreateShot(GenShot* s);
+	Type get_type(){return GameEvent::TYPE_SHOT_CRT;}
+	GenShot* get_shot();
+};
+class GameEventRemoveShot : public GameEvent{
+	int id;
+	double x,y,vx,vy;
+	GenShot::Type type;
+public:
+	GameEventRemoveShot(GenShot* s);
+	Type get_type(){return GameEvent::TYPE_SHOT_RMV;}
+	int get_id();
+	double get_x();
+	double get_y();
+	double get_vx();
+	double get_vy();
+	GenShot::Type get_stype();
+};
+
 
 #endif

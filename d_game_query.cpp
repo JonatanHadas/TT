@@ -28,6 +28,11 @@ int GameDQEventCreateShot::get_tank_ind(){ return e->get_shot()->get_tank()->get
 GameDQEventRemoveShot::GameDQEventRemoveShot(GameEventRemoveShot* event){ e = event; }
 GameDQEventRemoveShot::~GameDQEventRemoveShot(){ delete e; }
 int GameDQEventRemoveShot::get_id(){ return e->get_id(); }
+double GameDQEventRemoveShot::get_x(){ return e->get_x(); }
+double GameDQEventRemoveShot::get_y(){ return e->get_y(); }
+double GameDQEventRemoveShot::get_vx(){ return e->get_vx(); }
+double GameDQEventRemoveShot::get_vy(){ return e->get_vy(); }
+GenShot::Type GameDQEventRemoveShot::get_stype(){ return e->get_stype(); }
 
 GameDQ::GameDQ(Game* g){
 	game = g;

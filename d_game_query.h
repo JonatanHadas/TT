@@ -13,8 +13,8 @@ class GameDQEventStartRnd;
 class GameDQEventTankDeath;
 class GameDQEventScore;
 class GameDQEventEndGame;
-class GameQEventCreateShot;
-class GameQEventRemoveShot;
+class GameDQEventCreateShot;
+class GameDQEventRemoveShot;
 
 class GameDQEventStartRnd : public GameQEventStartRnd{
 	GameEventStartRnd* e;
@@ -58,10 +58,16 @@ public:
 };
 class GameDQEventRemoveShot : public GameQEventRemoveShot{
 	GameEventRemoveShot* e;
+	double x,y,vx,vy;
 public:
 	GameDQEventRemoveShot(GameEventRemoveShot* event);
 	~GameDQEventRemoveShot();
 	int get_id();
+	double get_x();
+	double get_y();
+	double get_vx();
+	double get_vy();
+	GenShot::Type get_stype();
 };
 
 

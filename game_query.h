@@ -66,6 +66,11 @@ class GameQEventRemoveShot : public GameQEvent{
 public:
 	Type get_type(){return GameQEvent::TYPE_SHOT_RMV;}
 	virtual int get_id() = 0;
+	virtual double get_x() = 0;
+	virtual double get_y() = 0;
+	virtual double get_vx() = 0;
+	virtual double get_vy() = 0;
+	virtual GenShot::Type get_stype() = 0;
 };
 
 class GameQ{

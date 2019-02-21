@@ -1,8 +1,13 @@
 SYS = WINDOWS64
 DEBUG = NO
 
+ADDIR = 
+ACDDIR = 
+
 ifeq ($(DEBUG),YES)
 DEBUG_FLG = -g
+ADDIR = $(DDIR)
+ACDDIR = $(CDDIR)
 endif 
 
 DEF_CMP_FLG = $(DEBUG_FLG) $(INC_PTH)
@@ -20,6 +25,8 @@ ifeq ($(SYS), WINDOWS64)
 CC = g++
 DIR = windows64/
 CDIR = windows64\\
+DDIR = debug/
+CDDIR = debug\\
 EXEC = $(DIR)tanktrouble.exe
 CLN = del
 CMP_FLG = $(DEF_CMP_FLG)
@@ -33,6 +40,8 @@ ifeq ($(SYS), WINDOWS)
 CC = g++
 DIR = windows/
 CDIR = windows\\
+DDIR = debug/
+CDDIR = debug\\
 EXEC = $(DIR)tanktrouble.exe
 CLN = del
 CMP_FLG = -std=c++11 $(DEF_CMP_FLG)
@@ -46,6 +55,8 @@ ifeq ($(SYS), LINUX)
 CC = g++
 DIR = linux/
 CDIR = $(DIR)
+DDIR = debug/
+CDDIR = $(DDIR)
 EXEC = $(DIR)tanktrouble
 CLN = rm
 CMP_FLG = -std=c++11 $(DEF_CMP_FLG)
@@ -56,6 +67,9 @@ INC_PTH = -I"enet/include" -I"/usr/include"
 endif
 endif
 endif
+
+DIR := $(DIR)$(ADDIR)
+CDIR := $(CDIR)$(ACDDIR)
 
 all: $(EXEC)
 
