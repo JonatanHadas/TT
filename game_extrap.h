@@ -117,6 +117,8 @@ public:
 	ExEvent* get_event();
 	
 	void push_ctrl(ControlState ctrl, int ind);
+	
+	long long int get_time();
 
 private:
 	void start_round(ExInEventStartRound* e);
@@ -146,7 +148,11 @@ class TankExtrap{
 	long long int b_t,t;
 	double x,y,ang;
 	
+	ControlState p_ctrl;
+	std::deque<ControlState> ctrl;
+	
 	bool dead;
+	bool check_wall_coll(double& nx, double& ny, double& px, double& py, double& dp);
 public:
 	TankExtrap(GameExtrap* game,int ind, TeamExtrap* team);
 	TeamExtrap* get_team();
@@ -162,6 +168,8 @@ public:
 	
 	void update(ExInEventTankUpdate* e);
 	void reset(double x, double y, double ang);
+	
+	void advance();
 	int get_ind();
 };
 

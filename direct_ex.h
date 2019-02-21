@@ -77,6 +77,7 @@ public:
 	double get_y();
 	double get_ang();
 	long long int get_time();
+	ControlState get_ctrl();
 };
 
 

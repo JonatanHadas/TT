@@ -408,6 +408,10 @@ void Tank::kill(){
 	team->num_alive--;
 }
 
+ControlState Tank::get_ctrl(){
+	return p_ctrl;
+}
+
 GenShot::GenShot(Game* g, Tank* t){
 	game = g;
 	ctime = g->get_time();

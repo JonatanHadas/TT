@@ -132,6 +132,9 @@ int GameExtrap::get_team_num(){
 TeamExtrap* GameExtrap::get_team(int i){
 	return teams[i];
 }
+long long int GameExtrap::get_time(){
+	return time;
+}
 
 void GameExtrap::step(){
 	ExInEvent* e;
@@ -224,7 +227,13 @@ double TankExtrap::get_ang(){
 
 void TankExtrap::update(ExInEventTankUpdate* e){
 	if(e->get_time()>b_t){
-		t = b_t = e->get_time();
+		t = b_t;
+		b_t = e->get_time();
+		while(t < b_t){
+			p_ctrl = ctrl.front();
+			ctrl.pop_front();
+			t++;
+		}
 		x = e->get_x();
 		y = e->get_y();
 		ang = e->get_ang();
@@ -236,6 +245,8 @@ void TankExtrap::reset(double xx, double yy, double a){
 	ang = a;
 	t = b_t = 0;
 	dead = false;
+	p_ctrl = {false,false,false,false,false};
+	ctrl.clear();
 }
 int TankExtrap::get_ind(){
 	return ind;
@@ -248,9 +259,55 @@ void TankExtrap::kill(){
 	dead = true;
 }
 
-void TankExtrap::push_control(ControlState ctrl){
-	game->push_ctrl(ctrl, ind);
+void TankExtrap::push_control(ControlState ct){
+	game->push_ctrl(ct, ind);
+	ctrl.push_back(ct);
 }
+
+bool TankExtrap::check_wall_coll(double& nx, double& ny, double& px, double& py, double& dp){
+	double txs[4],tys[4],wxs[4],wys[4];
+	int ix = x, iy = y;
+	gen_rot_rect(x,y,TANK_H, TANK_W, ang, txs,tys);
+	for(int i = -1; i<=1; i++){
+		for(int j = -1; j<1; j++){
+			gen_rect(ix+i-WALL_THK, iy+j-WALL_THK + 1, 2*WALL_THK + 1, 2*WALL_THK,wxs,wys);
+			if(game->get_round()->get_maze()->hwall(ix+i, iy+j) && poly_coll(txs,tys,4,wxs,wys,4,nx,ny,dp,px,py)){
+				return true;
+			}
+			gen_rect(ix+j-WALL_THK + 1, iy+i-WALL_THK, 2*WALL_THK, 2*WALL_THK + 1,wxs,wys);
+			if(game->get_round()->get_maze()->vwall(ix+j, iy+i) && poly_coll(txs,tys,4,wxs,wys,4,nx,ny,dp,px,py)){
+				return true;
+			}
+		}
+	}
+	return false;
+}
+void TankExtrap::advance(){
+	auto it = ctrl.begin();
+	ControlState cpc = p_ctrl;
+	while(t < game->get_time()){
+		ControlState cur = it==ctrl.end() ? cpc : (cpc=*(it++));
+		
+		if(!is_dead()){
+			double nx,ny,dp,px,py;
+			
+			double pa = ang;
+			
+			int turn = (cur.lt ? 1 : 0)-(cur.rt ? 1 : 0);
+			ang += turn * STEP_ANG;
+			
+			if(check_wall_coll(nx,ny,px,py,dp)) ang = pa;
+			
+			double prx = x, pry = y;
+			
+			double step = STEP_DST * ((cur.fd ? 1 : 0) - (cur.bk ? REV_RAT : 0));
+			rotate_add(ang, step, 0, x, y);
+
+			if(check_wall_coll(nx,ny,px,py,dp)) {x=prx; y=pry;}		
+		}
+		
+	}
+};
 
 GenShotExtrap::GenShotExtrap(GameExtrap* g, TankExtrap* tk, int i, GenShot::Type tp){
 	game = g; tank = tk; id = i; type = tp;

@@ -80,3 +80,4 @@ double DExInEventTankUpdate::get_x(){ return t->get_x(); }
 double DExInEventTankUpdate::get_y(){ return t->get_y(); }
 double DExInEventTankUpdate::get_ang(){ return t->get_ang(); }
 long long int DExInEventTankUpdate::get_time(){ return g->get_time(); }
+ControlState DExInEventTankUpdate::get_ctrl(){ return t->get_ctrl(); }

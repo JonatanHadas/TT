@@ -147,6 +147,8 @@ public:
 	
 	void push_control(ControlState st);
 	
+	ControlState get_ctrl();
+	
 	void step();
 	
 	void kill();
