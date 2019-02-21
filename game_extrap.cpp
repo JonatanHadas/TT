@@ -163,6 +163,8 @@ void GameExtrap::step(){
 		}
 		delete e;
 	}
+	round->advance();
+	for(int i = 0; i<get_tank_num(); i++) get_tank(i)->advance();
 }
 ExEvent* GameExtrap::get_event(){
 	ExEvent* ret = NULL;
@@ -206,6 +208,11 @@ RoundExtrap::RoundExtrap(GameExtrap* g,Maze* m){
 }
 Maze* RoundExtrap::get_maze(){
 	return maze;
+}
+void RoundExtrap::advance(){
+	for(auto it = get_shots(); it != end_shots(); it++){
+		(*it).second->advance();
+	}
 }
 std::map<int, GenShotExtrap*>::iterator RoundExtrap::get_shots(){
 	return shots.begin();
@@ -341,6 +348,11 @@ ShotExtrap::ShotExtrap(GameExtrap* game, ExInEventCreateShot* e) : GenShotExtrap
 	vx = e->get_vx();
 	vy = e->get_vy();
 	ctime = e->get_time();
+	
+	found = false;
+	col_t = 0;
+		
+	advance();
 }
 double ShotExtrap::get_r(){
 	switch(get_type()){
@@ -361,4 +373,80 @@ double ShotExtrap::get_ang(){
 
 std::vector<std::pair<double, double>>& ShotExtrap::get_colls(){
 	return colls;
+}
+double ShotExtrap::check_wall(){
+	double xx = x + col_t*vx,yy = y + col_t*vy;
+	int ix = xx;
+	int iy = yy;
+	int ixx = vx>0 ? 1 : 0;
+	int iyy = vy<0 ? 1 : 0;
+	int idx = vx>0 ? 1 : -1;
+	int idy = vy<0 ? 1 : -1;
+	int vsg = -idx*idy;
+	double wxs[4],wys[4],nnx,nny;
+	double t = -1;
+	while(abs(ix - (int)xx)+abs(iy - (int)yy) <= sqrt(vx*vx+vy*vy)*(get_game()->get_time()-ctime-col_t+1)){
+		double tt;
+		for(int i = -1; i<=1; i++){
+			for(int j = -1; j<1; j++){
+				gen_rect(ix+i-WALL_THK, iy+j-WALL_THK + 1, 2*WALL_THK + 1, 2*WALL_THK,wxs,wys);
+				if(get_game()->get_round()->get_maze()->hwall(ix+i, iy+j)){
+					tt = circ_poly_coltime(xx,yy,vx,vy,get_r(), wxs,wys,4,nnx,nny);
+					if(tt+col_t <= get_game()->get_time()-ctime && tt >= 0 && (tt < t || t < 0)){
+						found = true;
+						t = tt;
+						nx = nnx; ny = nny;
+					}
+				}
+				gen_rect(ix+j-WALL_THK + 1, iy+i-WALL_THK, 2*WALL_THK, 2*WALL_THK + 1,wxs,wys);
+				if(get_game()->get_round()->get_maze()->vwall(ix+j, iy+i)){
+					tt = circ_poly_coltime(xx,yy,vx,vy,get_r(), wxs,wys,4,nnx,nny);
+					if(tt+col_t < get_game()->get_time()-ctime && tt >= 0 && (tt < t || t < 0)){
+						found = true;
+						t = tt;
+						nx = nnx; ny = nny;
+					}
+				}
+			}
+		}
+		if( vsg * leftness(ix+ixx,iy+iyy,x,y,x+vx,y+vy) > 0) iy += idy;
+		else ix += idx;
+	}
+	return t;
+}
+void ShotExtrap::reflect(){
+	double col_x = x+col_t*vx;
+	double col_y = y+col_t*vy;
+	
+	
+	// reflect
+	colls.push_back({col_x, col_y});
+	if(found){
+		double old_vx = vx, old_vy = vy;
+		
+		if(nx*vx<0) vx = -vx;
+		if(ny*vy<0) vy = -vy;
+		
+		x = col_x - col_t*vx;
+		y = col_y - col_t*vy;
+	}
+	
+	found = false;
+	
+	// find maze collision
+	double ctm = check_wall();
+	
+	if(found) col_t += ctm;
+	
+	else{
+		col_t = (double)(get_game()->get_time()-ctime);
+		colls.push_back({get_x(), get_y()});
+	}
+}
+void ShotExtrap::advance(){
+	colls.clear();
+	colls.push_back({get_x(), get_y()});
+	while(col_t < get_game()->get_time()-ctime) {
+		reflect();
+	}
 }

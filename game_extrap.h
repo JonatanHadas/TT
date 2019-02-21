@@ -138,6 +138,8 @@ public:
 	RoundExtrap(GameExtrap* game,Maze* maze);
 	Maze* get_maze();
 	
+	void advance();
+	
 	std::map<int, GenShotExtrap*>::iterator get_shots();
 	std::map<int, GenShotExtrap*>::iterator end_shots();
 	
@@ -197,12 +199,16 @@ public:
 	virtual double get_x() = 0;
 	virtual double get_y() = 0;
 	virtual double get_ang() = 0;
+	virtual void advance() = 0;
 };
 
 class ShotExtrap : public GenShotExtrap{
 	std::vector<std::pair<double, double>> colls;
 	double x,y,vx,vy,nx,ny;
 	long long int ctime; double col_t;
+	bool found;
+	double check_wall();
+	void reflect();
 public:
 	ShotExtrap(GameExtrap* game, ExInEventCreateShot* e);
 	double get_r();
@@ -210,6 +216,8 @@ public:
 	double get_y();
 	double get_ang();
 	std::vector<std::pair<double, double>>& get_colls();
+	
+	void advance();
 };
 
 #endif
