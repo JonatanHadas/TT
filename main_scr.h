@@ -2,7 +2,9 @@
 #define _MAIN_SCR_H
 
 #include "gui.h"
+#include "texts.h"
 #include "SDL2/SDL.h"
+#include <string>
 
 class SubMenu{
 protected:
@@ -10,21 +12,31 @@ protected:
 	double pt;
 	SDL_Renderer* rend;
 	
+	bool conn;
+	
+	int m_x, m_y;
+	
 	void draw_back(bool active);
 public:
 	SubMenu(SDL_Renderer* r);
-	virtual void draw(bool conn) = 0;
+	void set_conn(bool c);
+	virtual void draw() = 0;
 	virtual void event(SDL_Event& e);
 	virtual void lose_mfocus();
 	virtual void lose_kfocus() = 0;
 };
 
 class ConnectionMenu : public SubMenu{
+	bool focus_addr;
+	bool in_addr(int x, int y);
+	std::string addr;
+	Msg* addr_m;
+	void reset_msg();
 public:
 	ConnectionMenu(SDL_Renderer* r);
 	~ConnectionMenu();
 	
-	void draw(bool conn);
+	void draw();
 	void event(SDL_Event& e);
 	void lose_mfocus();
 	void lose_kfocus();
@@ -34,7 +46,7 @@ public:
 	PlayerMenu(SDL_Renderer* r);
 	~PlayerMenu();
 	
-	void draw(bool conn);
+	void draw();
 	void event(SDL_Event& e);
 	void lose_mfocus();
 	void lose_kfocus();
@@ -44,7 +56,7 @@ public:
 	SettingMenu(SDL_Renderer* r);
 	~SettingMenu();
 	
-	void draw(bool conn);	
+	void draw();	
 	void event(SDL_Event& e);
 	void lose_mfocus();
 	void lose_kfocus();
@@ -66,6 +78,9 @@ class MainScr : public State{
 		
 	void set_mfocus();
 	void set_kfocus();
+	void set_conn(bool c);
+	
+	void m_correct(int& x, int& y);
 public:
 	MainScr(Main* up);
 	~MainScr();

@@ -7,13 +7,20 @@ endif
 
 DEF_CMP_FLG = $(DEBUG_FLG) $(INC_PTH)
 
-HEADS1 = utils.h geom.h gui.h clock.h main_scr.h texts.h
+HEADS1 = \
+utils.h \
+geom.h \
+gui.h \
+clock.h \
+main_scr.h \
+texts.h \
+utf8.h
 
 OBJ_NAMES = $(patsubst %.h,%.o, $(HEADS))
 OBJ_NAMES += main.o
 OBJS = $(patsubst %.o, $(DIR)%.o, $(OBJ_NAMES))
 
-HEADS = $(HEADS1) game_query.h game_consts.h
+HEADS = $(HEADS1)
 
 ifeq ($(SYS), WINDOWS64)
 #windows64
@@ -65,13 +72,15 @@ $(EXEC): $(OBJS)
 .SECONDEXPANSION:
 $(DIR)main.o: $$(patsubst $(DIR)%.o, %.cpp, $$@) $(HEADS)
 	$(CC) $(CMP_FLG) -c $< -o $@
+$(DIR)utf8.o: $$(patsubst $(DIR)%.o, %.cpp, $$@) utf8.h
+	$(CC) $(CMP_FLG) -c $< -o $@
 $(DIR)utils.o: $$(patsubst $(DIR)%.o, %.cpp, $$@) utils.h
 	$(CC) $(CMP_FLG) -c $< -o $@
 $(DIR)geom.o: $$(patsubst $(DIR)%.o, %.cpp, $$@) geom.h
 	$(CC) $(CMP_FLG) -c $< -o $@
 $(DIR)clock.o: $$(patsubst $(DIR)%.o, %.cpp, $$@) clock.h
 	$(CC) $(CMP_FLG) -c $< -o $@
-$(DIR)texts.o: $$(patsubst $(DIR)%.o, %.cpp, $$@) images.h
+$(DIR)texts.o: $$(patsubst $(DIR)%.o, %.cpp, $$@) texts.h
 	$(CC) $(CMP_FLG) -c $< -o $@
 $(DIR)gui.o: $$(patsubst $(DIR)%.o, %.cpp, $$@) $(HEADS)
 	$(CC) $(CMP_FLG) -c $< -o $@
