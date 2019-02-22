@@ -7,10 +7,11 @@
 #include <SDL2/SDL_mixer.h>
 #include <enet/enet.h>
 
+#include "gui.h"
+#include "texts.h"
+
 SDL_Window*  screen;
 SDL_Renderer* rend;
-
-#include "gui.h"
 
 void close_rend(){
 	SDL_DestroyRenderer(rend);
@@ -55,10 +56,10 @@ int main(int argc, char* argv[]){
 	}
 	atexit(enet_deinitialize);
 	
-	/*if(!load_fonts()){
+	if(!load_fonts()){
 		fprintf(stderr, "Error while loading fonts\n%s%s\n",SDL_GetError(), TTF_GetError());
 		return 0;
-	}*/
+	}
 	
 	screen = SDL_CreateWindow(
 										"Tank Trouble",
