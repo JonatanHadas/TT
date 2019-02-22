@@ -28,13 +28,29 @@ public:
 
 class ConnectionMenu : public SubMenu{
 	bool focus_addr;
-	bool in_addr(int x, int y);
+	SDL_Rect r_addr();
 	std::string addr;
 	Msg* addr_m;
 	void reset_msg();
+	
+	Msg* wait;
+	Msg* start;
+	Msg* leave;
+	Msg* nums[4];
+	int num;
+	
+	double but_p;
+	
+	bool st_prs, lv_prs;
+	
+	bool host;
+	SDL_Rect r_start();
+	SDL_Rect r_leave();
 public:
 	ConnectionMenu(SDL_Renderer* r);
 	~ConnectionMenu();
+	
+	void set_host(bool h);
 	
 	void draw();
 	void event(SDL_Event& e);

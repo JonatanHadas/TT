@@ -23,6 +23,10 @@ void follow(double& val, double tar, double spd){
 	val += dv*dir;
 }
 
+bool in_rect(SDL_Rect r, int x, int y){
+	return x>=r.x && y>=r.y && x < r.x+r.w && y < r.y+r.h;
+}
+
 SubMenu::SubMenu(SDL_Renderer* r){
 	rend = r;
 	p = pt = 0;
@@ -50,23 +54,61 @@ void SubMenu::lose_mfocus(){
 	pt = 0;
 }
 
-#define ADDR_X 10
-#define ADDR_XX 20
-#define ADDR_Y 10
+#define ADDR_X 20
+#define ADDR_XX 40
+#define ADDR_Y 20
 
 #define ADDR_H 50
-#define ADDR_W 700
+#define ADDR_W 680
+
+#define BUT_Y 80
+#define BUT_H 100
+#define BUT_W 100
+#define START_X 20
+#define LEAVE_X 140
+#define BUT_OUT_X 260
 
 ConnectionMenu::ConnectionMenu(SDL_Renderer* r) : SubMenu(r){
 	focus_addr = false;
 	addr_m = NULL;
 	reset_msg();
+	nums[0] = new Msg("Go!", {0,0,0,255},FONT_NRM, rend);
+	nums[1] = new Msg("1", {0,0,0,255},FONT_NRM, rend);
+	nums[2] = new Msg("2", {0,0,0,255},FONT_NRM, rend);
+	nums[3] = new Msg("3", {0,0,0,255},FONT_NRM, rend);
+	start = new Msg("Start", {0,0,0,255},FONT_NRM, rend);
+	leave = new Msg("Leave", {0,0,0,255},FONT_NRM, rend);
+	wait = new Msg("Wait", {0,0,0,255},FONT_NRM, rend);
+	num = -1;
+	host = false;
+	but_p = -1;
+	st_prs = lv_prs = false;
 }
 ConnectionMenu::~ConnectionMenu(){
 	if(addr_m) delete addr_m;
+	delete nums[0];
+	delete nums[1];
+	delete nums[2];
+	delete nums[3];
+	delete start; delete leave; delete wait;
 }
-bool ConnectionMenu::in_addr(int x, int y){
-	return x>=ADDR_X && y>=ADDR_Y && x < ADDR_X+ADDR_W && y < ADDR_Y+ADDR_H;
+void ConnectionMenu::set_host(bool h){
+	host = h;
+}
+SDL_Rect ConnectionMenu::r_addr(){
+	SDL_Rect r;
+	r.x = ADDR_X; r.y = ADDR_Y; r.w = ADDR_W; r.h = ADDR_H;
+	return r;
+}
+SDL_Rect ConnectionMenu::r_start(){
+	SDL_Rect r;
+	r.x = START_X + but_p*BUT_OUT_X; r.y = BUT_Y; r.w = BUT_W; r.h = BUT_H;
+	return r;
+}
+SDL_Rect ConnectionMenu::r_leave(){
+	SDL_Rect r;
+	r.x = LEAVE_X + but_p*BUT_OUT_X; r.y = BUT_Y; r.w = BUT_W; r.h = BUT_H;
+	return r;
 }
 void ConnectionMenu::reset_msg(){
 	if(addr_m) delete addr_m;
@@ -76,7 +118,7 @@ void ConnectionMenu::event(SDL_Event& e){
 	SubMenu::event(e);
 	switch(e.type){
 	case SDL_MOUSEBUTTONDOWN:
-		focus_addr = in_addr(e.button.x, e.button.y);
+		focus_addr = in_rect(r_addr(), e.button.x, e.button.y);
 	case SDL_KEYDOWN:
 		switch(e.key.keysym.sym){
 		case SDLK_BACKSPACE:
@@ -98,18 +140,39 @@ void ConnectionMenu::event(SDL_Event& e){
 void ConnectionMenu::draw(){
 	draw_back(true);
 	
-	SDL_Rect r;
-	r.x = ADDR_X; r.y = ADDR_Y; r.w = ADDR_W; r.h = ADDR_H;
+	follow(but_p, conn ? 0 : -1 ,0.3);
+	
+	SDL_Rect r = r_addr();
 	int c = focus_addr ? 235 : 245;
 	SDL_SetRenderDrawColor(rend, c,c,c, 192);
 	SDL_RenderFillRect(rend, &r);
 	
-	if(in_addr(m_x, m_y)){
+	if(in_rect(r, m_x, m_y)){
 		SDL_SetRenderDrawColor(rend, 0,0,0,255);
 		SDL_RenderDrawRect(rend, &r);
 	}
 	
 	addr_m->render_centered(ADDR_XX, ADDR_Y + ADDR_H/2, AL_LEFT);
+	
+	r = r_start();
+	c = st_prs ? 235 : 245;
+	SDL_SetRenderDrawColor(rend, c,c,c, 192);
+	SDL_RenderFillRect(rend, &r);
+	if(in_rect(r, m_x, m_y)){
+		SDL_SetRenderDrawColor(rend, 0,0,0,255);
+		SDL_RenderDrawRect(rend, &r);
+	}
+	(num >= 0 ? nums[num] : (host ? start : wait))->render_centered(r.x + r.w/2, r.y+r.h/2, AL_CENTER);
+
+	r = r_leave();
+	c = lv_prs ? 235 : 245;
+	SDL_SetRenderDrawColor(rend, c,c,c, 192);
+	SDL_RenderFillRect(rend, &r);
+	if(in_rect(r, m_x, m_y)){
+		SDL_SetRenderDrawColor(rend, 0,0,0,255);
+		SDL_RenderDrawRect(rend, &r);
+	}
+	leave->render_centered(r.x + r.w/2, r.y+r.h/2, AL_CENTER);
 }
 void ConnectionMenu::lose_mfocus(){
 	SubMenu::lose_mfocus();
