@@ -10,6 +10,8 @@
 SDL_Window*  screen;
 SDL_Renderer* rend;
 
+#include "gui.h"
+
 void close_rend(){
 	SDL_DestroyRenderer(rend);
 }
@@ -87,9 +89,9 @@ int main(int argc, char* argv[]){
 	SDL_SetHint(SDL_HINT_RENDER_SCALE_QUALITY, "best");
 	//SDL_RenderSetLogicalSize(rend, 1280, 960);
 	
-	/*Main* m = new Main(rend);
+	Main* m = new Main(rend);
 	m->mainloop();
-	delete m;*/
+	delete m;
 	
 	return 0;
 }
