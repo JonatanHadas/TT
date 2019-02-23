@@ -7,13 +7,27 @@ endif
 
 DEF_CMP_FLG = $(DEBUG_FLG) $(INC_PTH)
 
-HEADS1 = utils.h geom.h gui.h clock.h game.h game_draw.h d_game_query.h game_gui.h maze.h images.h gui_util.h game_config.h texts.h
+HEADS1 = utils.h \
+geom.h \
+gui.h \
+clock.h \
+game.h \
+game_draw.h \
+d_game_query.h \
+game_gui.h \
+maze.h \
+images.h \
+gui_util.h \
+game_config.h \
+texts.h
 
 OBJ_NAMES = $(patsubst %.h,%.o, $(HEADS1))
 OBJ_NAMES += main.o
 OBJS = $(patsubst %.o, $(DIR)%.o, $(OBJ_NAMES))
 
-HEADS = $(HEADS1) game_query.h game_consts.h
+HEADS = $(HEADS1) \
+game_query.h \
+game_consts.h
 
 ifeq ($(SYS), WINDOWS64)
 #windows64
