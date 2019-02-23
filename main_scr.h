@@ -4,7 +4,8 @@
 #include "gui.h"
 #include "texts.h"
 #include "keys.h"
-#include "SDL2/SDL.h"
+#include <SDL2/SDL.h>
+#include "network.h"
 #include <string>
 #include <vector>
 #include <set>
@@ -42,11 +43,18 @@ class ConnectionMenu : public SubMenu{
 	Msg* start;
 	Msg* leave;
 	Msg* nums[4];
+	
+	Msg* err_msg;
+	double err_p;
 	int num;
 	
 	double but_p;
 	
 	bool st_prs, lv_prs;
+	
+	int time;
+	double load_p;
+	Msg* loading[4];
 	
 	SDL_Rect r_start();
 	SDL_Rect r_leave();
@@ -58,6 +66,10 @@ public:
 	void event(SDL_Event& e);
 	void lose_mfocus();
 	void lose_kfocus();
+	
+	void set_err(const char* msg);
+	
+	const char* get_address();
 };
 class PlayerMenu : public SubMenu{
 public:
@@ -164,13 +176,23 @@ class MainScr : public State{
 	void set_mfocus();
 	void set_kfocus();
 	
+	Client* clnt;
 	
+	bool ihost;
+	bool iconn;
+	
+	int conn_timer;
+		
 	void m_correct(int& x, int& y);
 public:
-	MainScr(Main* up);
+	MainScr(Main* up, Client* c);
 	~MainScr();
 	
+	void connect();
+	void leave();
+	
 	bool get_conn();
+	bool get_conn_try();
 	bool get_host();
 
 	bool step();

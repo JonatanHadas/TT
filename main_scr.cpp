@@ -65,6 +65,12 @@ void SubMenu::lose_mfocus(){
 #define LEAVE_X 140
 #define BUT_OUT_X 260
 
+#define ERR_X 30
+#define ERR_Y 130
+#define ERR_HX -500
+
+#define LOAD_T 30
+
 ConnectionMenu::ConnectionMenu(SDL_Renderer* r, MainScr* m) : SubMenu(r, m){
 	focus_addr = false;
 	addr_m = NULL;
@@ -77,18 +83,36 @@ ConnectionMenu::ConnectionMenu(SDL_Renderer* r, MainScr* m) : SubMenu(r, m){
 	leave = new Msg("Leave", {0,0,0,255},FONT_NRM, rend);
 	wait = new Msg("Wait", {0,0,0,255},FONT_NRM, rend);
 	addr_fil = new Msg("Enter Server Address", {0,0,0,64},FONT_NRM, rend);
+	err_msg = NULL; set_err("");
+	loading[0] = new Msg("Loading", {0,0,0,255},FONT_NRM, rend);
+	loading[1] = new Msg("Loading.", {0,0,0,255},FONT_NRM, rend);
+	loading[2] = new Msg("Loading..", {0,0,0,255},FONT_NRM, rend);
+	loading[3] = new Msg("Loading...", {0,0,0,255},FONT_NRM, rend);
+	load_p = err_p = ERR_HX;
 	num = -1;
 	but_p = -1;
 	st_prs = lv_prs = false;
 }
 ConnectionMenu::~ConnectionMenu(){
 	if(addr_m) delete addr_m;
+	delete err_msg;
 	delete addr_fil;
 	delete nums[0];
 	delete nums[1];
 	delete nums[2];
 	delete nums[3];
+	delete loading[0];
+	delete loading[1];
+	delete loading[2];
+	delete loading[3];
 	delete start; delete leave; delete wait;
+}
+const char* ConnectionMenu::get_address(){
+	return addr.c_str();
+}
+void ConnectionMenu::set_err(const char* msg){
+	if(err_msg) delete err_msg;
+	err_msg = new Msg(msg, {128,0,0,255}, FONT_NRM, rend);
 }
 SDL_Rect ConnectionMenu::r_addr(){
 	SDL_Rect r;
@@ -113,13 +137,29 @@ void ConnectionMenu::event(SDL_Event& e){
 	SubMenu::event(e);
 	switch(e.type){
 	case SDL_MOUSEBUTTONDOWN:
-		focus_addr = in_rect(r_addr(), e.button.x, e.button.y);
+		if(e.button.button == SDL_BUTTON_LEFT){
+			focus_addr = in_rect(r_addr(), e.button.x, e.button.y) && !main->get_conn_try();
+			if(in_rect(r_leave(), e.button.x, e.button.y) && main->get_conn()) lv_prs = true;
+		}
+		break;
+	case SDL_MOUSEBUTTONUP:
+		if(e.button.button == SDL_BUTTON_LEFT){
+			if(in_rect(r_leave(), e.button.x, e.button.y) && main->get_conn() && lv_prs) {main->leave(); lv_prs = false;}
+		}
 	case SDL_KEYDOWN:
 		switch(e.key.keysym.sym){
 		case SDLK_BACKSPACE:
+		case SDLK_KP_BACKSPACE:
 			if(focus_addr && addr.size()>0){
 				utf8_pop_back(addr);
 				reset_msg();
+			}
+			break;
+		case SDLK_RETURN:
+		case SDLK_KP_ENTER:
+			if(focus_addr){
+				focus_addr = false;
+				main->connect();
 			}
 			break;
 		}
@@ -135,7 +175,11 @@ void ConnectionMenu::event(SDL_Event& e){
 void ConnectionMenu::draw(){
 	draw_back(true);
 	
+	follow(err_p, main->get_conn_try() ? ERR_HX : ERR_X, 1.5);
+	follow(load_p, main->get_conn_try() && !main->get_conn() ? ERR_X : ERR_HX, 1.5);
 	follow(but_p, main->get_conn() ? 0 : -1 ,0.3);
+	
+	if(!((SDL_GetMouseState(NULL, NULL) & SDL_BUTTON(SDL_BUTTON_LEFT)) && main->get_conn())) lv_prs = st_prs = false;
 	
 	SDL_Rect r = r_addr();
 	int c = focus_addr ? 235 : 245;
@@ -168,6 +212,11 @@ void ConnectionMenu::draw(){
 		SDL_RenderDrawRect(rend, &r);
 	}
 	leave->render_centered(r.x + r.w/2, r.y+r.h/2, AL_CENTER);
+	
+	loading[(time/LOAD_T)%4]->render_centered((int)load_p, ERR_Y, AL_LEFT);
+	err_msg->render_centered((int)err_p, ERR_Y, AL_LEFT);
+	
+	time++;
 }
 void ConnectionMenu::lose_mfocus(){
 	SubMenu::lose_mfocus();
@@ -656,7 +705,8 @@ void SettingMenu::add_player(){
 	if(non_used_inds.size()>0) non_used_inds.erase(non_used_inds.begin());
 }
 
-MainScr::MainScr(Main* up) : State(up), conn(up->get_renderer(),this), play(up->get_renderer(),this), sett(up->get_renderer(),this){
+MainScr::MainScr(Main* up, Client* c) : State(up), conn(up->get_renderer(),this), play(up->get_renderer(),this), sett(up->get_renderer(),this){
+	clnt = c;
 	conn_t = SDL_CreateTexture(	upper->get_renderer(), SDL_PIXELFORMAT_UNKNOWN,
 								SDL_TEXTUREACCESS_TARGET, SCR_W-SETT_W, SERV_H);
 	play_t = SDL_CreateTexture(	upper->get_renderer(), SDL_PIXELFORMAT_UNKNOWN,
@@ -675,6 +725,11 @@ MainScr::MainScr(Main* up) : State(up), conn(up->get_renderer(),this), play(up->
 	mfocus = kfocus = NULL;
 
 	SDL_StartTextInput();
+	
+	ihost = iconn = false;
+	
+	conn_timer = -1;
+	
 }
 MainScr::~MainScr(){
 	SDL_DestroyTexture(conn_t);
@@ -691,8 +746,7 @@ void MainScr::set_mfocus(){
 		else s = &play;
 	}
 	else s = &sett;
-
-	
+		
 	if(mfocus && s!=mfocus) mfocus->lose_mfocus();
 	mfocus = s;
 }
@@ -701,15 +755,27 @@ void MainScr::set_kfocus(){
 	if(kfocus && kfocus!=mfocus) kfocus->lose_kfocus();
 	kfocus = mfocus;
 }
+bool MainScr::get_conn_try(){
+	return clnt != NULL;
+}
 bool MainScr::get_conn(){
-	return false;
+	return iconn;
 }
 bool MainScr::get_host(){
-	return false;
+	return ihost;
 }
 void MainScr::m_correct(int& x, int& y){
 	if(x >= SCR_W - SETT_W) x-= SCR_W - SETT_W;
 	else if(y >= SERV_H) y -= SERV_H;
+}
+void MainScr::connect(){
+	clnt = new Client(conn.get_address());
+	conn_timer = 5*60;
+}
+void MainScr::leave(){
+	delete clnt;
+	clnt = NULL;
+	iconn = ihost = false;
 }
 	
 bool MainScr::step(){
@@ -743,6 +809,37 @@ bool MainScr::step(){
 		case SDL_KEYUP:
 		case SDL_TEXTINPUT:
 			kfocus->event(e);
+		}
+	}
+	if(clnt){
+		if(conn_timer>0) conn_timer--;
+		else if(conn_timer==0){
+			conn.set_err("Failed to connect to server");
+			leave();
+		}
+		NetEvent e;
+		while(true){
+			if(clnt == NULL) break;
+			if(clnt->is_error()){
+				conn.set_err(clnt->get_error());
+				leave();
+				break;
+			}
+			e=clnt->get_event();
+			if(e.type == NetEvent::TYPE_NONE) break;
+			switch(e.type){
+			case NetEvent::TYPE_CONN:
+				iconn = true;
+				conn_timer = -1;
+				break;
+			case NetEvent::TYPE_RECV:
+				delete e.data;
+				break;
+			case NetEvent::TYPE_DISC:
+				conn.set_err("Server disconnected");
+				leave();
+				break;
+			}
 		}
 	}
 	

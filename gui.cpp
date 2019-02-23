@@ -9,7 +9,7 @@ Main::Main(SDL_Renderer* renderer){
 	rend = renderer;
 	for_del = NULL;
 	chng_sz = false;
-	state = new MainScr(this);
+	state = new MainScr(this, NULL);
 }
 Main::~Main(){
 	if(state) delete state;

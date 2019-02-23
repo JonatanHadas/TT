@@ -15,11 +15,14 @@ clock.h \
 main_scr.h \
 texts.h \
 utf8.h \
-keys.h
+keys.h \
+network.h
 
-OBJ_NAMES = $(patsubst %.h,%.o, $(HEADS))
-OBJ_NAMES += main.o
-OBJS = $(patsubst %.o, $(DIR)%.o, $(OBJ_NAMES))
+GOBJ_NAMES = $(patsubst %.h,%.o, $(HEADS))
+COBJ_NAMES = $(GOBJ_NAMES) main.o
+SOBJ_NAMES = $(GOBJ_NAMES) server_main.o
+COBJS = $(patsubst %.o, $(DIR)%.o, $(COBJ_NAMES))
+SOBJS = $(patsubst %.o, $(DIR)%.o, $(SOBJ_NAMES))
 
 HEADS = $(HEADS1)
 
@@ -28,7 +31,8 @@ ifeq ($(SYS), WINDOWS64)
 CC = g++
 DIR = windows64/
 CDIR = windows64\\
-EXEC = $(DIR)tanktrouble.exe
+CEXEC = $(DIR)tanktrouble.exe
+SEXEC = $(DIR)tanktrouble_server.exe
 CLN = del
 CMP_FLG = $(DEF_CMP_FLG)
 LNK_FLG = $(LIB_PTH) -static-libgcc -static-libstdc++ -lmingw32 -lSDL2main -lSDL2 -lSDL2_image -lSDL2_ttf -lSDL2_mixer -lenet64 -lws2_32 -lwinmm
@@ -41,7 +45,8 @@ ifeq ($(SYS), WINDOWS)
 CC = g++
 DIR = windows/
 CDIR = windows\\
-EXEC = $(DIR)tanktrouble.exe
+CEXEC = $(DIR)tanktrouble.exe
+SEXEC = $(DIR)tanktrouble_server.exe
 CLN = del
 CMP_FLG = -std=c++11 $(DEF_CMP_FLG)
 LNK_FLG = $(LIB_PTH) -static-libgcc -static-libstdc++ -lmingw32 -lSDL2main -lSDL2 -lSDL2_image -lSDL2_ttf -lSDL2_mixer -lenet -lws2_32 -lwinmm
@@ -54,7 +59,8 @@ ifeq ($(SYS), LINUX)
 CC = g++
 DIR = linux/
 CDIR = $(DIR)
-EXEC = $(DIR)tanktrouble
+CEXEC = $(DIR)tanktrouble
+SEXEC = $(DIR)tanktrouble_server
 CLN = rm
 CMP_FLG = -std=c++11 $(DEF_CMP_FLG)
 LNK_FLG = $(LIB_PTH) -static-libgcc -static-libstdc++ -lSDL2 -lSDL2_image -lSDL2_ttf -lSDL2_mixer -lenet
@@ -65,13 +71,17 @@ endif
 endif
 endif
 
-all: $(EXEC)
+all: $(CEXEC) $(SEXEC)
 
-$(EXEC): $(OBJS)
-	$(CC) $(CMP_FLG) $(OBJS) -o $(EXEC) $(LNK_FLG)
+$(CEXEC): $(COBJS)
+	$(CC) $(CMP_FLG) $^ -o $@ $(LNK_FLG)
+$(SEXEC): $(SOBJS)
+	$(CC) $(CMP_FLG) $^ -o $@ $(LNK_FLG)
 
 .SECONDEXPANSION:
 $(DIR)main.o: $$(patsubst $(DIR)%.o, %.cpp, $$@) $(HEADS)
+	$(CC) $(CMP_FLG) -c $< -o $@
+$(DIR)server_main.o: $$(patsubst $(DIR)%.o, %.cpp, $$@) $(HEADS)
 	$(CC) $(CMP_FLG) -c $< -o $@
 $(DIR)keys.o: $$(patsubst $(DIR)%.o, %.cpp, $$@) keys.h
 	$(CC) $(CMP_FLG) -c $< -o $@
@@ -85,15 +95,17 @@ $(DIR)clock.o: $$(patsubst $(DIR)%.o, %.cpp, $$@) clock.h
 	$(CC) $(CMP_FLG) -c $< -o $@
 $(DIR)texts.o: $$(patsubst $(DIR)%.o, %.cpp, $$@) texts.h
 	$(CC) $(CMP_FLG) -c $< -o $@
+$(DIR)network.o: $$(patsubst $(DIR)%.o, %.cpp, $$@) network.h
+	$(CC) $(CMP_FLG) -c $< -o $@
 $(DIR)gui.o: $$(patsubst $(DIR)%.o, %.cpp, $$@) $(HEADS)
 	$(CC) $(CMP_FLG) -c $< -o $@
 $(DIR)main_scr.o: $$(patsubst $(DIR)%.o, %.cpp, $$@) $(HEADS)
 	$(CC) $(CMP_FLG) -c $< -o $@
 
-CEXEC = $(patsubst $(DIR)%,$(CDIR)%, $(EXEC))
-COBJS = $(patsubst $(DIR)%,$(CDIR)%, $(OBJS))
+CLEXEC = $(patsubst $(DIR)%,$(CDIR)%, $(EXEC))
+CLOBJS = $(patsubst $(DIR)%,$(CDIR)%, $(OBJS))
 
 clean_all:
-	$(CLN) $(CEXEC) $(COBJS)
+	$(CLN) $(CLEXEC) $(CLOBJS)
 clean:
-	$(CLN) $(COBJS)
+	$(CLN) $(CLOBJS)

@@ -1,0 +1,1 @@
+windows64\tanktrouble_server.exe || windows\tanktrouble_server.exe
