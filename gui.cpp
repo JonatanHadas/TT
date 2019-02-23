@@ -22,9 +22,11 @@ void Main::draw_back(){
 void Main::mainloop(){
 	while(true){
 		clk.tick(FPS);
+		
 		if(state->step()) return;
 		if(for_del) delete for_del;
 		for_del = NULL;
+		
 		SDL_RenderPresent(rend);
 		
 		if(chng_sz) SDL_RenderSetLogicalSize(rend, w,h);

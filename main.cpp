@@ -10,6 +10,7 @@
 #include "gui.h"
 #include "texts.h"
 #include "keys.h"
+#include "images.h"
 
 SDL_Window*  screen;
 SDL_Renderer* rend;
@@ -87,14 +88,14 @@ int main(int argc, char* argv[]){
 	}
 	atexit(close_rend);
 	
-	/*if(!load_images(rend)){
+	if(!load_images(rend)){
 		fprintf(stderr, "Error while loading images\n%s%s\n",SDL_GetError(), IMG_GetError());
 		return 0;
-	}*/
+	}
 	
 	SDL_SetHint(SDL_HINT_RENDER_SCALE_QUALITY, "best");
 	//SDL_RenderSetLogicalSize(rend, 1280, 960);
-	
+
 	Main* m = new Main(rend);
 	m->mainloop();
 	delete m;

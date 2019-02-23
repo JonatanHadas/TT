@@ -16,7 +16,15 @@ main_scr.h \
 texts.h \
 utf8.h \
 keys.h \
-network.h
+network.h \
+game.h \
+game_draw.h \
+d_game_query.h \
+game_gui.h \
+maze.h \
+images.h \
+gui_util.h \
+game_config.h \
 
 GOBJ_NAMES = $(patsubst %.h,%.o, $(HEADS))
 COBJ_NAMES = $(GOBJ_NAMES) main.o
@@ -24,7 +32,9 @@ SOBJ_NAMES = $(GOBJ_NAMES) server_main.o
 COBJS = $(patsubst %.o, $(DIR)%.o, $(COBJ_NAMES))
 SOBJS = $(patsubst %.o, $(DIR)%.o, $(SOBJ_NAMES))
 
-HEADS = $(HEADS1)
+HEADS = $(HEADS1) \
+game_query.h \
+game_consts.h
 
 ifeq ($(SYS), WINDOWS64)
 #windows64
@@ -89,6 +99,8 @@ $(DIR)utf8.o: $$(patsubst $(DIR)%.o, %.cpp, $$@) utf8.h
 	$(CC) $(CMP_FLG) -c $< -o $@
 $(DIR)utils.o: $$(patsubst $(DIR)%.o, %.cpp, $$@) utils.h
 	$(CC) $(CMP_FLG) -c $< -o $@
+$(DIR)gui_util.o: $$(patsubst $(DIR)%.o, %.cpp, $$@) utils.h
+	$(CC) $(CMP_FLG) -c $< -o $@
 $(DIR)geom.o: $$(patsubst $(DIR)%.o, %.cpp, $$@) geom.h
 	$(CC) $(CMP_FLG) -c $< -o $@
 $(DIR)clock.o: $$(patsubst $(DIR)%.o, %.cpp, $$@) clock.h
@@ -96,8 +108,22 @@ $(DIR)clock.o: $$(patsubst $(DIR)%.o, %.cpp, $$@) clock.h
 $(DIR)texts.o: $$(patsubst $(DIR)%.o, %.cpp, $$@) texts.h
 	$(CC) $(CMP_FLG) -c $< -o $@
 $(DIR)network.o: $$(patsubst $(DIR)%.o, %.cpp, $$@) network.h
+$(CC) $(CMP_FLG) -c $< -o $@
+$(DIR)images.o: $$(patsubst $(DIR)%.o, %.cpp, $$@) images.h
+	$(CC) $(CMP_FLG) -c $< -o $@
+$(DIR)maze.o: $$(patsubst $(DIR)%.o, %.cpp, $$@) maze.h
+	$(CC) $(CMP_FLG) -c $< -o $@
+$(DIR)game_config.o: $$(patsubst $(DIR)%.o, %.cpp, $$@) game_config.h
 	$(CC) $(CMP_FLG) -c $< -o $@
 $(DIR)gui.o: $$(patsubst $(DIR)%.o, %.cpp, $$@) $(HEADS)
+	$(CC) $(CMP_FLG) -c $< -o $@
+$(DIR)game.o: $$(patsubst $(DIR)%.o, %.cpp, $$@) $(HEADS)
+	$(CC) $(CMP_FLG) -c $< -o $@
+$(DIR)d_game_query.o: $$(patsubst $(DIR)%.o, %.cpp, $$@) $(HEADS)
+	$(CC) $(CMP_FLG) -c $< -o $@
+$(DIR)game_draw.o: $$(patsubst $(DIR)%.o, %.cpp, $$@) $(HEADS)
+	$(CC) $(CMP_FLG) -c $< -o $@
+$(DIR)game_gui.o: $$(patsubst $(DIR)%.o, %.cpp, $$@) $(HEADS)
 	$(CC) $(CMP_FLG) -c $< -o $@
 $(DIR)main_scr.o: $$(patsubst $(DIR)%.o, %.cpp, $$@) $(HEADS)
 	$(CC) $(CMP_FLG) -c $< -o $@
