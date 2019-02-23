@@ -14,7 +14,8 @@ gui.h \
 clock.h \
 main_scr.h \
 texts.h \
-utf8.h
+utf8.h \
+keys.h
 
 OBJ_NAMES = $(patsubst %.h,%.o, $(HEADS))
 OBJ_NAMES += main.o
@@ -71,6 +72,8 @@ $(EXEC): $(OBJS)
 
 .SECONDEXPANSION:
 $(DIR)main.o: $$(patsubst $(DIR)%.o, %.cpp, $$@) $(HEADS)
+	$(CC) $(CMP_FLG) -c $< -o $@
+$(DIR)keys.o: $$(patsubst $(DIR)%.o, %.cpp, $$@) keys.h
 	$(CC) $(CMP_FLG) -c $< -o $@
 $(DIR)utf8.o: $$(patsubst $(DIR)%.o, %.cpp, $$@) utf8.h
 	$(CC) $(CMP_FLG) -c $< -o $@

@@ -9,6 +9,7 @@
 
 #include "gui.h"
 #include "texts.h"
+#include "keys.h"
 
 SDL_Window*  screen;
 SDL_Renderer* rend;
@@ -58,6 +59,10 @@ int main(int argc, char* argv[]){
 	
 	if(!load_fonts()){
 		fprintf(stderr, "Error while loading fonts\n%s%s\n",SDL_GetError(), TTF_GetError());
+		return 0;
+	}
+	if(!load_keys()){
+		fprintf(stderr, "Error while loading keysets\n");
 		return 0;
 	}
 	

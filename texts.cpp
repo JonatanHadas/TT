@@ -55,6 +55,7 @@ Msg::Msg(const char* text, SDL_Color color, FontType t, SDL_Renderer* renderer){
 		img = SDL_CreateTextureFromSurface(rend, surf);
 		if(img == NULL){w = -1; h = -1;}
 		else{ w = surf->w; h = surf->h;}
+		SDL_SetTextureAlphaMod(img, color.a);
 		SDL_FreeSurface(surf);
 	}
 }
