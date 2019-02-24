@@ -12,6 +12,8 @@
 #include <math.h>
 #include "utf8.h"
 
+#include "encoding.h"
+
 #include <stdio.h>
 
 void follow(double& val, double tar, double spd){
@@ -224,7 +226,55 @@ void ConnectionMenu::lose_mfocus(){
 void ConnectionMenu::lose_kfocus(){
 	focus_addr = false;
 }
+
+#define PLR_X 30
+#define PLR_Y 30
+#define PLR_S 40
+#define SEP_S 20
+#define PLR_SY 900
+
+#define PLR_TKW 60
+#define PLR_TKH 33
+#define PLR_TXX 70
 	
+CPlayerData::CPlayerData(int c, int t, SDL_Renderer* r){
+	rend = r;
+	img = NULL; name_m = NULL;
+	set_name("");
+	set_col(c);
+	team = t;
+}
+CPlayerData::~CPlayerData(){
+	if(img) delete img;
+	if(name_m) delete name_m;
+}
+void CPlayerData::set_col(int i){
+	col = i;
+	if(img) delete img;
+	img = new TankImg();
+	generate_tank(col, rend, img);
+}
+int CPlayerData::get_col(){
+	return col;
+}
+void CPlayerData::set_name(const char* n){
+	name = n;
+	if(name_m) delete name_m;
+	name_m = new Msg(name.size()>0 ? name.c_str() : "---", {0,0,0,255}, FONT_NRM, rend);
+}
+std::string CPlayerData::get_name(){
+	return name;
+}
+void CPlayerData::draw(int y){
+	SDL_Rect r;
+	r.w = PLR_TKW; r.h = PLR_TKH;
+	r.x = PLR_X;
+	r.y = y - r.h/2;
+	SDL_RenderCopy(rend, img->image, NULL, &r);
+	
+	name_m->render_centered(PLR_X + PLR_TXX, y, AL_LEFT);
+}
+
 PlayerMenu::PlayerMenu(SDL_Renderer* r, MainScr* m) : SubMenu(r, m){
 }
 PlayerMenu::~PlayerMenu(){
@@ -235,12 +285,41 @@ void PlayerMenu::event(SDL_Event& e){
 }
 void PlayerMenu::draw(){
 	draw_back(main->get_conn());
+	
+	if(!main->get_conn()){
+		players.clear();
+		ys.clear();
+		return ;
+	}
+	
+	int y = PLR_Y;
+	double spd = 3;
+	
+	for(auto it = players.begin(); it != players.end(); it++){
+		int id = it->first;
+		follow(ys[id], y, spd);
+		players[id]->draw(ys[id]);
+		y += PLR_S;
+	}
+	
 }
 void PlayerMenu::lose_mfocus(){
 	SubMenu::lose_mfocus();
 }
 void PlayerMenu::lose_kfocus(){
 	
+}
+void PlayerMenu::add_player(int id, int c, int t){
+	players.insert({id, new CPlayerData(c,t,rend)});
+	ys.insert({id, PLR_SY});
+}
+void PlayerMenu::remove_player(int id){
+	delete players[id];
+	players.erase(id);
+	ys.erase(id);
+}
+void PlayerMenu::update_name(int id, const char* name){
+	players[id]->set_name(name);
 }
 	
 #define PLST_W 480
@@ -311,6 +390,11 @@ PlayerSetting::~PlayerSetting(){
 void PlayerSetting::update_msg(){
 	if(name_m) delete name_m;
 	name_m = new Msg(name.c_str(), {0,0,0,255}, FONT_NRM, rend);
+}
+bool PlayerSetting::get_msg_upd(){
+	bool ret = msg_upd;
+	msg_upd = false;
+	return ret;
 }
 void PlayerSetting::update_keys(){
 	if(k_fd == NULL || p.fd != get_keyset(ind).fd){
@@ -383,6 +467,7 @@ bool PlayerSetting::event(SDL_Event& e){
 			if(in_rect(get_rect(FOCUS_LT), m_x, m_y)) focus = FOCUS_LT;
 			if(in_rect(get_rect(FOCUS_SHT), m_x, m_y)) focus = FOCUS_SHT;
 			if(in_rect(get_rect(FOCUS_NAME), m_x, m_y)) focus = FOCUS_NAME;
+			msg_upd = true;
 		}
 		break;
 	case SDL_MOUSEBUTTONUP:
@@ -424,6 +509,7 @@ bool PlayerSetting::event(SDL_Event& e){
 			case SDLK_RETURN:
 			case SDLK_KP_ENTER:
 				focus = FOCUS_NONE;
+				msg_upd = true;
 				break;
 			}
 			break;
@@ -506,6 +592,7 @@ void PlayerSetting::lose_mfocus(){
 }
 void PlayerSetting::lose_kfocus(){
 	focus = FOCUS_NONE;
+	msg_upd = true;
 }
 	
 KeySet PlayerSetting::get_keys(){
@@ -514,6 +601,15 @@ KeySet PlayerSetting::get_keys(){
 	
 int PlayerSetting::get_ind(){
 	return ind;
+}
+const char* PlayerSetting::get_name(){
+	return name.c_str();
+}
+int SettingMenu::get_player_num(){
+	return players.size();
+}
+const char* SettingMenu::get_name(int i){
+	return players[i]->get_name();
 }
 
 #define CROSS_S 50
@@ -599,6 +695,9 @@ void SettingMenu::set_mfocus(){
 }
 	
 void SettingMenu::set_kfocus(){
+	if(kfocus && kfocus->get_msg_upd()) main->update_name(get_ind(kfocus));
+	
+	
 	if(kfocus && kfocus!=mfocus) kfocus->lose_kfocus();
 	kfocus = mfocus;
 }
@@ -654,6 +753,7 @@ void SettingMenu::event(SDL_Event& e){
 			if(mfocus) if(mfocus->event(e)){
 				non_used_inds.insert(players[mfi]->get_ind());
 				delete players[mfi];
+				main->remove_player(mfi);
 				if(kfocus == players[mfi]) kfocus = NULL;
 				SDL_DestroyTexture(player_ts[mfi]);
 				players.erase(players.begin() + mfi);
@@ -685,6 +785,7 @@ void SettingMenu::event(SDL_Event& e){
 			}
 			break;
 	}
+	if(kfocus && kfocus->get_msg_upd()) main->update_name(get_ind(kfocus));
 }
 void SettingMenu::lose_mfocus(){
 	SubMenu::lose_mfocus();
@@ -695,6 +796,10 @@ void SettingMenu::lose_kfocus(){
 	if(kfocus) kfocus->lose_kfocus();
 	kfocus = NULL;
 }
+int SettingMenu::get_ind(PlayerSetting* pl){
+	for(int i = 0; i<players.size(); i++) if(players[i] == pl) return i;
+	return -1;
+}
 
 void SettingMenu::add_player(){
 	players.push_back(new PlayerSetting(rend,
@@ -703,6 +808,7 @@ void SettingMenu::add_player(){
 											PLST_W, PLST_H));
 	SDL_SetTextureBlendMode(player_ts.back(), SDL_BLENDMODE_BLEND);
 	if(non_used_inds.size()>0) non_used_inds.erase(non_used_inds.begin());
+	main->add_player();
 }
 
 MainScr::MainScr(Main* up, Client* c) : State(up), conn(up->get_renderer(),this), play(up->get_renderer(),this), sett(up->get_renderer(),this){
@@ -736,6 +842,7 @@ MainScr::~MainScr(){
 	SDL_DestroyTexture(play_t);
 	SDL_DestroyTexture(sett_t);
 	SDL_StopTextInput();
+	
 }
 
 void MainScr::set_mfocus(){
@@ -786,6 +893,7 @@ bool MainScr::step(){
 	while(SDL_PollEvent(&e)){
 		switch(e.type){
 		case SDL_QUIT:
+			if(clnt) leave();
 			return true;
 		case SDL_MOUSEMOTION:
 			m_x = e.motion.x;
@@ -804,6 +912,7 @@ bool MainScr::step(){
 		case SDL_KEYDOWN:
 			switch(e.key.keysym.sym){
 			case SDLK_ESCAPE:
+				if(clnt) leave();
 				return true;
 			}
 		case SDL_KEYUP:
@@ -826,13 +935,45 @@ bool MainScr::step(){
 				break;
 			}
 			e=clnt->get_event();
+			char* cur;
+			char h,hh, str[1000];
+			int i,c,t;
 			if(e.type == NetEvent::TYPE_NONE) break;
 			switch(e.type){
 			case NetEvent::TYPE_CONN:
 				iconn = true;
+				send_players();
 				conn_timer = -1;
 				break;
 			case NetEvent::TYPE_RECV:
+				cur = e.data;
+				cur = decode_char(cur, h);
+				switch(h){
+				case '\x00':
+					cur = decode_char(cur, hh);
+					switch(hh){
+					case '\x00':
+						break;
+					case '\x01':
+						cur = decode_int(cur, i);
+						cur = decode_int(cur, t);
+						cur = decode_int(cur, c);
+						play.add_player(i,c,t);
+						break;
+					case '\x02':
+						cur = decode_int(cur, i);
+						play.remove_player(i);
+						break;
+					case '\x03':
+						cur = decode_int(cur, i);
+						cur = decode_str(cur, str);
+						play.update_name(i, str);
+						break;
+					}
+					break;
+				}
+				
+			
 				delete e.data;
 				break;
 			case NetEvent::TYPE_DISC:
@@ -867,4 +1008,46 @@ bool MainScr::step(){
 	SDL_RenderCopy(upper->get_renderer(), sett_t, NULL, &r);
 	
 	return false;
+}
+
+void MainScr::send_players(){
+	for(int i = 0; i<sett.get_player_num(); i++){
+		add_player();
+		update_name(i);
+	}
+}
+
+void MainScr::add_player(){
+	if(!iconn) return;
+	char data[100];
+	char* end;
+	
+	end = data;
+	end = encode_char(end, '\x00');
+	end = encode_char(end, '\x01');
+	clnt->send(data, end-data, PROTO_REL);
+}
+void MainScr::remove_player(int ind){
+	if(!iconn) return;
+	
+	char data[100];
+	char* end;
+	
+	end = data;
+	end = encode_char(end, '\x00');
+	end = encode_char(end, '\x02');
+	end = encode_int(end, ind);
+	clnt->send(data, end-data, PROTO_REL);
+}
+void MainScr::update_name(int i){
+	if(!iconn) return;
+	char data[100];
+	char* end;
+		
+	end = data;
+	end = encode_char(end, '\x00');
+	end = encode_char(end, '\x03');
+	end = encode_int(end, i);
+	end = encode_str(end, sett.get_name(i));
+	clnt->send(data, end-data, PROTO_REL);
 }

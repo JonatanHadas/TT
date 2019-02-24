@@ -46,6 +46,7 @@ public:
 	NetEvent get_event();
 	
 	void send(char* data, int len, int peer_id, Proto p);
+	void send_all(char* data, int len, Proto p);
 };
 
 class Client{

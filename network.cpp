@@ -83,7 +83,9 @@ void Server::send(char* data, int len, int peer_id, Proto p){
 		enet_host_flush(host);
 	}
 }
-
+void Server::send_all(char* data, int len, Proto p){
+	for(auto it = peers.begin(); it!=peers.end(); it++) send(data,len, it->first, p);
+}
 
 Client::Client(const char* address){
 	addr = address;

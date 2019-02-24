@@ -27,7 +27,19 @@
 -sfx
 -vfx
 
+-menus
+  =connection menu
+  ~local settings
+    =key selection
+    -
+  -global settings
+  -player list
+	
+  
 
 -game extrapolation
 
 -network
+  =connection
+  -setup transmision
+  -game transmission

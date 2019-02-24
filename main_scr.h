@@ -4,6 +4,7 @@
 #include "gui.h"
 #include "texts.h"
 #include "keys.h"
+#include "images.h"
 #include <SDL2/SDL.h>
 #include "network.h"
 #include <string>
@@ -71,7 +72,28 @@ public:
 	
 	const char* get_address();
 };
+
+class CPlayerData{
+	Msg* name_m;
+	TankImg* img;
+	int col;
+	std::string name;
+	SDL_Renderer* rend;
+public:
+	int team;
+	CPlayerData(int c, int t, SDL_Renderer* r);
+	~CPlayerData();
+	void set_col(int i);
+	int get_col();
+	void set_name(const char* name);
+	std::string get_name();
+	
+	void draw(int y);
+};
+
 class PlayerMenu : public SubMenu{
+	std::map<int, CPlayerData*> players;
+	std::map<int, double> ys;
 public:
 	PlayerMenu(SDL_Renderer* r, MainScr* main);
 	~PlayerMenu();
@@ -80,6 +102,10 @@ public:
 	void event(SDL_Event& e);
 	void lose_mfocus();
 	void lose_kfocus();
+	
+	void add_player(int id, int c, int t);
+	void remove_player(int id);
+	void update_name(int id, const char* name);
 };
 
 class PlayerSetting{
@@ -95,6 +121,8 @@ class PlayerSetting{
 	
 	SDL_Texture* cross[2];
 	bool x_prs;
+	
+	bool msg_upd;
 	
 	int m_x, m_y;
 	
@@ -125,6 +153,9 @@ public:
 	void lose_kfocus();
 	
 	KeySet get_keys();
+	const char* get_name();
+	
+	bool get_msg_upd();
 	
 	int get_ind();
 };
@@ -145,6 +176,8 @@ class SettingMenu : public SubMenu{
 	void set_kfocus();
 	
 	SDL_Rect get_players_rect();
+	
+	int get_ind(PlayerSetting* pl);
 public:
 	SettingMenu(SDL_Renderer* r, MainScr* main);
 	~SettingMenu();
@@ -155,6 +188,10 @@ public:
 	void lose_kfocus();
 	
 	void add_player();
+	
+	int get_player_num();
+	const char* get_name(int i);
+
 	
 	std::vector<PlayerSetting*>& get_players();
 };
@@ -184,6 +221,8 @@ class MainScr : public State{
 	int conn_timer;
 		
 	void m_correct(int& x, int& y);
+	
+	void send_players();
 public:
 	MainScr(Main* up, Client* c);
 	~MainScr();
@@ -196,6 +235,11 @@ public:
 	bool get_host();
 
 	bool step();
+	
+	
+	void add_player();
+	void remove_player(int ind);
+	void update_name(int i);
 };
 
 #endif

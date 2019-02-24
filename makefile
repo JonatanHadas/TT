@@ -25,8 +25,10 @@ maze.h \
 images.h \
 gui_util.h \
 game_config.h \
+encoding.h \
+game_setup.h \
 
-GOBJ_NAMES = $(patsubst %.h,%.o, $(HEADS))
+GOBJ_NAMES = $(patsubst %.h,%.o, $(HEADS1))
 COBJ_NAMES = $(GOBJ_NAMES) main.o
 SOBJ_NAMES = $(GOBJ_NAMES) server_main.o
 COBJS = $(patsubst %.o, $(DIR)%.o, $(COBJ_NAMES))
@@ -108,7 +110,7 @@ $(DIR)clock.o: $$(patsubst $(DIR)%.o, %.cpp, $$@) clock.h
 $(DIR)texts.o: $$(patsubst $(DIR)%.o, %.cpp, $$@) texts.h
 	$(CC) $(CMP_FLG) -c $< -o $@
 $(DIR)network.o: $$(patsubst $(DIR)%.o, %.cpp, $$@) network.h
-$(CC) $(CMP_FLG) -c $< -o $@
+	$(CC) $(CMP_FLG) -c $< -o $@
 $(DIR)images.o: $$(patsubst $(DIR)%.o, %.cpp, $$@) images.h
 	$(CC) $(CMP_FLG) -c $< -o $@
 $(DIR)maze.o: $$(patsubst $(DIR)%.o, %.cpp, $$@) maze.h
@@ -127,9 +129,13 @@ $(DIR)game_gui.o: $$(patsubst $(DIR)%.o, %.cpp, $$@) $(HEADS)
 	$(CC) $(CMP_FLG) -c $< -o $@
 $(DIR)main_scr.o: $$(patsubst $(DIR)%.o, %.cpp, $$@) $(HEADS)
 	$(CC) $(CMP_FLG) -c $< -o $@
+$(DIR)encoding.o: $$(patsubst $(DIR)%.o, %.cpp, $$@) $(HEADS)
+	$(CC) $(CMP_FLG) -c $< -o $@
+$(DIR)game_setup.o: $$(patsubst $(DIR)%.o, %.cpp, $$@) $(HEADS)
+	$(CC) $(CMP_FLG) -c $< -o $@
 
-CLEXEC = $(patsubst $(DIR)%,$(CDIR)%, $(EXEC))
-CLOBJS = $(patsubst $(DIR)%,$(CDIR)%, $(OBJS))
+CLEXEC = $(patsubst $(DIR)%,$(CDIR)%, $(CEXEC)) $(patsubst $(DIR)%,$(CDIR)%, $(SEXEC))
+CLOBJS = $(patsubst $(DIR)%,$(CDIR)%, $(COBJS)) $(patsubst $(DIR)%,$(CDIR)%, $(SOBJS))
 
 clean_all:
 	$(CLN) $(CLEXEC) $(CLOBJS)
