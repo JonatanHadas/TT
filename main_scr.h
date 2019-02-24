@@ -179,6 +179,8 @@ class SettingMenu : public SubMenu{
 	SDL_Texture* players_t;
 	SDL_Texture* playera_t[2];
 	
+	double y, scr_y, scr_t;
+	
 	bool a_prs;
 	
 	PlayerSetting* mfocus;

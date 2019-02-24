@@ -677,6 +677,9 @@ void PlayerSetting::update_col(int c){
 #define CROSS_S 50
 #define CROSS_W 20
 
+#define SET_H 300
+#define SCR_S 50
+
 SettingMenu::SettingMenu(SDL_Renderer* ren, MainScr* m) : SubMenu(ren, m){
 	players_t = SDL_CreateTexture(	rend, SDL_PIXELFORMAT_UNKNOWN, SDL_TEXTUREACCESS_TARGET, 
 									PLST_W + 2*PLST_MAR, SCR_H - 2*PLST_MAR);
@@ -716,6 +719,8 @@ SettingMenu::SettingMenu(SDL_Renderer* ren, MainScr* m) : SubMenu(ren, m){
 	a_prs = false;
 	
 	mfocus = kfocus = NULL;
+	
+	scr_y = scr_t = p = 0;
 
 	add_player();
 }
@@ -742,7 +747,7 @@ void SettingMenu::set_mfocus(){
 	SDL_Rect pr = get_players_rect();
 	if(in_rect(pr,m_x, m_y)){
 		SDL_Rect r;
-		r.w = PLST_W; r.h = PLST_H; r.x = PLST_MAR+pr.x; r.y = PLST_MAR+pr.y;
+		r.w = PLST_W; r.h = PLST_H; r.x = PLST_MAR+pr.x; r.y = PLST_MAR+pr.y - scr_y;
 		for(int i = 0; i<players.size(); i++, r.y += PLST_H + PLST_MAR){
 			if(in_rect(r, m_x, m_y)){
 				s = players[i];
@@ -766,14 +771,21 @@ void SettingMenu::set_kfocus(){
 void SettingMenu::draw(){
 	draw_back(true);
 	
+	
+	int max_scr = PLST_MAR + (PLST_MAR+PLST_H)*(players.size()+1) - get_players_rect().h;
+	if(scr_t > max_scr) scr_t = max_scr;
+	if(scr_t < 0) scr_t = 0;
+	follow(scr_y, scr_t, 5.0);
+	follow(y, main->get_conn() ? SET_H : 0, 1.5);
+	
 	if(!(SDL_GetMouseState(NULL,NULL) & SDL_BUTTON(SDL_BUTTON_LEFT))) a_prs = false; 
 	
 	SDL_Texture* tar = SDL_GetRenderTarget(rend);
 	SDL_SetRenderTarget(rend, players_t);
 	SDL_SetRenderDrawColor(rend, 255,255,255,0);
 	SDL_RenderClear(rend);
-	SDL_Rect r;
-	r.x = PLST_MAR; r.y = PLST_MAR; r.w = PLST_W; r.h = PLST_H;
+	SDL_Rect r,sr;
+	r.x = PLST_MAR; r.y = PLST_MAR - scr_y; r.w = PLST_W; r.h = PLST_H;
 	for(int i = 0; i<players.size(); i++, r.y += PLST_H + PLST_MAR){
 		SDL_SetRenderTarget(rend, player_ts[i]);
 		players[i]->draw();
@@ -787,7 +799,8 @@ void SettingMenu::draw(){
 	
 	SDL_SetRenderTarget(rend, tar);
 	r = get_players_rect();
-	SDL_RenderCopy(rend, players_t, NULL, &r);
+	sr.x = sr.y = 0; sr.w = r.w; sr.h = r.h;
+	SDL_RenderCopy(rend, players_t, &sr, &r);
 	
 }	
 void SettingMenu::event(SDL_Event& e){
@@ -800,7 +813,7 @@ void SettingMenu::event(SDL_Event& e){
 			set_mfocus();
 			if(mfocus){
 				e.motion.x -= pr.x + PLST_MAR;
-				e.motion.y -= pr.y + PLST_MAR + (PLST_MAR+PLST_H)*mfi;
+				e.motion.y -= pr.y + PLST_MAR + (PLST_MAR+PLST_H)*mfi - scr_y;
 				mfocus->event(e);
 			}
 			break;
@@ -809,7 +822,7 @@ void SettingMenu::event(SDL_Event& e){
 		case SDL_MOUSEBUTTONUP:
 			if(mfocus){
 				e.button.x -= pr.x + PLST_MAR;
-				e.button.y -= pr.y + PLST_MAR + (PLST_MAR+PLST_H)*mfi;
+				e.button.y -= pr.y + PLST_MAR + (PLST_MAR+PLST_H)*mfi - scr_y;
 			}
 		case SDL_MOUSEWHEEL:
 			if(mfocus) if(mfocus->event(e)){
@@ -845,6 +858,10 @@ void SettingMenu::event(SDL_Event& e){
 				a_prs = false;
 				add_player();
 			}
+			break;
+		case SDL_MOUSEWHEEL:
+			if(in_rect(get_players_rect(), m_x, m_y))
+				scr_t += e.wheel.y * SCR_S * (e.wheel.direction == SDL_MOUSEWHEEL_FLIPPED ? 1 : -1);
 			break;
 	}
 	if(kfocus && kfocus->get_msg_upd()) main->update_name(get_ind(kfocus));
