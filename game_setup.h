@@ -38,6 +38,9 @@ type |   | meaning        | data
 2    | > | remove player  | id
 3    | < | change name    | player_index,name
 3    | > | change name    | id,name
+4    | < | change color   | index, color
+4    | > | change color   | id, color
+5    | > | change color   | ind, color
 
 
 */
@@ -60,6 +63,7 @@ class GameSetup{
 	void add_player(int peer_id); //add player for this peer
 	void remove_player(int peer_id, int ind);
 	void update_name(int peer_id, int ind, const char* name);
+	void update_col(int peer_id, int ind, int col);
 public:
 	GameSetup(Server* s);
 	~GameSetup();

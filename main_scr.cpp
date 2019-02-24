@@ -14,6 +14,8 @@
 
 #include "encoding.h"
 
+#include "gui_util.h"
+
 #include <stdio.h>
 
 void follow(double& val, double tar, double spd){
@@ -321,7 +323,10 @@ void PlayerMenu::remove_player(int id){
 void PlayerMenu::update_name(int id, const char* name){
 	players[id]->set_name(name);
 }
-	
+void PlayerMenu::update_col(int id, int c){
+	players[id]->set_col(c);
+}
+
 #define PLST_W 480
 #define PLST_MAR 20
 
@@ -347,8 +352,15 @@ void PlayerMenu::update_name(int id, const char* name){
 #define NAME_Y 10
 #define NAME_H 40
 #define NAME_W 300
+
+#define COL_W 32
+#define COL_H 32
+#define COL_X 340
+#define COL_Y 20
+#define COL_ROW 3
 	
-PlayerSetting::PlayerSetting(SDL_Renderer* rn, int i){
+PlayerSetting::PlayerSetting(SDL_Renderer* rn, int i, SettingMenu* upp){
+	up = upp;
 	ind = i;
 	rend = rn;
 	
@@ -375,6 +387,13 @@ PlayerSetting::PlayerSetting(SDL_Renderer* rn, int i){
 	name_m = NULL;
 	update_msg();
 	
+	col = 0;
+	
+	for(int i = 0; i<get_tex_num(); i++){
+		cols.push_back(get_tex(i, rend));
+		if(cols.back() == NULL) cols.back() = gen_uniform(rend, COL_W, COL_H, get_tank_col(i));
+	}
+	
 	focus = FOCUS_NONE;
 }
 PlayerSetting::~PlayerSetting(){
@@ -386,6 +405,7 @@ PlayerSetting::~PlayerSetting(){
 	if(k_rt) delete k_rt;
 	if(k_sht) delete k_sht;
 	if(name_m) delete name_m;
+	for(int i = 0; i<cols.size(); i++) SDL_DestroyTexture(cols[i]);
 }
 void PlayerSetting::update_msg(){
 	if(name_m) delete name_m;
@@ -396,6 +416,7 @@ bool PlayerSetting::get_msg_upd(){
 	msg_upd = false;
 	return ret;
 }
+
 void PlayerSetting::update_keys(){
 	if(k_fd == NULL || p.fd != get_keyset(ind).fd){
 		if(k_fd) delete k_fd;
@@ -443,6 +464,10 @@ SDL_Rect PlayerSetting::get_rect(Focus f){
 	case FOCUS_NAME:
 		r.x = NAME_X; r.y = NAME_Y; r.w = NAME_W; r.h = NAME_H;
 		break;
+	case FOCUS_COL:
+		r.x = COL_X; r.y = COL_Y;
+		r.w = COL_W * (focus == FOCUS_COL ? COL_ROW : 1);
+		r.h = COL_H * (focus == FOCUS_COL ? (get_tex_num()-1)/COL_ROW+1 : 1);
 	}
 	return r;
 }
@@ -459,14 +484,27 @@ bool PlayerSetting::event(SDL_Event& e){
 		break;
 	case SDL_MOUSEBUTTONDOWN:
 		if(e.button.button == SDL_BUTTON_LEFT){
-			focus = FOCUS_NONE;
-			if(in_rect(get_xr(), m_x, m_y)) x_prs = true;
-			if(in_rect(get_rect(FOCUS_BK), m_x, m_y)) focus = FOCUS_BK;
-			if(in_rect(get_rect(FOCUS_FD), m_x, m_y)) focus = FOCUS_FD;
-			if(in_rect(get_rect(FOCUS_RT), m_x, m_y)) focus = FOCUS_RT;
-			if(in_rect(get_rect(FOCUS_LT), m_x, m_y)) focus = FOCUS_LT;
-			if(in_rect(get_rect(FOCUS_SHT), m_x, m_y)) focus = FOCUS_SHT;
-			if(in_rect(get_rect(FOCUS_NAME), m_x, m_y)) focus = FOCUS_NAME;
+			if(in_rect(get_rect(FOCUS_COL), m_x, m_y) && up->get_main()->get_conn()){
+				if(focus == FOCUS_COL){
+					SDL_Rect r = get_rect(FOCUS_COL);
+					int i = (m_x-r.x)/COL_W + ((m_y-r.y)/COL_H)*COL_ROW;
+					if(i<get_tex_num()){
+						up->get_main()->update_col(up->get_ind(this), i>0 ? (i<=col ? i-1 : i) : col);
+						focus = FOCUS_NONE;
+					}
+				}
+				else focus = FOCUS_COL;
+			}
+			else{
+				focus = FOCUS_NONE;
+				if(in_rect(get_xr(), m_x, m_y)) x_prs = true;
+				if(in_rect(get_rect(FOCUS_BK), m_x, m_y)) focus = FOCUS_BK;
+				if(in_rect(get_rect(FOCUS_FD), m_x, m_y)) focus = FOCUS_FD;
+				if(in_rect(get_rect(FOCUS_RT), m_x, m_y)) focus = FOCUS_RT;
+				if(in_rect(get_rect(FOCUS_LT), m_x, m_y)) focus = FOCUS_LT;
+				if(in_rect(get_rect(FOCUS_SHT), m_x, m_y)) focus = FOCUS_SHT;
+				if(in_rect(get_rect(FOCUS_NAME), m_x, m_y)) focus = FOCUS_NAME;
+			}
 			msg_upd = true;
 		}
 		break;
@@ -584,7 +622,27 @@ void PlayerSetting::draw(){
 	name_m->render_centered(r.x + NAME_M, r.y + r.h/2, AL_LEFT);
 	SDL_SetRenderDrawColor(rend, 0,0,0,255);
 	if(in_rect(r,m_x,m_y)) SDL_RenderDrawRect(rend, &r);
-
+	
+	if(up->get_main()->get_conn()){
+		r = get_rect(FOCUS_COL);
+		SDL_SetRenderDrawColor(rend, 128,128,128,192);
+		SDL_RenderFillRect(rend, &r);
+		SDL_Rect rr,ir;
+		ir.x = ir.y = 0; ir.w = COL_W; ir.h = COL_H;
+		rr.w = COL_W; rr.h = COL_H;
+		rr.x = r.x; rr.y = r.y;
+		SDL_RenderCopy(rend, cols[col], &ir, &rr);
+		SDL_SetRenderDrawColor(rend, 0,0,0,255);
+		if(focus == FOCUS_COL){
+			if(in_rect(rr, m_x, m_y)) SDL_RenderDrawRect(rend, &rr);
+			for(int i = 1; i<get_tex_num(); i++){
+				rr.x = r.x + (COL_W)*(i%COL_ROW);
+				rr.y = r.y + (COL_H)*(i/COL_ROW);
+				SDL_RenderCopy(rend, cols[i <= col ? i-1 : i], &ir, &rr);
+				if(in_rect(rr, m_x, m_y)) SDL_RenderDrawRect(rend, &rr);
+			}
+		}
+	}
 }
 	
 void PlayerSetting::lose_mfocus(){
@@ -610,6 +668,10 @@ int SettingMenu::get_player_num(){
 }
 const char* SettingMenu::get_name(int i){
 	return players[i]->get_name();
+}
+
+void PlayerSetting::update_col(int c){
+	col = c;
 }
 
 #define CROSS_S 50
@@ -803,12 +865,19 @@ int SettingMenu::get_ind(PlayerSetting* pl){
 
 void SettingMenu::add_player(){
 	players.push_back(new PlayerSetting(rend,
-										(non_used_inds.size() > 0) ? *(non_used_inds.begin()) : players.size()));
+										(non_used_inds.size() > 0) ? *(non_used_inds.begin()) : players.size(), this));
 	player_ts.push_back(SDL_CreateTexture(	rend, SDL_PIXELFORMAT_UNKNOWN, SDL_TEXTUREACCESS_TARGET,
 											PLST_W, PLST_H));
 	SDL_SetTextureBlendMode(player_ts.back(), SDL_BLENDMODE_BLEND);
 	if(non_used_inds.size()>0) non_used_inds.erase(non_used_inds.begin());
 	main->add_player();
+}
+void SettingMenu::update_col(int i,int col){
+	players[i]->update_col(col);
+}
+	
+MainScr* SettingMenu::get_main(){
+	return main;
 }
 
 MainScr::MainScr(Main* up, Client* c) : State(up), conn(up->get_renderer(),this), play(up->get_renderer(),this), sett(up->get_renderer(),this){
@@ -969,6 +1038,16 @@ bool MainScr::step(){
 						cur = decode_str(cur, str);
 						play.update_name(i, str);
 						break;
+					case '\x04':
+						cur = decode_int(cur, i);
+						cur = decode_int(cur, c);
+						play.update_col(i, c);
+						break;
+					case '\x05':
+						cur = decode_int(cur, i);
+						cur = decode_int(cur, c);
+						sett.update_col(i, c);
+						break;
 					}
 					break;
 				}
@@ -1049,5 +1128,18 @@ void MainScr::update_name(int i){
 	end = encode_char(end, '\x03');
 	end = encode_int(end, i);
 	end = encode_str(end, sett.get_name(i));
+	clnt->send(data, end-data, PROTO_REL);
+}
+void MainScr::update_col(int i, int col){
+	if(!iconn) return;
+	
+	char data[100];
+	char* end;
+				
+	end = data;
+	end = encode_char(end, '\x00');
+	end = encode_char(end, '\x04');
+	end = encode_int(end, i);
+	end = encode_int(end, col);
 	clnt->send(data, end-data, PROTO_REL);
 }

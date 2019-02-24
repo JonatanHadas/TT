@@ -39,6 +39,10 @@ SDL_Color get_tank_col(int ind);
 SDL_Texture* tex_img(int ind, SDL_Surface* src, SDL_Renderer* rend, bool use_tex);
 void generate_tank(int ind, SDL_Renderer* rend, TankImg* img);
 
+SDL_Texture* get_tex(int ind, SDL_Renderer* rend); // NULL if no texture
+
+int get_tex_num();
+
 SDL_Texture* get_img(Img i);
 
 #endif

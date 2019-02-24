@@ -279,6 +279,15 @@ void generate_tank(int ind, SDL_Renderer* rend, TankImg* img){
 	img->image = tex_img(ind, surfs[18], rend, true);
 }
 
+SDL_Texture* get_tex(int ind, SDL_Renderer* rend){
+	if(tts[ind]->surf == NULL) return NULL;
+	
+	return SDL_CreateTextureFromSurface(rend, tts[ind]->surf);
+}
+
+int get_tex_num(){
+	return tts.size();
+}
 
 SDL_Texture* get_img(Img i){
 	return texts[get_ind(i)];

@@ -48,3 +48,32 @@ SDL_Texture* gen_circle(SDL_Renderer* rend, double rad){
 	return ret;
 }
 
+SDL_Texture* gen_uniform(SDL_Renderer* rend, int w, int h, SDL_Color col){
+	SDL_Texture* ret = SDL_CreateTexture(rend, SDL_PIXELFORMAT_RGBA8888, SDL_TEXTUREACCESS_STATIC, w,h);
+	SDL_Texture* temp = SDL_CreateTexture(rend, SDL_PIXELFORMAT_RGBA8888, SDL_TEXTUREACCESS_TARGET, w,h);
+	
+	SDL_Rect all;
+	all.x=all.y=0;
+	all.w = w;all.h = h;
+	
+	unsigned char r,g,b,a;
+	SDL_GetRenderDrawColor(rend, &r,&g,&b,&a);
+	SDL_Texture* tar = SDL_GetRenderTarget(rend);
+	SDL_SetRenderTarget(rend, temp);
+	SDL_SetRenderDrawColor(rend, col.r, col.g, col.b, col.a);
+		
+	SDL_RenderClear(rend);
+	
+	int* pixels = new int[w*h];
+
+	SDL_RenderReadPixels(rend, &all, SDL_PIXELFORMAT_RGBA8888, pixels, sizeof(int)*w);
+	SDL_UpdateTexture(ret, &all, pixels, sizeof(int)*w);
+	
+	SDL_SetTextureBlendMode(ret, SDL_BLENDMODE_BLEND);
+	
+	//clean up;
+	delete[] pixels;
+	SDL_SetRenderTarget(rend, tar);
+	SDL_DestroyTexture(temp);
+	return ret;
+}

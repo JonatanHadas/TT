@@ -77,6 +77,14 @@ void GameSetup::add_player(int peer_id){
 	end = encode_int(end, pl.team);
 	end = encode_int(end, pl.color);
 	serv->send_all(data, end-data, PROTO_REL);
+	
+	end = data;
+	end = encode_char(end, '\x00');
+	end = encode_char(end, '\x05');
+	end = encode_int(end, players[pl.id].second);
+	end = encode_int(end, pl.color);
+	serv->send(data, end-data, peer_id, PROTO_REL);
+	
 }
 void GameSetup::remove_player(int peer_id, int ind){
 	for(int i = ind+1; i<peers[peer_id]->size(); i++){
@@ -112,6 +120,30 @@ void GameSetup::update_name(int peer_id, int ind, const char* n){
 	serv->send_all(data, end-data, PROTO_REL);
 	
 }
+void GameSetup::update_col(int peer_id, int ind, int col){
+	if(color_taken(col)) return;
+	
+	peers[peer_id]->at(ind).color = col;
+	int id = peers[peer_id]->at(ind).id;
+	
+	char data[100];
+	char* end;
+	
+	end = data;
+	end = encode_char(end, '\x00');
+	end = encode_char(end, '\x04');
+	end = encode_int(end, id);
+	end = encode_int(end, col);
+	serv->send_all(data, end-data, PROTO_REL);
+	
+	end = data;
+	end = encode_char(end, '\x00');
+	end = encode_char(end, '\x05');
+	end = encode_int(end, ind);
+	end = encode_int(end, col);
+	serv->send(data, end-data, peer_id, PROTO_REL);
+	
+}
 	
 void GameSetup::mainloop(){
 	while(true){
@@ -123,7 +155,7 @@ void GameSetup::mainloop(){
 		NetEvent e=serv->get_event();
 		char* cur;
 		char h,hh, str[1000];
-		int i;
+		int i,c,t;
 		switch (e.type)
 		{
 		case NetEvent::TYPE_CONN:
@@ -138,11 +170,9 @@ void GameSetup::mainloop(){
 		case NetEvent::TYPE_RECV:
 			cur = e.data;
 			cur = decode_char(cur, h);
-			printf("%d\n", h);
 			switch(h){
 			case '\x00':
 				cur = decode_char(cur, hh);
-				printf("%d\n", hh);
 				switch(hh){
 				case '\x01':
 					add_player(e.peer_id);
@@ -156,6 +186,10 @@ void GameSetup::mainloop(){
 					cur = decode_str(cur, str);
 					update_name(e.peer_id, i, str);
 					break;
+				case '\x04':
+					cur = decode_int(cur, i);
+					cur = decode_int(cur, c);
+					update_col(e.peer_id, i, c);
 				}
 				break;
 			case '\x01':

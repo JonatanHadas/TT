@@ -13,6 +13,10 @@
 
 class MainScr;
 
+class SettingMenu;
+class PlayerMenu;
+class ConnectionMenu;
+
 class SubMenu{
 protected:
 	double p;
@@ -106,6 +110,7 @@ public:
 	void add_player(int id, int c, int t);
 	void remove_player(int id);
 	void update_name(int id, const char* name);
+	void update_col(int id, int c);
 };
 
 class PlayerSetting{
@@ -115,6 +120,7 @@ class PlayerSetting{
 		FOCUS_LT, FOCUS_RT,
 		FOCUS_SHT,
 		FOCUS_NAME,
+		FOCUS_COL,
 	};
 	int ind;
 	SDL_Renderer* rend;
@@ -142,8 +148,13 @@ class PlayerSetting{
 	void update_keys();
 	void update_msg();
 	SDL_Rect get_rect(Focus f);
+	
+	int col;
+	std::vector<SDL_Texture*> cols;
+	
+	SettingMenu* up;
 public:
-	PlayerSetting(SDL_Renderer* rend, int i);
+	PlayerSetting(SDL_Renderer* rend, int i, SettingMenu* up);
 	~PlayerSetting();
 	
 	bool event(SDL_Event& e); //true if destroyed
@@ -156,6 +167,7 @@ public:
 	const char* get_name();
 	
 	bool get_msg_upd();
+	void update_col(int col);
 	
 	int get_ind();
 };
@@ -177,7 +189,6 @@ class SettingMenu : public SubMenu{
 	
 	SDL_Rect get_players_rect();
 	
-	int get_ind(PlayerSetting* pl);
 public:
 	SettingMenu(SDL_Renderer* r, MainScr* main);
 	~SettingMenu();
@@ -191,7 +202,11 @@ public:
 	
 	int get_player_num();
 	const char* get_name(int i);
+	
+	void update_col(int i, int col);
 
+	int get_ind(PlayerSetting* pl);
+	MainScr* get_main();
 	
 	std::vector<PlayerSetting*>& get_players();
 };
@@ -240,6 +255,7 @@ public:
 	void add_player();
 	void remove_player(int ind);
 	void update_name(int i);
+	void update_col(int i, int col);
 };
 
 #endif
