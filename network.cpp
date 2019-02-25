@@ -36,10 +36,10 @@ bool Server::is_error(){
 const char* Server::get_error(){
 	return error_msg;
 }
-NetEvent Server::get_event(){
+NetEvent Server::get_event(int time){
 	ENetEvent event;
 	NetEvent ret = {NetEvent::TYPE_NONE, 0, NULL, 0};
-	while(enet_host_service(host, &event, 1000) > 0){
+	while(enet_host_service(host, &event, time) > 0){
 		switch(event.type){
 		case ENET_EVENT_TYPE_CONNECT:
 			if(ids.count(event.peer)==0){

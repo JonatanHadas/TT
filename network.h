@@ -43,7 +43,7 @@ public:
 	
 	bool is_error();
 	const char* get_error();
-	NetEvent get_event();
+	NetEvent get_event(int time);
 	
 	void send(char* data, int len, int peer_id, Proto p);
 	void send_all(char* data, int len, Proto p);

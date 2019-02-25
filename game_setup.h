@@ -3,6 +3,7 @@
 
 #include "game_config.h"
 #include "network.h"
+#include "time.h"
 #include <map>
 #include <vector>
 
@@ -80,6 +81,9 @@ class GameSetup{
 	Server* serv;
 	
 	int id;
+	int cnt;
+	
+	clock_t last_tick;
 	
 	bool color_taken(int colnum);
 	
@@ -100,6 +104,10 @@ class GameSetup{
 	void update_use_teams();
 	void update_scr_mth();
 	void update_end_mth();
+	
+	void start_count();
+	void count();
+	void stop_count();
 public:
 	GameSetup(Server* s);
 	~GameSetup();

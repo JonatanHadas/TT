@@ -256,11 +256,17 @@ void ConnectionMenu::event(SDL_Event& e){
 		if(e.button.button == SDL_BUTTON_LEFT){
 			focus_addr = in_rect(r_addr(), e.button.x, e.button.y) && !main->get_conn_try();
 			if(in_rect(r_leave(), e.button.x, e.button.y) && main->get_conn()) lv_prs = true;
+			if(in_rect(r_start(), e.button.x, e.button.y) && main->get_conn()) st_prs = true;
 		}
 		break;
 	case SDL_MOUSEBUTTONUP:
 		if(e.button.button == SDL_BUTTON_LEFT){
 			if(in_rect(r_leave(), e.button.x, e.button.y) && main->get_conn() && lv_prs) {main->leave(); lv_prs = false;}
+			if(in_rect(r_start(), e.button.x, e.button.y) && main->get_conn() && st_prs){
+				if(main->get_host() && num < 0) main->start_count();
+				else main->stop_count();
+				st_prs = false;
+			}
 		}
 	case SDL_KEYDOWN:
 		switch(e.key.keysym.sym){
@@ -339,6 +345,9 @@ void ConnectionMenu::lose_mfocus(){
 }
 void ConnectionMenu::lose_kfocus(){
 	focus_addr = false;
+}
+void ConnectionMenu::set_cnt(int n){
+	num = n;
 }
 
 #define PLR_X 30
@@ -1578,6 +1587,13 @@ bool MainScr::step(){
 						break;
 					}
 					break;
+				case '\x01':
+					cur = decode_char(cur, hh);
+					switch(hh){
+					case '\x00':
+						cur = decode_int(cur, i);
+						conn.set_cnt(i);
+					}
 				}
 				
 			
@@ -1755,5 +1771,23 @@ void MainScr::set_use_teams(bool use){
 	end = encode_char(end, '\x15');
 	end = encode_bool(end, use);
 	clnt->send(data, end-data, PROTO_REL);	
+}
+void MainScr::start_count(){
+	char data[100];
+	char* end;
+				
+	end = data;
+	end = encode_char(end, '\x01');
+	end = encode_char(end, '\x00');
+	clnt->send(data, end-data, PROTO_REL);	
+}
+void MainScr::stop_count(){
+	char data[100];
+	char* end;
+				
+	end = data;
+	end = encode_char(end, '\x01');
+	end = encode_char(end, '\x01');
+	clnt->send(data, end-data, PROTO_REL);		
 }
 

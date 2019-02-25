@@ -1,7 +1,7 @@
 #include "game_setup.h"
 #include "encoding.h"
 #include <stdio.h>
-
+#include <time.h>
 bool GameSetup::color_taken(int colnum){
 	for(auto it = peers.begin(); it!=peers.end(); it++){
 		for(int i = 0; i<it->second->size(); i++){
@@ -25,6 +25,8 @@ GameSetup::GameSetup(Server* s){
 	
 	use_teams = false;
 	team_num = 2;
+	
+	cnt = -1;
 	
 	id = 0;
 }
@@ -282,6 +284,42 @@ void GameSetup::update_use_teams(){
 	end = encode_bool(end, use_teams);
 	serv->send_all(data, end-data, PROTO_REL);
 }
+
+void GameSetup::start_count(){
+	cnt = 4;
+	count();
+}
+void GameSetup::count(){
+	if(cnt<0) return;
+	cnt--;
+	last_tick = clock();
+	char data[100];
+	char* end;
+
+	if(cnt>=0){
+		end = data;
+		end = encode_char(end, '\x01');
+		end = encode_char(end, '\x00');
+		end = encode_int(end, cnt);
+		serv->send_all(data, end-data, PROTO_REL);
+		
+		printf(cnt<=0 ? "Go!\n" : "%d\n", cnt);
+	}
+	else{
+		stop_count();
+	}
+}
+void GameSetup::stop_count(){
+	if(cnt>=0) printf("Countdown stopped\n");
+	char data[100];
+	char* end;
+	cnt = -1;
+	end = data;
+	end = encode_char(end, '\x01');
+	end = encode_char(end, '\x00');
+	end = encode_int(end, cnt);
+	serv->send_all(data, end-data, PROTO_REL);
+}
 	
 void GameSetup::mainloop(){
 	while(true){
@@ -290,7 +328,7 @@ void GameSetup::mainloop(){
 			return;
 		}
 		
-		NetEvent e=serv->get_event();
+		NetEvent e=serv->get_event(cnt >= 0 ? (last_tick - clock() + CLOCKS_PER_SEC)*1000/CLOCKS_PER_SEC : 1000);
 		char* cur;
 		char h,hh, str[1000];
 		int i,c,t;
@@ -298,6 +336,8 @@ void GameSetup::mainloop(){
 		{
 		case NetEvent::TYPE_CONN:
 			printf(	"Connection:    id=%10d\n", e.peer_id);
+			
+			stop_count();
 			
 			
 			peers.insert({e.peer_id, new std::vector<PlayerData>});
@@ -313,26 +353,30 @@ void GameSetup::mainloop(){
 			switch(h){
 			case '\x00':
 				cur = decode_char(cur, hh);
-				printf("%02x\n", hh);
 				switch(hh){
 				case '\x01':
+					stop_count();
 					add_player(e.peer_id);
 					break;
 				case '\x02':
+					stop_count();
 					cur = decode_int(cur, i);
 					remove_player(e.peer_id, i);
 					break;
 				case '\x03':
+					stop_count();
 					cur = decode_int(cur, i);
 					cur = decode_str(cur, str);
 					update_name(e.peer_id, i, str);
 					break;
 				case '\x04':
+					stop_count();
 					cur = decode_int(cur, i);
 					cur = decode_int(cur, c);
 					update_col(e.peer_id, i, c);
 					break;
 				case '\x08':
+					stop_count();
 					cur = decode_int(cur, i);
 					cur = decode_int(cur, t);
 					change_team(e.peer_id, i, t);
@@ -340,37 +384,53 @@ void GameSetup::mainloop(){
 					
 				case '\x10':
 					if(e.peer_id != peers.begin()->first) break;
+					stop_count();
 					cur = decode_scr_mth(cur, set.scr_mth);
 					update_scr_mth();
 					break;
 				case '\x11':
 					if(e.peer_id != peers.begin()->first) break;
+					stop_count();
 					cur = decode_end_mth(cur, set.end_mth);
 					update_end_mth();
 					break;
 				case '\x12':
 					if(e.peer_id != peers.begin()->first) break;
+					stop_count();
 					cur = decode_int(cur, set.allow_dif);
 					update_tie_lim();
 					break;
 				case '\x13':
 					if(e.peer_id != peers.begin()->first) break;
+					stop_count();
 					cur = decode_int(cur, set.lim);
 					update_game_lim();
 					break;
 				case '\x14':
 					if(e.peer_id != peers.begin()->first) break;
+					stop_count();
 					cur = decode_int(cur, team_num);
 					update_team_num();
 					break;
 				case '\x15':
 					if(e.peer_id != peers.begin()->first) break;
+					stop_count();
 					cur = decode_bool(cur, use_teams);
 					update_use_teams();
 					break;
 				}
 				break;
 			case '\x01':
+				cur = decode_char(cur, hh);
+				switch(hh){
+				case '\x00':
+					if(e.peer_id != peers.begin()->first) break;
+					start_count();
+					break;
+				case '\x01':
+					stop_count();
+					break;
+				}
 				break;
 			}
 			
@@ -380,12 +440,17 @@ void GameSetup::mainloop(){
 		case NetEvent::TYPE_DISC:
 			printf(	"Disconnection: id=%10d\n", e.peer_id);
 			
+			if(peers[e.peer_id]->size()>0) stop_count();
+			
 			while(peers[e.peer_id]->size()>0) remove_player(e.peer_id, peers[e.peer_id]->size()-1);
 			delete peers[e.peer_id];
 			peers.erase(e.peer_id);
 			
 			assign_host();
 			
+			break;
+		case NetEvent::TYPE_NONE:
+			count();
 			break;
 		}
 	}

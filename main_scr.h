@@ -112,6 +112,8 @@ public:
 	void set_err(const char* msg);
 	
 	const char* get_address();
+	
+	void set_cnt(int n);
 };
 
 class CPlayerData{
@@ -358,6 +360,9 @@ public:
 	
 	void set_team_num(int num);
 	void set_use_teams(bool use);
+	
+	void start_count();
+	void stop_count();
 };
 
 #endif
