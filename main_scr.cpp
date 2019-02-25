@@ -18,7 +18,7 @@
 
 #include <stdio.h>
 
-#define AR_H 10
+#define AR_H 20
 #define UP "\xe2\x96\xb2"
 #define DOWN "\xe2\x96\xbc"
 
@@ -83,37 +83,39 @@ NumberField::~NumberField(){
 
 void NumberField::draw(){
 	SDL_Rect rr;
-	msg->render_centered(r.x + r.w/2, r.y + r.h/2, AL_CENTER);
 	
 	if(!(SDL_GetMouseState(NULL, NULL) & SDL_BUTTON(SDL_BUTTON_LEFT))) d_prs = u_prs = false;
 	
 	rr = u_rect();
 	SDL_SetRenderDrawColor(rend, 192,192,192,64);
-	if(u_prs) SDL_RenderFillRect(rend, &r);
-	(active && num<upper ? up : iup)->render_centered(rr.x + rr.w/2, rr.y + rr.h/2, AL_CENTER);
+	if(u_prs) SDL_RenderFillRect(rend, &rr);
+	(active && (num<upper || !use_u) ? up : iup)->render_centered(rr.x + rr.w/2, rr.y + rr.h/2, AL_CENTER);
 
 	rr = b_rect();
-	if(d_prs) SDL_RenderFillRect(rend, &r);
-	(active && num>lower ? down : idown)->render_centered(rr.x + rr.w/2, rr.y + rr.h/2, AL_CENTER);
+	if(d_prs) SDL_RenderFillRect(rend, &rr);
+	(active && (num>lower || !use_l)
+	? down : idown)->render_centered(rr.x + rr.w/2, rr.y + rr.h/2, AL_CENTER);
+
+	msg->render_centered(r.x + r.w/2, r.y + r.h/2, AL_CENTER);
 }
 void NumberField::event(SDL_Event& e){
 	switch(e.type){
 	case SDL_MOUSEBUTTONDOWN:
-		if(in_rect(u_rect(), e.button.x, e.button.y)) u_prs = true;
-		if(in_rect(b_rect(), e.button.x, e.button.y)) d_prs = true;
+		if(in_rect(u_rect(), e.button.x, e.button.y) && active) u_prs = true;
+		if(in_rect(b_rect(), e.button.x, e.button.y) && active) d_prs = true;
 		break;
 	case SDL_MOUSEBUTTONUP:
-		if(in_rect(u_rect(), e.button.x, e.button.y) && u_prs){
+		if(in_rect(u_rect(), e.button.x, e.button.y) && u_prs && active){
 			u_prs = false;
 			set_num(num+1);
 		}
-		if(in_rect(b_rect(), e.button.x, e.button.y) && d_prs){
+		if(in_rect(b_rect(), e.button.x, e.button.y) && d_prs && active){
 			d_prs = false;
 			set_num(num-1);
 		}
 		break;
 	case SDL_MOUSEWHEEL:
-		set_num(num-e.wheel.y * (e.wheel.direction == SDL_MOUSEWHEEL_FLIPPED ? -1 : 1));
+		if(active) set_num(num+e.wheel.y * (e.wheel.direction == SDL_MOUSEWHEEL_FLIPPED ? -1 : 1));
 		break;
 	}
 }
@@ -811,7 +813,7 @@ void PlayerSetting::update_col(int c){
 #define SCR_Y 30
 #define SCR_LST_W 130
 #define SCR_ORD_W 150
-#define SCR_DTH_W 120
+#define SCR_DTH_W 140
 
 #define END_Y 70
 #define END_NON_W 70
@@ -819,14 +821,14 @@ void PlayerSetting::update_col(int c){
 #define END_SCORE_W 120
 
 #define LIM_X 100
-#define LIM_Y 110
+#define LIM_Y 100
 #define LIM_W 50
-#define LIM_H 50
+#define LIM_H 60
 
 #define TIE_X 300
-#define TIE_Y 180
+#define TIE_Y 150
 #define TIE_W 50
-#define TIE_H 50
+#define TIE_H 60
 
 SettingMenu::SettingMenu(SDL_Renderer* ren, MainScr* m) : SubMenu(ren, m), tie_lim(ren,{TIE_X,TIE_Y,TIE_W, TIE_H},0,0,2), game_lim(ren,{LIM_X, LIM_Y, LIM_W, LIM_H},10,0,true){
 	players_t = SDL_CreateTexture(	rend, SDL_PIXELFORMAT_UNKNOWN, SDL_TEXTUREACCESS_TARGET, 
@@ -987,7 +989,7 @@ void SettingMenu::draw(){
 	draw_back(true);
 	
 	tie_lim.set_active(main->get_host());
-	game_lim.set_active(main->get_host());
+	game_lim.set_active(main->get_host() && end_mth != GameSettings::END_NONE);
 	
 	int max_scr = PLST_MAR + (PLST_MAR+PLST_H)*(players.size()+1) - get_players_rect().h;
 	if(scr_t > max_scr) scr_t = max_scr;
@@ -996,10 +998,10 @@ void SettingMenu::draw(){
 	follow(y, main->get_conn() ? SET_H : 0, 1.5);
 	
 	
-	follow(sx, scr_rect(scr_mth).x, 0.5);
-	follow(sw, scr_rect(scr_mth).w, 0.5);
-	follow(ex, end_rect(end_mth).x, 0.5);
-	follow(ew, end_rect(end_mth).w, 0.5);
+	follow(sx, scr_rect(scr_mth).x, 1.5);
+	follow(sw, scr_rect(scr_mth).w, 1.5);
+	follow(ex, end_rect(end_mth).x, 1.5);
+	follow(ew, end_rect(end_mth).w, 1.5);
 	
 	if(!(SDL_GetMouseState(NULL,NULL) & SDL_BUTTON(SDL_BUTTON_LEFT))) a_prs = false; 
 	
@@ -1051,6 +1053,9 @@ void SettingMenu::draw(){
 	end_rnd->render_centered(MSG_M + end_rect(GameSettings::END_ROUND).x, END_Y, AL_LEFT);
 	end_scr->render_centered(MSG_M + end_rect(GameSettings::END_SCORE).x, END_Y, AL_LEFT);
 	
+	game_lim.draw();
+	tie_lim.draw();
+
 	SDL_SetRenderDrawColor(rend, 0,0,0,255);
 	if(in_rect(get_game_rect(), m_x, m_y) && main->get_host()){
 		r = scr_rect(GameSettings::SCR_LAST);
@@ -1065,10 +1070,11 @@ void SettingMenu::draw(){
 		if(in_rect(r, m_x - get_game_rect().x, m_y - get_game_rect().y)) SDL_RenderDrawRect(rend, &r);
 		r = end_rect(GameSettings::END_SCORE);
 		if(in_rect(r, m_x - get_game_rect().x, m_y - get_game_rect().y)) SDL_RenderDrawRect(rend, &r);
+		r = game_lim.get_rect();
+		if(in_rect(r, m_x - get_game_rect().x, m_y - get_game_rect().y)) SDL_RenderDrawRect(rend, &r);
+		r = tie_lim.get_rect();
+		if(in_rect(r, m_x - get_game_rect().x, m_y - get_game_rect().y)) SDL_RenderDrawRect(rend, &r);
 	}
-	
-	game_lim.draw();
-	tie_lim.draw();
 	
 	SDL_SetRenderTarget(rend, tar);
 	
@@ -1078,7 +1084,7 @@ void SettingMenu::draw(){
 void SettingMenu::event(SDL_Event& e){
 	SubMenu::event(e);
 	SDL_Rect pr = get_players_rect();
-	
+	SDL_Rect gr = get_game_rect();
 	// event propagation
 	switch(e.type){
 		case SDL_MOUSEMOTION:
@@ -1096,16 +1102,32 @@ void SettingMenu::event(SDL_Event& e){
 				e.button.x -= pr.x + PLST_MAR;
 				e.button.y -= pr.y + PLST_MAR + (PLST_MAR+PLST_H)*mfi - scr_y;
 			}
+			else if(in_rect(gr, m_x, m_y)){
+				e.button.x -= gr.x;
+				e.button.y -= gr.y;
+			}
 		case SDL_MOUSEWHEEL:
-			if(mfocus) if(mfocus->event(e)){
-				non_used_inds.insert(players[mfi]->get_ind());
-				delete players[mfi];
-				main->remove_player(mfi);
-				if(kfocus == players[mfi]) kfocus = NULL;
-				SDL_DestroyTexture(player_ts[mfi]);
-				players.erase(players.begin() + mfi);
-				player_ts.erase(player_ts.begin() + mfi);
-				set_mfocus();
+			if(mfocus) {
+				if(mfocus->event(e)){
+					non_used_inds.insert(players[mfi]->get_ind());
+					delete players[mfi];
+					main->remove_player(mfi);
+					if(kfocus == players[mfi]) kfocus = NULL;
+					SDL_DestroyTexture(player_ts[mfi]);
+					players.erase(players.begin() + mfi);
+					player_ts.erase(player_ts.begin() + mfi);
+					set_mfocus();
+				}
+			}
+			else if(in_rect(gr, m_x, m_y)){
+				if( in_rect(game_lim.get_rect(), m_x-gr.x, m_y-gr.y)) {
+					game_lim.event(e);
+					main->set_game_lim(game_lim.get_num());
+				}
+				if( in_rect(tie_lim.get_rect(), m_x-gr.x, m_y-gr.y)){
+					tie_lim.event(e);
+					main->set_tie_lim(tie_lim.get_num());
+				}
 			}
 			break;
 		case SDL_KEYDOWN:
@@ -1121,8 +1143,25 @@ void SettingMenu::event(SDL_Event& e){
 	ar.w = PLST_W; ar.h = PLST_H;
 	switch(e.type){
 		case SDL_MOUSEBUTTONDOWN:
-			if(e.button.button == SDL_BUTTON_LEFT && in_rect(ar,m_x,m_y)){
-				a_prs = true;
+			if(e.button.button == SDL_BUTTON_LEFT){
+				if(in_rect(ar,m_x,m_y)) a_prs = true;
+				if(in_rect(gr, m_x, m_y)){
+					printf("c\n");
+					GameSettings::ScoreMeth scr;
+					scr = GameSettings::SCR_LAST;
+					if( in_rect(scr_rect(scr), m_x-gr.x, m_y-gr.y)) main->set_scr_mth(scr);
+					scr = GameSettings::SCR_ORDER;
+					if( in_rect(scr_rect(scr), m_x-gr.x, m_y-gr.y)) main->set_scr_mth(scr);
+					scr = GameSettings::SCR_DEATH;
+					if( in_rect(scr_rect(scr), m_x-gr.x, m_y-gr.y)) main->set_scr_mth(scr);
+					GameSettings::EndMeth end;
+					end = GameSettings::END_NONE;
+					if( in_rect(end_rect(end), m_x-gr.x, m_y-gr.y)) main->set_end_mth(end);
+					end = GameSettings::END_ROUND;
+					if( in_rect(end_rect(end), m_x-gr.x, m_y-gr.y)) main->set_end_mth(end);
+					end = GameSettings::END_SCORE;
+					if( in_rect(end_rect(end), m_x-gr.x, m_y-gr.y)) main->set_end_mth(end);
+				}
 			}
 			break;
 		case SDL_MOUSEBUTTONUP:
@@ -1167,6 +1206,25 @@ void SettingMenu::update_col(int i,int col){
 	
 MainScr* SettingMenu::get_main(){
 	return main;
+}
+
+void SettingMenu::set_settings(GameSettings s){
+	set_game_lim(s.lim);
+	set_tie_lim(s.allow_dif);
+	set_scr_mth(s.scr_mth);
+	set_end_mth(s.end_mth);
+}
+void SettingMenu::set_game_lim(int lim){
+	game_lim.set_num(lim);
+}
+void SettingMenu::set_tie_lim(int lim){
+	tie_lim.set_num(lim);
+}
+void SettingMenu::set_scr_mth(GameSettings::ScoreMeth mth){
+	scr_mth = mth;
+}
+void SettingMenu::set_end_mth(GameSettings::EndMeth mth){
+	end_mth = mth;
 }
 
 MainScr::MainScr(Main* up, Client* c) : State(up), conn(up->get_renderer(),this), play(up->get_renderer(),this), sett(up->get_renderer(),this){
@@ -1296,6 +1354,7 @@ bool MainScr::step(){
 			char* cur;
 			char h,hh, str[1000];
 			int i,c,t;
+			GameSettings s;
 			if(e.type == NetEvent::TYPE_NONE) break;
 			switch(e.type){
 			case NetEvent::TYPE_CONN:
@@ -1311,6 +1370,8 @@ bool MainScr::step(){
 					cur = decode_char(cur, hh);
 					switch(hh){
 					case '\x00':
+						cur = decode_gamesett(cur, s);
+						sett.set_settings(s);
 						break;
 					case '\x01':
 						cur = decode_int(cur, i);
@@ -1343,6 +1404,23 @@ bool MainScr::step(){
 					case '\x07':
 						cur = decode_int(cur, i);
 						play.set_host(i);
+						break;
+						
+					case '\x10':
+						cur = decode_scr_mth(cur, s.scr_mth);
+						sett.set_scr_mth(s.scr_mth);
+						break;
+					case '\x11':
+						cur = decode_end_mth(cur, s.end_mth);
+						sett.set_end_mth(s.end_mth);
+						break;
+					case '\x12':
+						cur = decode_int(cur, s.allow_dif);
+						sett.set_tie_lim(s.allow_dif);
+						break;
+					case '\x13':
+						cur = decode_int(cur, s.lim);
+						sett.set_game_lim(s.lim);
 						break;
 					}
 					break;
@@ -1437,5 +1515,53 @@ void MainScr::update_col(int i, int col){
 	end = encode_char(end, '\x04');
 	end = encode_int(end, i);
 	end = encode_int(end, col);
+	clnt->send(data, end-data, PROTO_REL);
+}
+void MainScr::set_game_lim(int lim){
+	if(!ihost) return;
+	
+	char data[100];
+	char* end;
+				
+	end = data;
+	end = encode_char(end, '\x00');
+	end = encode_char(end, '\x13');
+	end = encode_int(end, lim);
+	clnt->send(data, end-data, PROTO_REL);
+}
+void MainScr::set_tie_lim(int lim){
+	if(!ihost) return;
+	
+	char data[100];
+	char* end;
+				
+	end = data;
+	end = encode_char(end, '\x00');
+	end = encode_char(end, '\x12');
+	end = encode_int(end, lim);
+	clnt->send(data, end-data, PROTO_REL);
+}
+void MainScr::set_scr_mth(GameSettings::ScoreMeth mth){
+	if(!ihost) return;
+	
+	char data[100];
+	char* end;
+				
+	end = data;
+	end = encode_char(end, '\x00');
+	end = encode_char(end, '\x10');
+	end = encode_scr_mth(end, mth);
+	clnt->send(data, end-data, PROTO_REL);
+}
+void MainScr::set_end_mth(GameSettings::EndMeth mth){
+	if(!ihost) return;
+	
+	char data[100];
+	char* end;
+				
+	end = data;
+	end = encode_char(end, '\x00');
+	end = encode_char(end, '\x11');
+	end = encode_end_mth(end, mth);
 	clnt->send(data, end-data, PROTO_REL);
 }

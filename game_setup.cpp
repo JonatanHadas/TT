@@ -172,6 +172,47 @@ void GameSetup::assign_host(){
 	}
 	
 }
+
+void GameSetup::update_game_lim(){
+	char data[100];
+	char* end;
+	
+	end = data;
+	end = encode_char(end, '\x00');
+	end = encode_char(end, '\x13');
+	end = encode_int(end, set.lim);
+	serv->send_all(data, end-data, PROTO_REL);
+}
+void GameSetup::update_tie_lim(){
+	char data[100];
+	char* end;
+	
+	end = data;
+	end = encode_char(end, '\x00');
+	end = encode_char(end, '\x12');
+	end = encode_int(end, set.allow_dif);
+	serv->send_all(data, end-data, PROTO_REL);
+}
+void GameSetup::update_scr_mth(){
+	char data[100];
+	char* end;
+	
+	end = data;
+	end = encode_char(end, '\x00');
+	end = encode_char(end, '\x10');
+	end = encode_scr_mth(end, set.scr_mth);
+	serv->send_all(data, end-data, PROTO_REL);
+}
+void GameSetup::update_end_mth(){
+	char data[100];
+	char* end;
+	
+	end = data;
+	end = encode_char(end, '\x00');
+	end = encode_char(end, '\x11');
+	end = encode_end_mth(end, set.end_mth);
+	serv->send_all(data, end-data, PROTO_REL);
+}
 	
 void GameSetup::mainloop(){
 	while(true){
@@ -203,6 +244,7 @@ void GameSetup::mainloop(){
 			switch(h){
 			case '\x00':
 				cur = decode_char(cur, hh);
+				printf("%02x\n", hh);
 				switch(hh){
 				case '\x01':
 					add_player(e.peer_id);
@@ -220,6 +262,25 @@ void GameSetup::mainloop(){
 					cur = decode_int(cur, i);
 					cur = decode_int(cur, c);
 					update_col(e.peer_id, i, c);
+					break;
+					
+				case '\x10':
+					cur = decode_scr_mth(cur, set.scr_mth);
+					update_scr_mth();
+					break;
+				case '\x11':
+					cur = decode_end_mth(cur, set.end_mth);
+					update_end_mth();
+					break;
+				case '\x12':
+					cur = decode_int(cur, set.allow_dif);
+					update_tie_lim();
+					break;
+				case '\x13':
+					cur = decode_int(cur, set.lim);
+					update_game_lim();
+					break;
+
 				}
 				break;
 			case '\x01':

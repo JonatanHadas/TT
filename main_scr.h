@@ -275,6 +275,13 @@ public:
 	std::vector<PlayerSetting*>& get_players();
 	
 	GameSettings get_settings();
+	void set_settings(GameSettings s);
+	
+	void set_game_lim(int lim);
+	void set_tie_lim(int lim);
+	void set_scr_mth(GameSettings::ScoreMeth mth);
+	void set_end_mth(GameSettings::EndMeth mth);
+	
 };
 
 class MainScr : public State{
@@ -322,6 +329,10 @@ public:
 	void remove_player(int ind);
 	void update_name(int i);
 	void update_col(int i, int col);
+	void set_game_lim(int lim);
+	void set_tie_lim(int lim);
+	void set_scr_mth(GameSettings::ScoreMeth mth);
+	void set_end_mth(GameSettings::EndMeth mth);
 };
 
 #endif

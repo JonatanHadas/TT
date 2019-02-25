@@ -79,6 +79,11 @@ class GameSetup{
 	void update_name(int peer_id, int ind, const char* name);
 	void update_col(int peer_id, int ind, int col);
 	void assign_host();
+	
+	void update_game_lim();
+	void update_tie_lim();
+	void update_scr_mth();
+	void update_end_mth();
 public:
 	GameSetup(Server* s);
 	~GameSetup();
