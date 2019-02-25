@@ -41,6 +41,7 @@ GameEQ::GameEQ(GameExtrap* g){
 	for(int i = 0; i<get_tank_num(); i++) tanks.push_back(new TankEQ(game->get_tank(i), this));
 }
 GameEQ::~GameEQ(){
+	delete game;
 	delete round;
 	for(int i = 0; i<get_tank_num(); i++) delete tanks[i];
 	for(int i = 0; i<get_team_num(); i++) delete teams[i];

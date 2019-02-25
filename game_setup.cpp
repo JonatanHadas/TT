@@ -59,6 +59,7 @@ void GameSetup::send_all(int peer_id){
 			end = encode_char(end, '\x00');
 			end = encode_char(end, '\x09');
 			end = encode_int(end, pl.id);
+			end = encode_int(end, it->second.second);
 			serv->send(data, end-data, peer_id, PROTO_REL);
 		}
 
@@ -98,6 +99,7 @@ void GameSetup::add_player(int peer_id){
 	end = encode_char(end, '\x00');
 	end = encode_char(end, '\x09');
 	end = encode_int(end, pl.id);
+	end = encode_int(end, peers[peer_id]->size()-1);
 	serv->send(data, end-data, peer_id, PROTO_REL);
 
 	end = data;
@@ -306,7 +308,32 @@ void GameSetup::count(){
 		printf(cnt<=0 ? "Go!\n" : "%d\n", cnt);
 	}
 	else{
-		stop_count();
+		printf("Starting game");
+		end = data;
+		end = encode_char(end, '\x01');
+		end = encode_char(end, '\x02');
+		serv->send_all(data, end-data, PROTO_REL);
+		
+		GameConfig cf(players.size(), use_teams ? team_num : cf.tank_num);
+		cf.set = set;
+		int i = 0;
+		for(auto it = players.begin(); it != players.end(); it++, i++){
+			cf.keys[i] = it->first;
+		}
+		for(int i = 0; i<players.size(); i++){
+			PlayerData pl = peers[players[cf.keys[i]].first]->at(players[cf.keys[i]].second);
+			cf.team_inds[i] = use_teams ? pl.team : i;
+			cf.colors[i] = pl.color;
+		}
+		
+		NetGame* net_game = new NetGame(cf, this);
+		net_game->mainloop();
+		delete net_game;
+		
+		for(auto it = peers.begin(); it != peers.end(); it++){
+			send_all(it->first);
+		}
+		assign_host();
 	}
 }
 void GameSetup::stop_count(){

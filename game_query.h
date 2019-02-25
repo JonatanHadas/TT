@@ -75,6 +75,7 @@ public:
 
 class GameQ{
 public:
+	virtual ~GameQ(){};
 	virtual int get_tank_num() = 0;
 	virtual TankQ* get_tank(int i) = 0;
 	virtual int get_team_num() = 0;

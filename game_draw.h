@@ -2,6 +2,7 @@
 #define _GAME_DRAW_H
 
 #include <SDL2/SDL.h>
+#include "game_config.h"
 #include "game_query.h"
 #include "images.h"
 #include "texts.h"
@@ -16,7 +17,7 @@ class BoardDrawer{
 	TankImg* tank_images;
 	SDL_Texture* circ;
 public:
-	BoardDrawer(GameQ* q, SDL_Renderer* rend, std::vector<int> img_inds);
+	BoardDrawer(GameQ* q, SDL_Renderer* rend, GameConfig& cf);
 	~BoardDrawer();
 	void draw();
 	TankImg* get_img(int i);
@@ -31,7 +32,7 @@ class GameDrawer{
 	std::vector<Msg*> scores;
 	int w,h;
 public:
-	GameDrawer(GameQ* q, SDL_Renderer* rend, std::vector<int> img_inds);
+	GameDrawer(GameQ* q, SDL_Renderer* rend, GameConfig& cf);
 	~GameDrawer();
 	void draw();
 	void update_score(int ind);

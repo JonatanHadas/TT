@@ -9,6 +9,7 @@ class DirectEx : public ExInEvents{
 	int t_ind;
 public:
 	DirectEx(Game* game);
+	~DirectEx();
 	ExInEvent* get_event();
 	void push_ctrl(ControlState ctrl, int ind, int rnd);
 };

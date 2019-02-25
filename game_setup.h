@@ -1,7 +1,10 @@
 #ifndef _GAME_SETUP_H
 #define _GAME_SETUP_H
 
+class GameSetup;
+
 #include "game_config.h"
+#include "netgame.h"
 #include "network.h"
 #include "time.h"
 #include <map>
@@ -46,7 +49,7 @@ type |   | meaning        | data
 07   | > | host tank      | id
 08   | < | change team    | id, team
 08   | > | change team    | id, team
-09   | > | tank yours     | id
+09   | > | tank yours     | id, ind
      |   |                |
 10   | <H| change scr mth | new value
 10   | > | change scr mth | new value
@@ -73,6 +76,7 @@ type |   | meaning    | data
 */
 
 class GameSetup{
+	
 	GameSettings set;
 	bool use_teams;
 	int team_num;
@@ -108,6 +112,7 @@ class GameSetup{
 	void start_count();
 	void count();
 	void stop_count();
+	friend NetGame;
 public:
 	GameSetup(Server* s);
 	~GameSetup();

@@ -22,6 +22,11 @@
 #define UP "\xe2\x96\xb2"
 #define DOWN "\xe2\x96\xbc"
 
+#include "game_extrap.h"
+#include "e_game_query.h"
+#include "game_gui.h"
+#include "net_ex.h"
+
 bool in_rect(SDL_Rect r, int x, int y){
 	return x>=r.x && y>=r.y && x < r.x+r.w && y < r.y+r.h;
 }
@@ -542,6 +547,21 @@ void PlayerMenu::set_use_teams(bool use){
 void PlayerMenu::set_team(int id, int t){
 	players[id]->set_team(t);
 }
+std::map<int, CPlayerData*>::iterator PlayerMenu::get_players(){
+	return players.begin();
+}
+std::map<int, CPlayerData*>::iterator PlayerMenu::end_players(){
+	return players.end();
+}
+int PlayerMenu::get_player_num(){
+	return players.size();
+}
+int PlayerMenu::get_team_num(){
+	return tys.size()+1;
+}
+int PlayerMenu::get_use_teams(){
+	return use_teams;
+}
 
 #define PLST_W 480
 #define PLST_MAR 20
@@ -888,6 +908,12 @@ const char* SettingMenu::get_name(int i){
 
 void PlayerSetting::update_col(int c){
 	col = c;
+}
+int PlayerSetting::get_id(){
+	return id;
+}
+void PlayerSetting::set_id(int i){
+	id = i;
 }
 
 #define CROSS_S 50
@@ -1340,7 +1366,10 @@ void SettingMenu::add_player(){
 void SettingMenu::update_col(int i,int col){
 	players[i]->update_col(col);
 }
-	
+int SettingMenu::get_ind(int ind){
+	return players[ind]->get_ind();
+}
+
 MainScr* SettingMenu::get_main(){
 	return main;
 }
@@ -1350,6 +1379,14 @@ void SettingMenu::set_settings(GameSettings s){
 	set_tie_lim(s.allow_dif);
 	set_scr_mth(s.scr_mth);
 	set_end_mth(s.end_mth);
+}
+GameSettings SettingMenu::get_settings(){
+	GameSettings s;
+	s.lim = game_lim.get_num();
+	s.allow_dif = tie_lim.get_num();
+	s.scr_mth = scr_mth;
+	s.end_mth = end_mth;
+	return s;
 }
 void SettingMenu::set_game_lim(int lim){
 	game_lim.set_num(lim);
@@ -1368,6 +1405,12 @@ void SettingMenu::set_scr_mth(GameSettings::ScoreMeth mth){
 }
 void SettingMenu::set_end_mth(GameSettings::EndMeth mth){
 	end_mth = mth;
+}
+void SettingMenu::set_id(int ind, int id){
+	players[ind]->set_id(id);
+}
+int SettingMenu::get_id(int ind){
+	return players[ind]->get_id();
 }
 
 MainScr::MainScr(Main* up, Client* c) : State(up), conn(up->get_renderer(),this), play(up->get_renderer(),this), sett(up->get_renderer(),this){
@@ -1593,6 +1636,11 @@ bool MainScr::step(){
 					case '\x00':
 						cur = decode_int(cur, i);
 						conn.set_cnt(i);
+						break;
+					case '\x02':
+						start();
+						return false;
+						break;
 					}
 				}
 				
@@ -1791,3 +1839,27 @@ void MainScr::stop_count(){
 	clnt->send(data, end-data, PROTO_REL);		
 }
 
+void MainScr::start(){
+	GameConfig cf(play.get_player_num(), play.get_use_teams() ? play.get_team_num() : play.get_player_num());
+	
+	cf.set = sett.get_settings();
+	
+	std::map<int,int> inds;
+	
+	int i = 0;
+	for(auto it = play.get_players(); i<cf.tank_num; it++,i++){
+		cf.names[i] = it->second->get_name();
+		cf.team_inds[i] = play.get_use_teams() ? it->second->get_team() : i;
+		cf.colors[i] = it->second->get_col();
+		cf.keys[i] = -1;
+		inds[it->first] = i;
+	}
+	for(int i = 0; i<sett.get_player_num(); i++){
+		cf.keys[sett.get_id(i)] = sett.get_ind(i);
+	}
+	
+	ExInEvents* in = new NetEx(clnt, cf);
+	GameExtrap* ex = new GameExtrap(cf, in);
+	GameQ* q = new GameEQ(ex);
+	upper->set_state(new GameGui(q, upper, cf, clnt));
+}

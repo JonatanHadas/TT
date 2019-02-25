@@ -113,6 +113,7 @@ GameExtrap::GameExtrap(GameConfig& cf, ExInEvents* i){
 	for(int i = 0; i<cf.tank_num; i++) tanks.push_back(new TankExtrap(this, i, teams[cf.team_inds[i]]));	
 }
 GameExtrap::~GameExtrap(){
+	delete in;
 	if(round) delete round;
 	for(int i = 0; i<get_tank_num(); i++) delete tanks[i];
 	for(int i = 0; i<get_team_num(); i++) delete teams[i];	

@@ -36,6 +36,8 @@ game_extrap.h \
 direct_ex.h \
 encoding.h \
 game_setup.h \
+netgame.h \
+net_ex.h \
 
 GOBJ_NAMES = $(patsubst %.h,%.o, $(HEADS1))
 COBJ_NAMES = $(GOBJ_NAMES) main.o
@@ -157,6 +159,10 @@ $(DIR)main_scr.o: $$(patsubst $(DIR)%.o, %.cpp, $$@) $(HEADS)
 $(DIR)encoding.o: $$(patsubst $(DIR)%.o, %.cpp, $$@) $(HEADS)
 	$(CC) $(CMP_FLG) -c $< -o $@
 $(DIR)game_setup.o: $$(patsubst $(DIR)%.o, %.cpp, $$@) $(HEADS)
+	$(CC) $(CMP_FLG) -c $< -o $@
+$(DIR)netgame.o: $$(patsubst $(DIR)%.o, %.cpp, $$@) $(HEADS)
+	$(CC) $(CMP_FLG) -c $< -o $@
+$(DIR)net_ex.o: $$(patsubst $(DIR)%.o, %.cpp, $$@) $(HEADS)
 	$(CC) $(CMP_FLG) -c $< -o $@
 
 CLEXEC = $(patsubst $(DIR)%,$(CDIR)%, $(CEXEC)) $(patsubst $(DIR)%,$(CDIR)%, $(SEXEC))

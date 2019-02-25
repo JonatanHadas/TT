@@ -4,6 +4,9 @@ DirectEx::DirectEx(Game* g){
 	game = g;
 	t_ind = -1;
 }
+DirectEx::~DirectEx(){
+	
+}
 ExInEvent* DirectEx::get_event(){
 	GameEvent* e = game->get_event();
 	if(e){

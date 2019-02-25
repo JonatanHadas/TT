@@ -23,7 +23,7 @@ struct GameConfig{
 	int team_num;
 	int* team_inds;
 	int* colors;
-	int* keys; // keyset number (not required for server)
+	int* keys; // keyset number 
 	std::string* names;
 	GameSettings set;
 	GameConfig(int tank_num, int team_num);

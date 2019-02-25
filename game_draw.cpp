@@ -22,12 +22,12 @@
 
 
 
-BoardDrawer::BoardDrawer(GameQ* q, SDL_Renderer* r, std::vector<int> img_inds){
+BoardDrawer::BoardDrawer(GameQ* q, SDL_Renderer* r, GameConfig& cf){
 	renderer = r;
 	game = q;
 	tank_images = new TankImg[q->get_tank_num()];
 	for(int i = 0; i<q->get_tank_num(); i++) {
-		generate_tank(img_inds[i], r, tank_images + i);
+		generate_tank(cf.colors[i], r, tank_images + i);
 	}
 	SDL_SetRenderDrawColor(r, 255,255,255,255);
 	circ = gen_circle(r,20.0);
@@ -114,10 +114,10 @@ TankImg* BoardDrawer::get_img(int i){
 }
 
 
-GameDrawer::GameDrawer(GameQ* q, SDL_Renderer* r, std::vector<int> img_inds){
+GameDrawer::GameDrawer(GameQ* q, SDL_Renderer* r, GameConfig& cf){
 	game = q;
 	renderer = r;
-	board = new BoardDrawer(q,r,img_inds);
+	board = new BoardDrawer(q,r,cf);
 	board_t = NULL;
 	for(int i = 0; i<game->get_team_num(); i++){
 		scores.push_back(NULL);

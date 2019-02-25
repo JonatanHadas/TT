@@ -170,6 +170,12 @@ public:
 	void set_team_num(int num);
 	void set_use_teams(bool use);
 	void set_team(int id, int t);
+	
+	std::map<int, CPlayerData*>::iterator get_players();
+	std::map<int, CPlayerData*>::iterator end_players();
+	int get_player_num();
+	int get_team_num();
+	int get_use_teams();
 };
 
 class PlayerSetting{
@@ -182,6 +188,7 @@ class PlayerSetting{
 		FOCUS_COL,
 	};
 	int ind;
+	int id;
 	SDL_Renderer* rend;
 	
 	SDL_Texture* cross[2];
@@ -229,6 +236,9 @@ public:
 	void update_col(int col);
 	
 	int get_ind();
+	
+	int get_id();
+	void set_id(int i);
 };
 
 class SettingMenu : public SubMenu{
@@ -304,7 +314,10 @@ public:
 	void set_use_teams(bool use);
 	void set_scr_mth(GameSettings::ScoreMeth mth);
 	void set_end_mth(GameSettings::EndMeth mth);
+	void set_id(int ind, int id);
 	
+	int get_ind(int ind);
+	int get_id(int ind);
 };
 
 class MainScr : public State{
@@ -363,6 +376,8 @@ public:
 	
 	void start_count();
 	void stop_count();
+	
+	void start();
 };
 
 #endif
