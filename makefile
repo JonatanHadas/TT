@@ -1,8 +1,13 @@
 SYS = WINDOWS64
 DEBUG = NO
 
+ADDIR = 
+ACDDIR = 
+
 ifeq ($(DEBUG),YES)
 DEBUG_FLG = -g
+ADDIR = $(DDIR)
+ACDDIR = $(CDDIR)
 endif 
 
 DEF_CMP_FLG = $(DEBUG_FLG) $(INC_PTH)
@@ -23,8 +28,12 @@ d_game_query.h \
 game_gui.h \
 maze.h \
 images.h \
+e_game_query.h \
 gui_util.h \
 game_config.h \
+texts.h \
+game_extrap.h \
+direct_ex.h \
 encoding.h \
 game_setup.h \
 
@@ -36,13 +45,16 @@ SOBJS = $(patsubst %.o, $(DIR)%.o, $(SOBJ_NAMES))
 
 HEADS = $(HEADS1) \
 game_query.h \
-game_consts.h
+game_consts.h \
+ex_in_events.h \
 
 ifeq ($(SYS), WINDOWS64)
 #windows64
 CC = g++
 DIR = windows64/
 CDIR = windows64\\
+DDIR = debug/
+CDDIR = debug\\
 CEXEC = $(DIR)tanktrouble.exe
 SEXEC = $(DIR)tanktrouble_server.exe
 CLN = del
@@ -57,6 +69,8 @@ ifeq ($(SYS), WINDOWS)
 CC = g++
 DIR = windows/
 CDIR = windows\\
+DDIR = debug/
+CDDIR = debug\\
 CEXEC = $(DIR)tanktrouble.exe
 SEXEC = $(DIR)tanktrouble_server.exe
 CLN = del
@@ -71,6 +85,8 @@ ifeq ($(SYS), LINUX)
 CC = g++
 DIR = linux/
 CDIR = $(DIR)
+DDIR = debug/
+CDDIR = $(DDIR)
 CEXEC = $(DIR)tanktrouble
 SEXEC = $(DIR)tanktrouble_server
 CLN = rm
@@ -82,6 +98,9 @@ INC_PTH = -I"enet/include" -I"/usr/include"
 endif
 endif
 endif
+
+DIR := $(DIR)$(ADDIR)
+CDIR := $(CDIR)$(ACDDIR)
 
 all: $(CEXEC) $(SEXEC)
 
@@ -123,9 +142,15 @@ $(DIR)game.o: $$(patsubst $(DIR)%.o, %.cpp, $$@) $(HEADS)
 	$(CC) $(CMP_FLG) -c $< -o $@
 $(DIR)d_game_query.o: $$(patsubst $(DIR)%.o, %.cpp, $$@) $(HEADS)
 	$(CC) $(CMP_FLG) -c $< -o $@
+$(DIR)e_game_query.o: $$(patsubst $(DIR)%.o, %.cpp, $$@) $(HEADS)
+	$(CC) $(CMP_FLG) -c $< -o $@
 $(DIR)game_draw.o: $$(patsubst $(DIR)%.o, %.cpp, $$@) $(HEADS)
 	$(CC) $(CMP_FLG) -c $< -o $@
 $(DIR)game_gui.o: $$(patsubst $(DIR)%.o, %.cpp, $$@) $(HEADS)
+	$(CC) $(CMP_FLG) -c $< -o $@
+$(DIR)game_extrap.o: $$(patsubst $(DIR)%.o, %.cpp, $$@) $(HEADS)
+	$(CC) $(CMP_FLG) -c $< -o $@
+$(DIR)direct_ex.o: $$(patsubst $(DIR)%.o, %.cpp, $$@) $(HEADS)
 	$(CC) $(CMP_FLG) -c $< -o $@
 $(DIR)main_scr.o: $$(patsubst $(DIR)%.o, %.cpp, $$@) $(HEADS)
 	$(CC) $(CMP_FLG) -c $< -o $@

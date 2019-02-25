@@ -159,7 +159,6 @@ void GameDrawer::draw(){
 		case GameQEvent::TYPE_RND_START:
 			if(board_t) SDL_DestroyTexture(board_t);
 			maze = game->get_round()->get_maze();
-			printf("%p\n", game->get_round());
 			w = WALL_D_T*2 + BLOCK_SIZE*maze->get_w();
 			h = WALL_D_T*2 + BLOCK_SIZE*maze->get_h();
 			board_t = SDL_CreateTexture(renderer,SDL_PIXELFORMAT_UNKNOWN,SDL_TEXTUREACCESS_TARGET, w,h);
@@ -168,6 +167,7 @@ void GameDrawer::draw(){
 			update_score(((GameQEventScore*)event)->get_ind());
 			break;
 		}
+		delete event;
 	}
 	SDL_SetRenderDrawColor(renderer, 255,255,255,255);
 	SDL_RenderClear(renderer);

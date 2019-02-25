@@ -38,9 +38,34 @@ GenShot* GameEventCreateShot::get_shot(){
 
 GameEventRemoveShot::GameEventRemoveShot(GenShot* s){
 	id = s->get_id();
+	x = s->get_x();
+	y = s->get_y();
+	double spd;
+	switch(s->get_type()){
+	case GenShot::TYPE_REG:
+		spd = STEP_SHOT; break;
+	}
+	vx = cos(s->get_ang())*spd;
+	vy = cos(s->get_ang())*spd;
+	type = s->get_type();
 }
 int GameEventRemoveShot::get_id(){
 	return id;
+}
+double GameEventRemoveShot::get_x(){
+	return x;
+}
+double GameEventRemoveShot::get_y(){
+	return y;
+}
+double GameEventRemoveShot::get_vx(){
+	return vx;
+}
+double GameEventRemoveShot::get_vy(){
+	return vy;
+}
+GenShot::Type GameEventRemoveShot::get_stype(){
+	return type;
 }
 
 
@@ -71,8 +96,6 @@ Game::Game(GameConfig& cf){
 	round = NULL;
 	round_num = 0;
 	start_round();
-
-	time = 0;
 	
 	cid = 0;
 }
@@ -87,6 +110,7 @@ void Game::end_game(){
 	events.push(new GameEventEndGame(teams));
 }
 void Game::start_round(){
+	time = 0;
 	round_num++;
 	end_timer = -1;
 	if(round) delete round;
@@ -215,6 +239,9 @@ void Game::add_score(int ind, int diff){
 }
 int Game::get_new_id(){
 	return cid++;
+}
+int Game::get_round_num(){
+	return round_num;
 }
 
 Round::Round(Game* g){
@@ -381,8 +408,14 @@ void Tank::kill(){
 	team->num_alive--;
 }
 
+ControlState Tank::get_ctrl(){
+	return p_ctrl;
+}
+
 GenShot::GenShot(Game* g, Tank* t){
 	game = g;
+	ctime = g->get_time();
+	cround = g->get_round_num();
 	tank = t;
 	id = game->get_new_id();
 }
@@ -402,6 +435,12 @@ bool GenShot::is_reusable(){
 	return false;
 }
 
+long long int GenShot::get_ctime(){
+	return ctime;
+}
+int GenShot::get_cround(){
+	return cround;
+}
 
 
 Shot::Shot(Game* game, Tank* tank, double div, double spd) : GenShot(game, tank){
@@ -531,6 +570,13 @@ double Shot::get_x(){
 }
 double Shot::get_y(){
 	return y + tm*vy;
+}
+
+double Shot::get_vx(){
+	return vx;
+}
+double Shot::get_vy(){
+	return vy;
 }
 
 std::vector<std::pair<double,double>>& Shot::get_colls(){
