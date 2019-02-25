@@ -18,6 +18,14 @@
 
 #include <stdio.h>
 
+#define AR_H 10
+#define UP "\xe2\x96\xb2"
+#define DOWN "\xe2\x96\xbc"
+
+bool in_rect(SDL_Rect r, int x, int y){
+	return x>=r.x && y>=r.y && x < r.x+r.w && y < r.y+r.h;
+}
+
 void follow(double& val, double tar, double spd){
 	double dv = tar - val;
 	int dir = dv>0 ? 1 : -1;
@@ -26,8 +34,110 @@ void follow(double& val, double tar, double spd){
 	val += dv*dir;
 }
 
-bool in_rect(SDL_Rect r, int x, int y){
-	return x>=r.x && y>=r.y && x < r.x+r.w && y < r.y+r.h;
+SDL_Rect NumberField::u_rect(){
+	SDL_Rect rr = r;
+	rr.h = AR_H;
+	return rr;
+}
+SDL_Rect NumberField::b_rect(){
+	SDL_Rect rr = u_rect();
+	rr.y += r.h-rr.h;
+	return rr;
+}
+void NumberField::cut(){
+	if(num<lower && use_l) num = lower;
+	if(num>upper && use_u) num = upper;
+}
+void NumberField::upd_msg(){
+	char s[10];
+	sprintf(s, "%d", num);
+	if(msg) delete msg;
+	msg = new Msg(s, {0,0,0,active ? 255 : 128}, FONT_NRM, rend);
+}
+NumberField::NumberField(SDL_Renderer* ren, SDL_Rect rect, int v){
+	rend = ren;
+	r = rect;
+	use_l = use_u = false;
+	active = true;
+	num = v;
+	msg = NULL;
+	up = new Msg(UP, {0,0,0,255}, FONT_NRM, rend);
+	iup = new Msg(UP, {0,0,0,128}, FONT_NRM, rend);
+	down = new Msg(DOWN, {0,0,0,255}, FONT_NRM, rend);
+	idown = new Msg(DOWN, {0,0,0,128}, FONT_NRM, rend);
+	upd_msg();
+}
+NumberField::NumberField(SDL_Renderer* ren, SDL_Rect r, int v, int lowerb, int upperb) : NumberField(ren, r,v){
+	lower = lowerb; upper = upperb;
+	use_l = use_u = true;
+}
+NumberField::NumberField(SDL_Renderer* ren, SDL_Rect r, int v, int bound, bool islower) : NumberField(ren, r,v){
+	lower = upper = bound;
+	use_l = islower;
+	use_u = !use_l;
+}
+NumberField::~NumberField(){
+	if(msg) delete msg;
+	delete up,down, iup, idown;
+}
+
+void NumberField::draw(){
+	SDL_Rect rr;
+	msg->render_centered(r.x + r.w/2, r.y + r.h/2, AL_CENTER);
+	
+	if(!(SDL_GetMouseState(NULL, NULL) & SDL_BUTTON(SDL_BUTTON_LEFT))) d_prs = u_prs = false;
+	
+	rr = u_rect();
+	SDL_SetRenderDrawColor(rend, 192,192,192,64);
+	if(u_prs) SDL_RenderFillRect(rend, &r);
+	(active && num<upper ? up : iup)->render_centered(rr.x + rr.w/2, rr.y + rr.h/2, AL_CENTER);
+
+	rr = b_rect();
+	if(d_prs) SDL_RenderFillRect(rend, &r);
+	(active && num>lower ? down : idown)->render_centered(rr.x + rr.w/2, rr.y + rr.h/2, AL_CENTER);
+}
+void NumberField::event(SDL_Event& e){
+	switch(e.type){
+	case SDL_MOUSEBUTTONDOWN:
+		if(in_rect(u_rect(), e.button.x, e.button.y)) u_prs = true;
+		if(in_rect(b_rect(), e.button.x, e.button.y)) d_prs = true;
+		break;
+	case SDL_MOUSEBUTTONUP:
+		if(in_rect(u_rect(), e.button.x, e.button.y) && u_prs){
+			u_prs = false;
+			set_num(num+1);
+		}
+		if(in_rect(b_rect(), e.button.x, e.button.y) && d_prs){
+			d_prs = false;
+			set_num(num-1);
+		}
+		break;
+	case SDL_MOUSEWHEEL:
+		set_num(num-e.wheel.y * (e.wheel.direction == SDL_MOUSEWHEEL_FLIPPED ? -1 : 1));
+		break;
+	}
+}
+
+int NumberField::get_num(){
+	return num;
+}
+void NumberField::set_num(int n){
+	num = n;
+	cut();
+	upd_msg();
+	upd = true;
+}
+void NumberField::set_active(bool a){
+	active = a;
+	upd_msg();
+}
+bool NumberField::get_upd(){
+	bool ret = upd;
+	upd = false;
+	return ret;
+}
+SDL_Rect NumberField::get_rect(){
+	return r;
 }
 
 SubMenu::SubMenu(SDL_Renderer* r, MainScr* m){
@@ -73,7 +183,7 @@ void SubMenu::lose_mfocus(){
 #define ERR_Y 130
 #define ERR_HX -500
 
-#define LOAD_T 30
+#define LOAD_T 32
 
 ConnectionMenu::ConnectionMenu(SDL_Renderer* r, MainScr* m) : SubMenu(r, m){
 	focus_addr = false;
@@ -238,6 +348,8 @@ void ConnectionMenu::lose_kfocus(){
 #define PLR_TKW 60
 #define PLR_TKH 33
 #define PLR_TXX 70
+
+#define HST_X  SCR_W-SETT_W-30
 	
 CPlayerData::CPlayerData(int c, int t, SDL_Renderer* r){
 	rend = r;
@@ -245,10 +357,13 @@ CPlayerData::CPlayerData(int c, int t, SDL_Renderer* r){
 	set_name("");
 	set_col(c);
 	team = t;
+	host = false;
+	hst = new Msg("host", {0,0,0,255}, FONT_NRM, rend);
 }
 CPlayerData::~CPlayerData(){
 	if(img) delete img;
 	if(name_m) delete name_m;
+	delete hst;
 }
 void CPlayerData::set_col(int i){
 	col = i;
@@ -275,6 +390,11 @@ void CPlayerData::draw(int y){
 	SDL_RenderCopy(rend, img->image, NULL, &r);
 	
 	name_m->render_centered(PLR_X + PLR_TXX, y, AL_LEFT);
+	
+	if(host) hst->render_centered(HST_X, y, AL_RIGHT);
+}
+void CPlayerData::set_host(){
+	host = true;
 }
 
 PlayerMenu::PlayerMenu(SDL_Renderer* r, MainScr* m) : SubMenu(r, m){
@@ -325,6 +445,9 @@ void PlayerMenu::update_name(int id, const char* name){
 }
 void PlayerMenu::update_col(int id, int c){
 	players[id]->set_col(c);
+}
+void PlayerMenu::set_host(int id){
+	players[id]->set_host();
 }
 
 #define PLST_W 480
@@ -680,10 +803,38 @@ void PlayerSetting::update_col(int c){
 #define SET_H 300
 #define SCR_S 50
 
-SettingMenu::SettingMenu(SDL_Renderer* ren, MainScr* m) : SubMenu(ren, m){
+#define MSG_X 10
+#define MSG_H 40
+#define MSG_XX 100
+#define MSG_M 10
+
+#define SCR_Y 30
+#define SCR_LST_W 130
+#define SCR_ORD_W 150
+#define SCR_DTH_W 120
+
+#define END_Y 70
+#define END_NON_W 70
+#define END_RND_W 120
+#define END_SCORE_W 120
+
+#define LIM_X 100
+#define LIM_Y 110
+#define LIM_W 50
+#define LIM_H 50
+
+#define TIE_X 300
+#define TIE_Y 180
+#define TIE_W 50
+#define TIE_H 50
+
+SettingMenu::SettingMenu(SDL_Renderer* ren, MainScr* m) : SubMenu(ren, m), tie_lim(ren,{TIE_X,TIE_Y,TIE_W, TIE_H},0,0,2), game_lim(ren,{LIM_X, LIM_Y, LIM_W, LIM_H},10,0,true){
 	players_t = SDL_CreateTexture(	rend, SDL_PIXELFORMAT_UNKNOWN, SDL_TEXTUREACCESS_TARGET, 
 									PLST_W + 2*PLST_MAR, SCR_H - 2*PLST_MAR);
+	game_t = SDL_CreateTexture(	rend, SDL_PIXELFORMAT_UNKNOWN, SDL_TEXTUREACCESS_TARGET, 
+									PLST_W + 2*PLST_MAR, SET_H - PLST_MAR);
 									
+	SDL_SetTextureBlendMode(game_t, SDL_BLENDMODE_BLEND);
 	SDL_SetTextureBlendMode(players_t, SDL_BLENDMODE_BLEND);
 	playera_t[0] = SDL_CreateTexture(	rend, SDL_PIXELFORMAT_UNKNOWN, SDL_TEXTUREACCESS_TARGET, 
 										PLST_W, PLST_H);
@@ -721,6 +872,23 @@ SettingMenu::SettingMenu(SDL_Renderer* ren, MainScr* m) : SubMenu(ren, m){
 	mfocus = kfocus = NULL;
 	
 	scr_y = scr_t = p = 0;
+	
+	scr_m = new Msg("Score by:", {0,0,0,255}, FONT_NRM, rend);
+	scr_lst = new Msg("Last Servivor", {0,0,0,255}, FONT_NRM, rend);
+	scr_ord = new Msg("Order of Death", {0,0,0,255}, FONT_NRM, rend);
+	scr_dth = new Msg("Single Deaths", {0,0,0,255}, FONT_NRM, rend);
+	end_m = new Msg("Ends:", {0,0,0,255}, FONT_NRM, rend);
+	end_non = new Msg("Never", {0,0,0,255}, FONT_NRM, rend);
+	end_rnd = new Msg("After round", {0,0,0,255}, FONT_NRM, rend);
+	end_scr = new Msg("After score", {0,0,0,255}, FONT_NRM, rend);
+	tie_msg = new Msg("Tie break under difference of:", {0,0,0,255}, FONT_NRM, rend);
+	
+	end_mth = GameSettings::END_NONE;
+	scr_mth = GameSettings::SCR_LAST;
+	sx = sw = ex = ew = 0;
+	
+	tie_lim.set_active(false);
+	game_lim.set_active(false);
 
 	add_player();
 }
@@ -736,11 +904,58 @@ SettingMenu::~SettingMenu(){
 SDL_Rect SettingMenu::get_players_rect(){
 	SDL_Rect r;
 	r.x = (SETT_W - PLST_W - 2*PLST_MAR)/2;
-	r.y = PLST_MAR;
+	r.y = PLST_MAR + y;
 	r.w = PLST_W + 2*PLST_MAR;
-	r.h = SCR_H - 2*PLST_MAR;
+	r.h = SCR_H - 2*PLST_MAR - y;
 	return r;
 }
+SDL_Rect SettingMenu::get_game_rect(){
+	SDL_Rect r;
+	r.x = (SETT_W - PLST_W - 2*PLST_MAR)/2;
+	r.y = PLST_MAR + y - SET_H + PLST_MAR;
+	r.w = PLST_W + 2*PLST_MAR;
+	r.h = SET_H - PLST_MAR;
+	return r;
+}
+
+SDL_Rect SettingMenu::scr_rect(GameSettings::ScoreMeth scr){
+	SDL_Rect r;
+	r.x = MSG_XX; r.y = SCR_Y - MSG_H/2; r.h = MSG_H;
+	switch(scr){
+		case GameSettings::SCR_DEATH:
+			r.x += SCR_LST_W + SCR_ORD_W;
+			r.w = SCR_DTH_W;
+			break;
+		case GameSettings::SCR_ORDER:
+			r.x += SCR_LST_W;
+			r.w = SCR_ORD_W;
+			break;
+		case GameSettings::SCR_LAST:
+			r.w = SCR_LST_W;
+			break;
+	}
+	return r;
+}
+
+SDL_Rect SettingMenu::end_rect(GameSettings::EndMeth mth){
+	SDL_Rect r;
+	r.x = MSG_XX; r.y = END_Y - MSG_H/2; r.h = MSG_H;
+	switch(mth){
+		case GameSettings::END_SCORE:
+			r.x += END_NON_W + END_RND_W;
+			r.w = END_SCORE_W;
+			break;
+		case GameSettings::END_ROUND:
+			r.x += END_NON_W;
+			r.w = END_RND_W;
+			break;
+		case GameSettings::END_NONE:
+			r.w = END_NON_W;
+			break;
+	}
+	return r;
+}
+
 void SettingMenu::set_mfocus(){
 	
 	PlayerSetting* s = NULL;
@@ -771,12 +986,20 @@ void SettingMenu::set_kfocus(){
 void SettingMenu::draw(){
 	draw_back(true);
 	
+	tie_lim.set_active(main->get_host());
+	game_lim.set_active(main->get_host());
 	
 	int max_scr = PLST_MAR + (PLST_MAR+PLST_H)*(players.size()+1) - get_players_rect().h;
 	if(scr_t > max_scr) scr_t = max_scr;
 	if(scr_t < 0) scr_t = 0;
 	follow(scr_y, scr_t, 5.0);
 	follow(y, main->get_conn() ? SET_H : 0, 1.5);
+	
+	
+	follow(sx, scr_rect(scr_mth).x, 0.5);
+	follow(sw, scr_rect(scr_mth).w, 0.5);
+	follow(ex, end_rect(end_mth).x, 0.5);
+	follow(ew, end_rect(end_mth).w, 0.5);
 	
 	if(!(SDL_GetMouseState(NULL,NULL) & SDL_BUTTON(SDL_BUTTON_LEFT))) a_prs = false; 
 	
@@ -795,13 +1018,62 @@ void SettingMenu::draw(){
 	}
 	SDL_RenderCopy(rend, playera_t[a_prs ? 1 : 0], NULL, &r);
 	SDL_SetRenderDrawColor(rend, 0,0,0,255);
-	if(in_rect(r, m_x, m_y)) SDL_RenderDrawRect(rend, &r);
+	SDL_Rect rr = r;
+	rr.y += y;
+	if(in_rect(rr, m_x, m_y)) SDL_RenderDrawRect(rend, &r);
 	
 	SDL_SetRenderTarget(rend, tar);
 	r = get_players_rect();
 	sr.x = sr.y = 0; sr.w = r.w; sr.h = r.h;
 	SDL_RenderCopy(rend, players_t, &sr, &r);
 	
+	SDL_SetRenderTarget(rend, game_t);
+	
+	SDL_SetRenderDrawColor(rend, 255,255,255,0);
+	SDL_RenderClear(rend);
+	
+	scr_m->render_centered(MSG_X, SCR_Y, AL_LEFT);
+	end_m->render_centered(MSG_X, END_Y, AL_LEFT);
+	tie_msg->render_centered(MSG_X, TIE_Y + TIE_H/2, AL_LEFT);
+	
+	SDL_SetRenderDrawColor(rend, 192,192,192,64);
+	r = scr_rect(GameSettings::SCR_LAST);
+	r.x = sx; r.w = sw;
+	SDL_RenderFillRect(rend, &r);
+	r = end_rect(GameSettings::END_NONE);
+	r.x = ex; r.w = ew;
+	SDL_RenderFillRect(rend, &r);
+
+	scr_lst->render_centered(MSG_M + scr_rect(GameSettings::SCR_LAST).x, SCR_Y, AL_LEFT);
+	scr_ord->render_centered(MSG_M + scr_rect(GameSettings::SCR_ORDER).x, SCR_Y, AL_LEFT);
+	scr_dth->render_centered(MSG_M + scr_rect(GameSettings::SCR_DEATH).x, SCR_Y, AL_LEFT);
+	end_non->render_centered(MSG_M + end_rect(GameSettings::END_NONE).x, END_Y, AL_LEFT);
+	end_rnd->render_centered(MSG_M + end_rect(GameSettings::END_ROUND).x, END_Y, AL_LEFT);
+	end_scr->render_centered(MSG_M + end_rect(GameSettings::END_SCORE).x, END_Y, AL_LEFT);
+	
+	SDL_SetRenderDrawColor(rend, 0,0,0,255);
+	if(in_rect(get_game_rect(), m_x, m_y) && main->get_host()){
+		r = scr_rect(GameSettings::SCR_LAST);
+		if(in_rect(r, m_x - get_game_rect().x, m_y - get_game_rect().y)) SDL_RenderDrawRect(rend, &r);
+		r = scr_rect(GameSettings::SCR_ORDER);
+		if(in_rect(r, m_x - get_game_rect().x, m_y - get_game_rect().y)) SDL_RenderDrawRect(rend, &r);
+		r = scr_rect(GameSettings::SCR_DEATH);
+		if(in_rect(r, m_x - get_game_rect().x, m_y - get_game_rect().y)) SDL_RenderDrawRect(rend, &r);
+		r = end_rect(GameSettings::END_NONE);
+		if(in_rect(r, m_x - get_game_rect().x, m_y - get_game_rect().y)) SDL_RenderDrawRect(rend, &r);
+		r = end_rect(GameSettings::END_ROUND);
+		if(in_rect(r, m_x - get_game_rect().x, m_y - get_game_rect().y)) SDL_RenderDrawRect(rend, &r);
+		r = end_rect(GameSettings::END_SCORE);
+		if(in_rect(r, m_x - get_game_rect().x, m_y - get_game_rect().y)) SDL_RenderDrawRect(rend, &r);
+	}
+	
+	game_lim.draw();
+	tie_lim.draw();
+	
+	SDL_SetRenderTarget(rend, tar);
+	
+	r = get_game_rect();
+	SDL_RenderCopy(rend, game_t, NULL, &r);
 }	
 void SettingMenu::event(SDL_Event& e){
 	SubMenu::event(e);
@@ -1064,6 +1336,13 @@ bool MainScr::step(){
 						cur = decode_int(cur, i);
 						cur = decode_int(cur, c);
 						sett.update_col(i, c);
+						break;
+					case '\x06':
+						ihost = true;
+						break;
+					case '\x07':
+						cur = decode_int(cur, i);
+						play.set_host(i);
 						break;
 					}
 					break;

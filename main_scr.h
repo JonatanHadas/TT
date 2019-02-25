@@ -5,6 +5,7 @@
 #include "texts.h"
 #include "keys.h"
 #include "images.h"
+#include "game_config.h"
 #include <SDL2/SDL.h>
 #include "network.h"
 #include <string>
@@ -16,6 +17,42 @@ class MainScr;
 class SettingMenu;
 class PlayerMenu;
 class ConnectionMenu;
+
+class NumberField{
+	SDL_Renderer* rend;
+	SDL_Rect r;
+	int num;
+	int lower;
+	int upper;
+	bool use_l, use_u;
+	
+	bool d_prs, u_prs;
+	
+	bool active, upd;
+	
+	SDL_Rect u_rect();
+	SDL_Rect b_rect();
+	
+	Msg* up; Msg* down;
+	Msg* iup; Msg* idown;
+	Msg* msg;
+	void cut();
+	void upd_msg();
+public:
+	NumberField(SDL_Renderer* ren, SDL_Rect rect, int v);
+	NumberField(SDL_Renderer* ren, SDL_Rect r, int v, int lowerb, int upperb);
+	NumberField(SDL_Renderer* ren, SDL_Rect r, int v, int bound, bool islower);
+	~NumberField();
+	void draw();
+	void event(SDL_Event& e);
+
+	int get_num();
+	void set_num(int n);
+	void set_active(bool a);
+	bool get_upd();
+	SDL_Rect get_rect();
+};
+
 
 class SubMenu{
 protected:
@@ -57,7 +94,7 @@ class ConnectionMenu : public SubMenu{
 	
 	bool st_prs, lv_prs;
 	
-	int time;
+	unsigned int time;
 	double load_p;
 	Msg* loading[4];
 	
@@ -83,6 +120,9 @@ class CPlayerData{
 	int col;
 	std::string name;
 	SDL_Renderer* rend;
+	
+	bool host;
+	Msg* hst;
 public:
 	int team;
 	CPlayerData(int c, int t, SDL_Renderer* r);
@@ -93,6 +133,8 @@ public:
 	std::string get_name();
 	
 	void draw(int y);
+	
+	void set_host();
 };
 
 class PlayerMenu : public SubMenu{
@@ -111,6 +153,7 @@ public:
 	void remove_player(int id);
 	void update_name(int id, const char* name);
 	void update_col(int id, int c);
+	void set_host(int id);
 };
 
 class PlayerSetting{
@@ -179,6 +222,7 @@ class SettingMenu : public SubMenu{
 	SDL_Texture* players_t;
 	SDL_Texture* playera_t[2];
 	
+	SDL_Texture* game_t;
 	double y, scr_y, scr_t;
 	
 	bool a_prs;
@@ -190,6 +234,24 @@ class SettingMenu : public SubMenu{
 	void set_kfocus();
 	
 	SDL_Rect get_players_rect();
+	SDL_Rect get_game_rect();
+	
+	NumberField tie_lim, game_lim;
+	GameSettings::ScoreMeth scr_mth;
+	Msg* tie_msg;
+	SDL_Rect scr_rect(GameSettings::ScoreMeth scr);
+	double sx,sw;
+	Msg* scr_m;
+	Msg* scr_lst;
+	Msg* scr_dth;
+	Msg* scr_ord;
+	GameSettings::EndMeth end_mth;
+	SDL_Rect end_rect(GameSettings::EndMeth mth);
+	double ex,ew;
+	Msg* end_m;
+	Msg* end_non;
+	Msg* end_rnd;
+	Msg* end_scr;
 	
 public:
 	SettingMenu(SDL_Renderer* r, MainScr* main);
@@ -211,6 +273,8 @@ public:
 	MainScr* get_main();
 	
 	std::vector<PlayerSetting*>& get_players();
+	
+	GameSettings get_settings();
 };
 
 class MainScr : public State{

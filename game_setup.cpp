@@ -85,6 +85,13 @@ void GameSetup::add_player(int peer_id){
 	end = encode_int(end, pl.color);
 	serv->send(data, end-data, peer_id, PROTO_REL);
 	
+	if(peer_id == peers.begin()->first){
+		end = data;
+		end = encode_char(end, '\x00');
+		end = encode_char(end, '\x07');
+		end = encode_int(end, pl.id);
+		serv->send_all(data, end-data, PROTO_REL);
+	}
 }
 void GameSetup::remove_player(int peer_id, int ind){
 	for(int i = ind+1; i<peers[peer_id]->size(); i++){
@@ -144,6 +151,27 @@ void GameSetup::update_col(int peer_id, int ind, int col){
 	serv->send(data, end-data, peer_id, PROTO_REL);
 	
 }
+void GameSetup::assign_host(){
+	if(peers.size() == 0) return;
+	int peer_id = peers.begin()->first;
+	
+	char data[100];
+	char* end;
+	
+	end = data;
+	end = encode_char(end, '\x00');
+	end = encode_char(end, '\x06');
+	serv->send(data, end-data, peer_id, PROTO_REL);
+	
+	for(int i = 0; i<peers.begin()->second->size(); i++){
+		end = data;
+		end = encode_char(end, '\x00');
+		end = encode_char(end, '\x07');
+		end = encode_int(end, peers.begin()->second->at(i).id);
+		serv->send_all(data, end-data, PROTO_REL);
+	}
+	
+}
 	
 void GameSetup::mainloop(){
 	while(true){
@@ -164,7 +192,9 @@ void GameSetup::mainloop(){
 			
 			peers.insert({e.peer_id, new std::vector<PlayerData>});
 			
+			
 			send_all(e.peer_id);
+			assign_host();
 			
 			break;
 		case NetEvent::TYPE_RECV:
@@ -203,7 +233,10 @@ void GameSetup::mainloop(){
 			printf(	"Disconnection: id=%10d\n", e.peer_id);
 			
 			while(peers[e.peer_id]->size()>0) remove_player(e.peer_id, peers[e.peer_id]->size()-1);
+			delete peers[e.peer_id];
 			peers.erase(e.peer_id);
+			
+			assign_host();
 			
 			break;
 		}
