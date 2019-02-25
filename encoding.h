@@ -6,6 +6,9 @@
 char* encode_char(char* buf, char c);
 char* decode_char(char* buf, char& c);
 
+char* encode_bool(char* buf, bool c);
+char* decode_bool(char* buf, bool& c);
+
 char* encode_int(char* buf, int i);
 char* decode_int(char* buf, int& i);
 

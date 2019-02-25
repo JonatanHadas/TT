@@ -352,6 +352,15 @@ void ConnectionMenu::lose_kfocus(){
 #define PLR_TXX 70
 
 #define HST_X  SCR_W-SETT_W-30
+
+#define RUL_DY SEP_S-PLR_S
+#define RUL_X 40
+#define RUL_W SCR_W-SETT_W-2*RUL_X
+
+#define UD_X SCR_W-SETT_W-100
+#define UD_DY 10
+#define UD_W 20
+#define UD_H 20
 	
 CPlayerData::CPlayerData(int c, int t, SDL_Renderer* r){
 	rend = r;
@@ -359,13 +368,16 @@ CPlayerData::CPlayerData(int c, int t, SDL_Renderer* r){
 	set_name("");
 	set_col(c);
 	team = t;
-	host = false;
+	our = host = false;
 	hst = new Msg("host", {0,0,0,255}, FONT_NRM, rend);
+	up = new Msg(UP, {0,0,0,255}, FONT_NRM, rend);
+	dn= new Msg(DOWN, {0,0,0,255}, FONT_NRM, rend);
 }
 CPlayerData::~CPlayerData(){
 	if(img) delete img;
 	if(name_m) delete name_m;
 	delete hst;
+	delete up,dn;
 }
 void CPlayerData::set_col(int i){
 	col = i;
@@ -376,6 +388,12 @@ void CPlayerData::set_col(int i){
 int CPlayerData::get_col(){
 	return col;
 }
+void CPlayerData::set_team(int t){
+	team = t;
+}
+int CPlayerData::get_team(){
+	return team;
+}
 void CPlayerData::set_name(const char* n){
 	name = n;
 	if(name_m) delete name_m;
@@ -384,7 +402,7 @@ void CPlayerData::set_name(const char* n){
 std::string CPlayerData::get_name(){
 	return name;
 }
-void CPlayerData::draw(int y){
+void CPlayerData::draw(int y, bool use_teams){
 	SDL_Rect r;
 	r.w = PLR_TKW; r.h = PLR_TKH;
 	r.x = PLR_X;
@@ -394,18 +412,52 @@ void CPlayerData::draw(int y){
 	name_m->render_centered(PLR_X + PLR_TXX, y, AL_LEFT);
 	
 	if(host) hst->render_centered(HST_X, y, AL_RIGHT);
+	
+	if(our && use_teams){
+		up->render_centered(UD_X, y - UD_DY, AL_CENTER);
+		dn->render_centered(UD_X, y + UD_DY, AL_CENTER);
+	}
 }
 void CPlayerData::set_host(){
 	host = true;
+}
+void CPlayerData::set_our(){
+	our = true;
+}
+bool CPlayerData::get_our(){
+	return our;
 }
 
 PlayerMenu::PlayerMenu(SDL_Renderer* r, MainScr* m) : SubMenu(r, m){
 }
 PlayerMenu::~PlayerMenu(){
-	
+	for(auto it = players.begin(); it != players.end(); it++){
+		delete it->second;
+	}
 }
 void PlayerMenu::event(SDL_Event& e){
 	SubMenu::event(e);
+	switch(e.type){
+	case SDL_MOUSEBUTTONDOWN:
+		SDL_Rect r;
+		r.w = UD_W;
+		r.x = UD_X - r.w/2;
+		r.h = UD_H;
+		for(auto it = players.begin(); it != players.end(); it++){
+			int id = it->first;
+			r.y = ys[id] - r.h/2 - UD_DY;
+			if(in_rect(r, m_x, m_y) && players[id]->get_team()>0){
+				players[id]->set_team(players[id]->get_team()-1);
+				main->change_team(id, players[id]->get_team());
+			}
+			r.y = ys[id] - r.h/2 + UD_DY;
+			if(in_rect(r, m_x, m_y) && players[id]->get_our() && players[id]->get_team()<tys.size()){
+				players[id]->set_team(players[id]->get_team()+1);
+				main->change_team(id, players[id]->get_team());
+			}
+		}
+
+	}
 }
 void PlayerMenu::draw(){
 	draw_back(main->get_conn());
@@ -416,14 +468,31 @@ void PlayerMenu::draw(){
 		return ;
 	}
 	
+	std::vector<std::vector<int>> ids(tys.size()+1);
+	for(auto it = players.begin(); it != players.end(); it++){
+		ids[it->second->get_team()].push_back(it->first);
+	}
+
 	int y = PLR_Y;
 	double spd = 3;
-	
-	for(auto it = players.begin(); it != players.end(); it++){
-		int id = it->first;
-		follow(ys[id], y, spd);
-		players[id]->draw(ys[id]);
-		y += PLR_S;
+	for(int i = 0; i<ids.size(); i++){
+		for(int j = 0; j<ids[i].size(); j++){
+			int id = ids[i][j];
+			follow(ys[id], y, spd);
+			players[id]->draw(ys[id], use_teams);
+			y += PLR_S;
+		}
+		if(i < tys.size()){
+			follow(tys[i], y, spd);
+			if(use_teams){
+				SDL_Rect r;
+				r.y = tys[i] + RUL_DY;
+				r.x = RUL_X; r.w = RUL_W; r.h = 1;
+				SDL_SetRenderDrawColor(rend, 0,0,0,255);
+				SDL_RenderDrawRect(rend, &r);
+				y += SEP_S;
+			}
+		}
 	}
 	
 }
@@ -450,6 +519,19 @@ void PlayerMenu::update_col(int id, int c){
 }
 void PlayerMenu::set_host(int id){
 	players[id]->set_host();
+}
+void PlayerMenu::set_our(int id){
+	players[id]->set_our();
+}
+void PlayerMenu::set_team_num(int num){
+	while(tys.size() < num-1) tys.push_back(PLR_SY);
+	while(tys.size() > num-1) tys.pop_back();
+}
+void PlayerMenu::set_use_teams(bool use){
+	use_teams = use;
+}
+void PlayerMenu::set_team(int id, int t){
+	players[id]->set_team(t);
 }
 
 #define PLST_W 480
@@ -802,7 +884,7 @@ void PlayerSetting::update_col(int c){
 #define CROSS_S 50
 #define CROSS_W 20
 
-#define SET_H 300
+#define SET_H 350
 #define SCR_S 50
 
 #define MSG_X 10
@@ -830,7 +912,16 @@ void PlayerSetting::update_col(int c){
 #define TIE_W 50
 #define TIE_H 60
 
-SettingMenu::SettingMenu(SDL_Renderer* ren, MainScr* m) : SubMenu(ren, m), tie_lim(ren,{TIE_X,TIE_Y,TIE_W, TIE_H},0,0,2), game_lim(ren,{LIM_X, LIM_Y, LIM_W, LIM_H},10,0,true){
+#define TEAM_X 180
+#define TEAM_Y 220
+#define TEAM_W 50
+#define TEAM_H 60
+
+#define TEAM_NW 80
+#define TEAM_YW 80
+#define TEAM_MH 40
+
+SettingMenu::SettingMenu(SDL_Renderer* ren, MainScr* m) : SubMenu(ren, m), tie_lim(ren,{TIE_X,TIE_Y,TIE_W, TIE_H},0,0,2), game_lim(ren,{LIM_X, LIM_Y, LIM_W, LIM_H},10,0,true), team_num(ren, {TEAM_X, TEAM_Y, TEAM_W, TEAM_H},2,2,true){
 	players_t = SDL_CreateTexture(	rend, SDL_PIXELFORMAT_UNKNOWN, SDL_TEXTUREACCESS_TARGET, 
 									PLST_W + 2*PLST_MAR, SCR_H - 2*PLST_MAR);
 	game_t = SDL_CreateTexture(	rend, SDL_PIXELFORMAT_UNKNOWN, SDL_TEXTUREACCESS_TARGET, 
@@ -884,13 +975,17 @@ SettingMenu::SettingMenu(SDL_Renderer* ren, MainScr* m) : SubMenu(ren, m), tie_l
 	end_rnd = new Msg("After round", {0,0,0,255}, FONT_NRM, rend);
 	end_scr = new Msg("After score", {0,0,0,255}, FONT_NRM, rend);
 	tie_msg = new Msg("Tie break under difference of:", {0,0,0,255}, FONT_NRM, rend);
+	teams = new Msg("Teams", {0,0,0,255}, FONT_NRM, rend);
+	nteams = new Msg("Singles", {0,0,0,255}, FONT_NRM, rend);
 	
 	end_mth = GameSettings::END_NONE;
 	scr_mth = GameSettings::SCR_LAST;
-	sx = sw = ex = ew = 0;
+	ux = uw = sx = sw = ex = ew = 0;
 	
 	tie_lim.set_active(false);
 	game_lim.set_active(false);
+	team_num.set_active(false);
+	use_teams = false;
 
 	add_player();
 }
@@ -958,6 +1053,15 @@ SDL_Rect SettingMenu::end_rect(GameSettings::EndMeth mth){
 	return r;
 }
 
+SDL_Rect SettingMenu::use_rect(bool use){
+	SDL_Rect r;
+	r.x = MSG_X + (use ? TEAM_NW : 0);
+	r.y = TEAM_Y + (TEAM_H - TEAM_MH)/2;
+	r.w = use ? TEAM_YW : TEAM_NW;
+	r.h = TEAM_MH;
+	return r;
+}
+
 void SettingMenu::set_mfocus(){
 	
 	PlayerSetting* s = NULL;
@@ -990,6 +1094,7 @@ void SettingMenu::draw(){
 	
 	tie_lim.set_active(main->get_host());
 	game_lim.set_active(main->get_host() && end_mth != GameSettings::END_NONE);
+	team_num.set_active(main->get_host() && use_teams);
 	
 	int max_scr = PLST_MAR + (PLST_MAR+PLST_H)*(players.size()+1) - get_players_rect().h;
 	if(scr_t > max_scr) scr_t = max_scr;
@@ -1002,6 +1107,8 @@ void SettingMenu::draw(){
 	follow(sw, scr_rect(scr_mth).w, 1.5);
 	follow(ex, end_rect(end_mth).x, 1.5);
 	follow(ew, end_rect(end_mth).w, 1.5);
+	follow(ux, use_rect(use_teams).x, 1.5);
+	follow(uw, use_rect(use_teams).w, 1.5);
 	
 	if(!(SDL_GetMouseState(NULL,NULL) & SDL_BUTTON(SDL_BUTTON_LEFT))) a_prs = false; 
 	
@@ -1045,6 +1152,9 @@ void SettingMenu::draw(){
 	r = end_rect(GameSettings::END_NONE);
 	r.x = ex; r.w = ew;
 	SDL_RenderFillRect(rend, &r);
+	r = use_rect(true);
+	r.x = ux; r.w = uw;
+	SDL_RenderFillRect(rend, &r);
 
 	scr_lst->render_centered(MSG_M + scr_rect(GameSettings::SCR_LAST).x, SCR_Y, AL_LEFT);
 	scr_ord->render_centered(MSG_M + scr_rect(GameSettings::SCR_ORDER).x, SCR_Y, AL_LEFT);
@@ -1053,8 +1163,12 @@ void SettingMenu::draw(){
 	end_rnd->render_centered(MSG_M + end_rect(GameSettings::END_ROUND).x, END_Y, AL_LEFT);
 	end_scr->render_centered(MSG_M + end_rect(GameSettings::END_SCORE).x, END_Y, AL_LEFT);
 	
+	nteams->render_centered(MSG_M + use_rect(false).x, TEAM_Y + TEAM_H/2, AL_LEFT);
+	teams->render_centered(MSG_M + use_rect(true).x, TEAM_Y + TEAM_H/2, AL_LEFT);
+
 	game_lim.draw();
 	tie_lim.draw();
+	team_num.draw();
 
 	SDL_SetRenderDrawColor(rend, 0,0,0,255);
 	if(in_rect(get_game_rect(), m_x, m_y) && main->get_host()){
@@ -1070,9 +1184,15 @@ void SettingMenu::draw(){
 		if(in_rect(r, m_x - get_game_rect().x, m_y - get_game_rect().y)) SDL_RenderDrawRect(rend, &r);
 		r = end_rect(GameSettings::END_SCORE);
 		if(in_rect(r, m_x - get_game_rect().x, m_y - get_game_rect().y)) SDL_RenderDrawRect(rend, &r);
+		r = use_rect(false);
+		if(in_rect(r, m_x - get_game_rect().x, m_y - get_game_rect().y)) SDL_RenderDrawRect(rend, &r);
+		r = use_rect(true);
+		if(in_rect(r, m_x - get_game_rect().x, m_y - get_game_rect().y)) SDL_RenderDrawRect(rend, &r);
 		r = game_lim.get_rect();
 		if(in_rect(r, m_x - get_game_rect().x, m_y - get_game_rect().y)) SDL_RenderDrawRect(rend, &r);
 		r = tie_lim.get_rect();
+		if(in_rect(r, m_x - get_game_rect().x, m_y - get_game_rect().y)) SDL_RenderDrawRect(rend, &r);
+		r = team_num.get_rect();
 		if(in_rect(r, m_x - get_game_rect().x, m_y - get_game_rect().y)) SDL_RenderDrawRect(rend, &r);
 	}
 	
@@ -1128,6 +1248,10 @@ void SettingMenu::event(SDL_Event& e){
 					tie_lim.event(e);
 					main->set_tie_lim(tie_lim.get_num());
 				}
+				if( in_rect(team_num.get_rect(), m_x-gr.x, m_y-gr.y)){
+					team_num.event(e);
+					main->set_team_num(team_num.get_num());
+				}
 			}
 			break;
 		case SDL_KEYDOWN:
@@ -1146,7 +1270,6 @@ void SettingMenu::event(SDL_Event& e){
 			if(e.button.button == SDL_BUTTON_LEFT){
 				if(in_rect(ar,m_x,m_y)) a_prs = true;
 				if(in_rect(gr, m_x, m_y)){
-					printf("c\n");
 					GameSettings::ScoreMeth scr;
 					scr = GameSettings::SCR_LAST;
 					if( in_rect(scr_rect(scr), m_x-gr.x, m_y-gr.y)) main->set_scr_mth(scr);
@@ -1161,6 +1284,11 @@ void SettingMenu::event(SDL_Event& e){
 					if( in_rect(end_rect(end), m_x-gr.x, m_y-gr.y)) main->set_end_mth(end);
 					end = GameSettings::END_SCORE;
 					if( in_rect(end_rect(end), m_x-gr.x, m_y-gr.y)) main->set_end_mth(end);
+					bool use;
+					use = false;
+					if( in_rect(use_rect(use), m_x-gr.x, m_y-gr.y)) main->set_use_teams(use);
+					use = true;
+					if( in_rect(use_rect(use), m_x-gr.x, m_y-gr.y)) main->set_use_teams(use);
 				}
 			}
 			break;
@@ -1219,6 +1347,12 @@ void SettingMenu::set_game_lim(int lim){
 }
 void SettingMenu::set_tie_lim(int lim){
 	tie_lim.set_num(lim);
+}
+void SettingMenu::set_team_num(int num){
+	team_num.set_num(num);
+}
+void SettingMenu::set_use_teams(bool use){
+	use_teams = use;
 }
 void SettingMenu::set_scr_mth(GameSettings::ScoreMeth mth){
 	scr_mth = mth;
@@ -1354,6 +1488,7 @@ bool MainScr::step(){
 			char* cur;
 			char h,hh, str[1000];
 			int i,c,t;
+			bool u;
 			GameSettings s;
 			if(e.type == NetEvent::TYPE_NONE) break;
 			switch(e.type){
@@ -1405,6 +1540,15 @@ bool MainScr::step(){
 						cur = decode_int(cur, i);
 						play.set_host(i);
 						break;
+					case '\x08':
+						cur = decode_int(cur, i);
+						cur = decode_int(cur, t);
+						play.set_team(i,t);
+						break;
+					case '\x09':
+						cur = decode_int(cur, i);
+						play.set_our(i);
+						break;
 						
 					case '\x10':
 						cur = decode_scr_mth(cur, s.scr_mth);
@@ -1421,6 +1565,16 @@ bool MainScr::step(){
 					case '\x13':
 						cur = decode_int(cur, s.lim);
 						sett.set_game_lim(s.lim);
+						break;
+					case '\x14':
+						cur = decode_int(cur, t);
+						sett.set_team_num(t);
+						play.set_team_num(t);
+						break;
+					case '\x15':
+						cur = decode_bool(cur, u);
+						sett.set_use_teams(u);
+						play.set_use_teams(u);
 						break;
 					}
 					break;
@@ -1517,6 +1671,19 @@ void MainScr::update_col(int i, int col){
 	end = encode_int(end, col);
 	clnt->send(data, end-data, PROTO_REL);
 }
+void MainScr::change_team(int id, int team){
+	if(!iconn) return;
+	
+	char data[100];
+	char* end;
+				
+	end = data;
+	end = encode_char(end, '\x00');
+	end = encode_char(end, '\x08');
+	end = encode_int(end, id);
+	end = encode_int(end, team);
+	clnt->send(data, end-data, PROTO_REL);
+}
 void MainScr::set_game_lim(int lim){
 	if(!ihost) return;
 	
@@ -1565,3 +1732,28 @@ void MainScr::set_end_mth(GameSettings::EndMeth mth){
 	end = encode_end_mth(end, mth);
 	clnt->send(data, end-data, PROTO_REL);
 }
+void MainScr::set_team_num(int num){
+	if(!ihost) return;
+	
+	char data[100];
+	char* end;
+				
+	end = data;
+	end = encode_char(end, '\x00');
+	end = encode_char(end, '\x14');
+	end = encode_int(end, num);
+	clnt->send(data, end-data, PROTO_REL);	
+}
+void MainScr::set_use_teams(bool use){
+	if(!ihost) return;
+	
+	char data[100];
+	char* end;
+				
+	end = data;
+	end = encode_char(end, '\x00');
+	end = encode_char(end, '\x15');
+	end = encode_bool(end, use);
+	clnt->send(data, end-data, PROTO_REL);	
+}
+

@@ -23,6 +23,9 @@ GameSetup::GameSetup(Server* s){
 	set.end_mth = GameSettings::END_NONE;
 	set.lim = 10;
 	
+	use_teams = false;
+	team_num = 2;
+	
 	id = 0;
 }
 GameSetup::~GameSetup(){
@@ -48,6 +51,14 @@ void GameSetup::send_all(int peer_id){
 		end = encode_int(end, pl.team);
 		end = encode_int(end, pl.color);
 		serv->send(data, end-data, peer_id, PROTO_REL);
+		
+		if(it->second.first == peer_id){
+			end = data;
+			end = encode_char(end, '\x00');
+			end = encode_char(end, '\x09');
+			end = encode_int(end, pl.id);
+			serv->send(data, end-data, peer_id, PROTO_REL);
+		}
 
 		end = data;
 		end = encode_char(end, '\x00');
@@ -56,12 +67,15 @@ void GameSetup::send_all(int peer_id){
 		end = encode_str(end, pl.name.c_str()); // name
 		serv->send(data, end-data, peer_id, PROTO_REL);
 	}
+	
+	update_team_num();
+	update_use_teams();
 }
 
 void GameSetup::add_player(int peer_id){
 	PlayerData pl;
 	pl.color = get_free_col();
-	pl.team = 0;
+	pl.team = players.size() == 0 ? 0 : team_num-1;
 	pl.peer_id = peer_id;
 	pl.id = id++;
 	players.insert({pl.id, {peer_id, peers[peer_id]->size()}});
@@ -78,6 +92,12 @@ void GameSetup::add_player(int peer_id){
 	end = encode_int(end, pl.color);
 	serv->send_all(data, end-data, PROTO_REL);
 	
+	end = data;
+	end = encode_char(end, '\x00');
+	end = encode_char(end, '\x09');
+	end = encode_int(end, pl.id);
+	serv->send(data, end-data, peer_id, PROTO_REL);
+
 	end = data;
 	end = encode_char(end, '\x00');
 	end = encode_char(end, '\x05');
@@ -172,8 +192,28 @@ void GameSetup::assign_host(){
 	}
 	
 }
+void GameSetup::change_team(int peer_id, int id, int team){
+	if(team>=team_num) team = team_num-1;
+	if(team<0) team = 0;
+	if(players[id].first != peer_id) return;
+	int ind = players[id].second;
+	peers[peer_id]->at(ind).team = team;
+	
+	char data[100];
+	char* end;
+	
+	end = data;
+	end = encode_char(end, '\x00');
+	end = encode_char(end, '\x08');
+	end = encode_int(end, id);
+	end = encode_int(end, team);
+	serv->send_all(data, end-data, PROTO_REL);
+	
+}
 
 void GameSetup::update_game_lim(){
+	if(set.lim < 0) set.lim = 0;
+	
 	char data[100];
 	char* end;
 	
@@ -184,6 +224,9 @@ void GameSetup::update_game_lim(){
 	serv->send_all(data, end-data, PROTO_REL);
 }
 void GameSetup::update_tie_lim(){
+	if(set.allow_dif > 2) set.allow_dif = 2;
+	if(set.allow_dif < 0) set.allow_dif = 0;
+	
 	char data[100];
 	char* end;
 	
@@ -211,6 +254,32 @@ void GameSetup::update_end_mth(){
 	end = encode_char(end, '\x00');
 	end = encode_char(end, '\x11');
 	end = encode_end_mth(end, set.end_mth);
+	serv->send_all(data, end-data, PROTO_REL);
+}
+void GameSetup::update_team_num(){
+	char data[100];
+	char* end;
+	
+	for(auto it = players.begin(); it != players.end(); it++){
+		if(peers[it->second.first]->at(it->second.second).team >= team_num){
+			change_team(it->second.first, it->first, team_num-1);
+		}
+	}
+	
+	end = data;
+	end = encode_char(end, '\x00');
+	end = encode_char(end, '\x14');
+	end = encode_int(end, team_num);
+	serv->send_all(data, end-data, PROTO_REL);
+}
+void GameSetup::update_use_teams(){
+	char data[100];
+	char* end;
+	
+	end = data;
+	end = encode_char(end, '\x00');
+	end = encode_char(end, '\x15');
+	end = encode_bool(end, use_teams);
 	serv->send_all(data, end-data, PROTO_REL);
 }
 	
@@ -263,24 +332,42 @@ void GameSetup::mainloop(){
 					cur = decode_int(cur, c);
 					update_col(e.peer_id, i, c);
 					break;
+				case '\x08':
+					cur = decode_int(cur, i);
+					cur = decode_int(cur, t);
+					change_team(e.peer_id, i, t);
+					break;
 					
 				case '\x10':
+					if(e.peer_id != peers.begin()->first) break;
 					cur = decode_scr_mth(cur, set.scr_mth);
 					update_scr_mth();
 					break;
 				case '\x11':
+					if(e.peer_id != peers.begin()->first) break;
 					cur = decode_end_mth(cur, set.end_mth);
 					update_end_mth();
 					break;
 				case '\x12':
+					if(e.peer_id != peers.begin()->first) break;
 					cur = decode_int(cur, set.allow_dif);
 					update_tie_lim();
 					break;
 				case '\x13':
+					if(e.peer_id != peers.begin()->first) break;
 					cur = decode_int(cur, set.lim);
 					update_game_lim();
 					break;
-
+				case '\x14':
+					if(e.peer_id != peers.begin()->first) break;
+					cur = decode_int(cur, team_num);
+					update_team_num();
+					break;
+				case '\x15':
+					if(e.peer_id != peers.begin()->first) break;
+					cur = decode_bool(cur, use_teams);
+					update_use_teams();
+					break;
 				}
 				break;
 			case '\x01':

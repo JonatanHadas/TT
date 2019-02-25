@@ -11,6 +11,17 @@ char* decode_char(char* buf, char& c){
 	return buf;
 }
 
+char* encode_bool(char* buf, bool i){
+	bool* b = reinterpret_cast<bool*>(buf);
+	*(b++) = i;
+	return reinterpret_cast<char*>(b);
+}
+char* decode_bool(char* buf, bool& i){
+	bool* b = reinterpret_cast<bool*>(buf);
+	i = *(b++);
+	return reinterpret_cast<char*>(b);
+}
+
 char* encode_int(char* buf, int i){
 	int* b = reinterpret_cast<int*>(buf);
 	*(b++) = i;

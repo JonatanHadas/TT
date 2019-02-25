@@ -118,28 +118,37 @@ class CPlayerData{
 	Msg* name_m;
 	TankImg* img;
 	int col;
+	int team;
 	std::string name;
 	SDL_Renderer* rend;
 	
 	bool host;
+	bool our;
 	Msg* hst;
+	Msg* up;
+	Msg* dn;
 public:
-	int team;
 	CPlayerData(int c, int t, SDL_Renderer* r);
 	~CPlayerData();
 	void set_col(int i);
 	int get_col();
+	void set_team(int t);
+	int get_team();
 	void set_name(const char* name);
 	std::string get_name();
 	
-	void draw(int y);
+	void draw(int y, bool use_teams);
 	
 	void set_host();
+	void set_our();
+	bool get_our();
 };
 
 class PlayerMenu : public SubMenu{
 	std::map<int, CPlayerData*> players;
 	std::map<int, double> ys;
+	std::vector<double> tys;
+	bool use_teams;
 public:
 	PlayerMenu(SDL_Renderer* r, MainScr* main);
 	~PlayerMenu();
@@ -154,6 +163,11 @@ public:
 	void update_name(int id, const char* name);
 	void update_col(int id, int c);
 	void set_host(int id);
+	void set_our(int id);
+	
+	void set_team_num(int num);
+	void set_use_teams(bool use);
+	void set_team(int id, int t);
 };
 
 class PlayerSetting{
@@ -236,7 +250,12 @@ class SettingMenu : public SubMenu{
 	SDL_Rect get_players_rect();
 	SDL_Rect get_game_rect();
 	
-	NumberField tie_lim, game_lim;
+	NumberField tie_lim, game_lim, team_num;
+	bool use_teams;
+	SDL_Rect use_rect(bool use);
+	double ux,uw;
+	Msg* teams;
+	Msg* nteams;
 	GameSettings::ScoreMeth scr_mth;
 	Msg* tie_msg;
 	SDL_Rect scr_rect(GameSettings::ScoreMeth scr);
@@ -279,6 +298,8 @@ public:
 	
 	void set_game_lim(int lim);
 	void set_tie_lim(int lim);
+	void set_team_num(int num);
+	void set_use_teams(bool use);
 	void set_scr_mth(GameSettings::ScoreMeth mth);
 	void set_end_mth(GameSettings::EndMeth mth);
 	
@@ -329,10 +350,14 @@ public:
 	void remove_player(int ind);
 	void update_name(int i);
 	void update_col(int i, int col);
+	void change_team(int id, int team);
 	void set_game_lim(int lim);
 	void set_tie_lim(int lim);
 	void set_scr_mth(GameSettings::ScoreMeth mth);
 	void set_end_mth(GameSettings::EndMeth mth);
+	
+	void set_team_num(int num);
+	void set_use_teams(bool use);
 };
 
 #endif

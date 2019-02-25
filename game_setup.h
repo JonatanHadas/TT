@@ -26,8 +26,8 @@ stages:
 2=game			(round start, tank positions etc.)
 
 
-stage0:
 serv <--> client
+stage0:
 
 type |   | meaning        | data
 -----+---+----------------+--------
@@ -43,6 +43,9 @@ type |   | meaning        | data
 05   | > | change color   | ind, color
 06   | > | assign host    |
 07   | > | host tank      | id
+08   | < | change team    | id, team
+08   | > | change team    | id, team
+09   | > | tank yours     | id
      |   |                |
 10   | <H| change scr mth | new value
 10   | > | change scr mth | new value
@@ -52,8 +55,18 @@ type |   | meaning        | data
 12   | > | change tie lim | new value
 13   | <H| change limit   | new value
 13   | > | change limit   | new value
+14   | <H| team number    | num
+14   | > | team number    | num
+15   | <H| use teams      | true/false
+15   | > | use teams      | true/false
 
-
+stage1:
+type |   | meaning    | data
+-----+---+------------+--------
+00   | <H| start      | ---
+00   | > | count down | int num
+01   | < | stop count | ---
+02   | > | start game | ---
 
 
 */
@@ -79,9 +92,12 @@ class GameSetup{
 	void update_name(int peer_id, int ind, const char* name);
 	void update_col(int peer_id, int ind, int col);
 	void assign_host();
+	void change_team(int peer_id, int id, int team);
 	
 	void update_game_lim();
 	void update_tie_lim();
+	void update_team_num();
+	void update_use_teams();
 	void update_scr_mth();
 	void update_end_mth();
 public:
