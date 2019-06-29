@@ -23,6 +23,13 @@
 
 #define SHOT_R 0.03
 
+#define STEP_GATLING 0.05
+#define GATLING_TTL 600
+
+#define GATLING_R 0.015
+
+#define GATLING_DIV DEG2RAD(5.0)
+
 #define END_TIME 300
 
 #define UPG_ANG 30.0

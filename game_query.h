@@ -92,6 +92,8 @@ public:
 	virtual GameQEvent* get_event() = 0;
 	
 	virtual void advance() = 0;
+	
+	virtual long long int get_time() = 0;
 };
 class TeamQ{
 public:
@@ -106,6 +108,8 @@ public:
 	virtual double get_y() = 0;
 	virtual double get_ang() = 0;
 	virtual bool is_dead() = 0;
+	
+	virtual Tank::State get_state() = 0;
 	
 	virtual int get_ind() = 0;
 	virtual TeamQ* get_team() = 0;

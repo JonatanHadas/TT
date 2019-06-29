@@ -81,6 +81,7 @@ void BoardDrawer::draw(){
 		ShotQ* sht;
 		switch((*it)->get_type()){
 		case GenShot::TYPE_REG:
+		case GenShot::TYPE_GATLING:
 			sht = (ShotQ*)(*it);
 			r.w = r.h = DRC(2*sht->get_r());
 			r.x = WALL_D_T + DRC(sht->get_x()) - r.w/2;
@@ -120,7 +121,21 @@ void BoardDrawer::draw(){
 			
 			p.x -= r.x; p.y -= r.y;
 			
-			SDL_RenderCopyEx(renderer,tank_images[i].cannon, NULL, &r, RAD2DEG(ang)+90, &p, SDL_FLIP_NONE);
+			SDL_Texture* cannon;
+			switch(t->get_state()){
+			case Tank::REG:
+				cannon = tank_images[i].cannon;
+				break;
+			case Tank::GATLING:
+				cannon = tank_images[i].gatling[0];
+				break;
+			case Tank::GATLING_WAIT:
+			case Tank::GATLING_SHOOT:
+				cannon = tank_images[i].gatling[game->get_time()%3];
+				break;
+			}
+			
+			SDL_RenderCopyEx(renderer,cannon, NULL, &r, RAD2DEG(ang)+90, &p, SDL_FLIP_NONE);
 		}
 	}
 }

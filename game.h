@@ -188,6 +188,7 @@ class Tank{
 public:
 	enum State{
 		REG,
+		GATLING, GATLING_WAIT, GATLING_SHOOT,
 	};
 private:
 	
@@ -204,6 +205,8 @@ private:
 	int ind;
 	
 	int shot_num;
+	
+	int timer;
 	
 	friend RegShot;
 		
@@ -225,6 +228,7 @@ public:
 	double get_y();
 	double get_ang();
 	bool is_dead();
+	Tank::State get_state();
 	
 	int get_ind();
 	
@@ -242,6 +246,7 @@ class GenShot{
 public:
 	enum Type{
 		TYPE_REG,
+		TYPE_GATLING,
 	};
 private:
 	Tank* tank;
@@ -300,6 +305,14 @@ class RegShot : public Shot{
 public:
 	RegShot(Game* game, Tank* tank);
 	~RegShot();
+	double get_r();
+	int get_ttl();
+	GenShot::Type get_type();
+};
+class GatShot : public Shot{
+public:
+	GatShot(Game* game, Tank* tank);
+	~GatShot();
 	double get_r();
 	int get_ttl();
 	GenShot::Type get_type();

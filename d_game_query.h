@@ -98,6 +98,8 @@ public:
 	GameQEvent* get_event();
 	
 	void advance();
+
+	long long int get_time();
 };
 class TeamDQ : public TeamQ{
 	Team* team;
@@ -124,6 +126,8 @@ public:
 	TeamQ* get_team();
 	
 	void push_ctrl(ControlState ctrl);
+	
+	Tank::State get_state();
 };
 class RoundDQ : public RoundQ{
 	Round* round;

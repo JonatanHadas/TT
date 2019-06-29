@@ -389,27 +389,68 @@ double Tank::get_ang(){
 bool Tank::is_dead(){
 	return dead;
 }
+Tank::State Tank::get_state(){
+	return state;
+}
+
+#define GATLING_TIME 30
+#define GATLING_INTER 10 
+
 void Tank::step(){
 	if(!is_dead()){
 		double nx,ny,dp,px,py;
 		
-		double pa = ang;
-		
-		int turn = (ctrl.back().lt ? 1 : 0)-(ctrl.back().rt ? 1 : 0);
-		ang += turn * STEP_ANG;
-		
-		if(check_wall_coll(nx,ny,px,py,dp)) ang = pa;
-		
-		double prx = x, pry = y;
-		
-		double step = STEP_DST * ((ctrl.back().fd ? 1 : 0) - (ctrl.back().bk ? REV_RAT : 0));
-		rotate_add(ang, step, 0, x, y);
+		switch(state){
+		case Tank::REG:
+		case Tank::GATLING:
+			double pa = ang;
+			
+			int turn = (ctrl.back().lt ? 1 : 0)-(ctrl.back().rt ? 1 : 0);
+			ang += turn * STEP_ANG;
+			
+			if(check_wall_coll(nx,ny,px,py,dp)) ang = pa;
+			break;
+		}
+		switch(state){
+		case Tank::REG:
+		case Tank::GATLING:
+			double prx = x, pry = y;
+			
+			double step = STEP_DST * ((ctrl.back().fd ? 1 : 0) - (ctrl.back().bk ? REV_RAT : 0));
+			rotate_add(ang, step, 0, x, y);
 
-		if(check_wall_coll(nx,ny,px,py,dp)) {x=prx; y=pry;}
-		
-		
-		if(ctrl.back().sht && !p_ctrl.sht){
-			if(shot_num < MAX_SHOTS) game->get_round()->add_shot(new RegShot(game, this));
+			if(check_wall_coll(nx,ny,px,py,dp)) {x=prx; y=pry;}
+			break;
+		}
+		switch(state){
+		case Tank::REG:
+			if(ctrl.back().sht && !p_ctrl.sht){
+				if(shot_num < MAX_SHOTS) game->get_round()->add_shot(new RegShot(game, this));
+			}
+			break;
+		case Tank::GATLING:
+			if(ctrl.back().sht && !p_ctrl.sht){
+				state = Tank::GATLING_WAIT;
+				timer = GATLING_TIME;
+			}
+			break;
+			
+		case Tank::GATLING_WAIT:
+		case Tank::GATLING_SHOOT:
+			if(!ctrl.back().sht) state = Tank::REG;
+			break;
+		}
+	}
+	
+	if(timer > 0) timer--;
+	else{
+		switch(state){
+		case Tank::GATLING_WAIT:
+			state = GATLING_SHOOT;
+		case Tank::GATLING_SHOOT:
+			timer = GATLING_INTER;
+			game->get_round()->add_shot(new GatShot(game, this));
+			break;
 		}
 	}
 	
@@ -472,7 +513,7 @@ bool Tank::check_upg(Upgrade u){
 }
 
 std::pair<Upgrade::Type, Tank::State> upg2stt_a[UPG_NUM]={
-	{Upgrade::GATLING,Tank::REG},
+	{Upgrade::GATLING,Tank::GATLING},
 };
 
 std::map<Upgrade::Type, Tank::State> upg2stt(upg2stt_a, upg2stt_a+UPG_NUM);
@@ -658,4 +699,18 @@ int RegShot::get_ttl(){
 }
 GenShot::Type RegShot::get_type(){
 	return GenShot::TYPE_REG;
+}
+
+GatShot::GatShot(Game* game, Tank* tank) : Shot(game, tank, GATLING_DIV, STEP_GATLING){
+}
+GatShot::~GatShot(){
+}
+double GatShot::get_r(){
+	return GATLING_R;
+}
+int GatShot::get_ttl(){
+	return GATLING_TTL;
+}
+GenShot::Type GatShot::get_type(){
+	return GenShot::TYPE_GATLING;
 }
