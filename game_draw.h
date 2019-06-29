@@ -19,7 +19,7 @@ public:
 	BoardDrawer(GameQ* q, SDL_Renderer* rend, std::vector<int> img_inds);
 	~BoardDrawer();
 	void draw();
-	TankImg* get_img(int i);
+	TankImg* get_tank_img(int i);
 };
 
 class GameDrawer{

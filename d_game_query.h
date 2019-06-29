@@ -13,8 +13,10 @@ class GameDQEventStartRnd;
 class GameDQEventTankDeath;
 class GameDQEventScore;
 class GameDQEventEndGame;
-class GameQEventCreateShot;
-class GameQEventRemoveShot;
+class GameDQEventCreateShot;
+class GameDQEventRemoveShot;
+class GameDQEventCreateUpgrade;
+class GameDQEventRemoveUpgrade;
 
 class GameDQEventStartRnd : public GameQEventStartRnd{
 	GameEventStartRnd* e;
@@ -64,6 +66,21 @@ public:
 	int get_id();
 };
 
+class GameDQEventCreateUpgrade : public GameQEventCreateUpgrade{
+	GameEventCreateUpgrade* e;
+public:
+	GameDQEventCreateUpgrade(GameEventCreateUpgrade* event);
+	~GameDQEventCreateUpgrade();
+	Upgrade get_upg();
+};
+class GameDQEventRemoveUpgrade : public GameQEventRemoveUpgrade{
+	GameEventRemoveUpgrade* e;
+public:
+	GameDQEventRemoveUpgrade(GameEventRemoveUpgrade* event);
+	~GameDQEventRemoveUpgrade();
+	int get_x();
+	int get_y();
+};
 
 class GameDQ : public GameQ{
 	Game* game;
@@ -114,6 +131,7 @@ public:
 	RoundDQ(Round* round);
 	Maze* get_maze();
 	std::set<GenShotQ*> get_shots();
+	std::set<Upgrade*> get_upgs();
 };
 
 class ShotDQ : public ShotQ{

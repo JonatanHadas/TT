@@ -141,6 +141,14 @@ std::set<GenShotQ*> RoundDQ::get_shots(){
 	}
 	return ret;
 }
+std::set<Upgrade*> RoundDQ::get_upgs(){
+	std::set<Upgrade*> ret;
+	for(auto it = round->get_upgs(); it!=round->end_upgs(); it++){
+		Upgrade* u = new Upgrade({(*it).first.first,(*it).first.second, (*it).second});
+		ret.insert(u);
+	}
+	return ret;
+}
 
 ShotDQ::ShotDQ(Shot* s){
 	shot = s;

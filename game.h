@@ -8,6 +8,7 @@
 
 #include "maze.h"
 #include "game_config.h"
+#include "game_consts.h"
 
 // a whole game
 class Game;
@@ -16,6 +17,7 @@ class Tank;
 // all round specific data
 class Round;
 
+//Shots
 class GenShot;
 class Shot;
 class RegShot;
@@ -31,6 +33,7 @@ public:
 		TYPE_SCORE,
 		TYPE_END_GAME,
 		TYPE_SHOT_CRT, TYPE_SHOT_RMV,
+		TYPE_UPG_CRT, TYPE_UPG_RMV,
 	};
 	virtual Type get_type()=0;
 };
@@ -76,7 +79,23 @@ public:
 	Type get_type(){return GameEvent::TYPE_SHOT_RMV;}
 	int get_id();
 };
-
+class GameEventCreateUpgrade : public GameEvent{
+	Upgrade u; int rnd;
+public:
+	GameEventCreateUpgrade(Upgrade u, int round);
+	Type get_type(){return GameEvent::TYPE_UPG_CRT;}
+	Upgrade get_upg();
+	int get_round();
+};
+class GameEventRemoveUpgrade : public GameEvent{
+	int x,y,rnd;
+public:
+	GameEventRemoveUpgrade(Upgrade u, int round);
+	Type get_type(){return GameEvent::TYPE_UPG_RMV;}
+	int get_x();
+	int get_y();
+	int get_round();
+};
 
 class Team{
 	int score;
@@ -138,6 +157,12 @@ class Round{
 	
 	std::set<GenShot*> shots;
 	std::set<GenShot*> shts_fd;
+	
+	std::map<std::pair<int,int>, Upgrade::Type> upgs;
+	
+	int upg_timer;
+	
+	void create_upgrade();
 public:
 	Round(Game* game);
 	~Round();
@@ -148,16 +173,27 @@ public:
 	void delete_shot(GenShot* shot);
 	std::set<GenShot*>::iterator get_shots();
 	std::set<GenShot*>::iterator end_shots();
+	
+	std::map<std::pair<int,int>,Upgrade::Type>::iterator get_upgs();
+	std::map<std::pair<int,int>,Upgrade::Type>::iterator end_upgs();
 };
+
 
 struct ControlState{
 	bool rt,lt,bk,fd,sht;
 };
 
 class Tank{
+public:
+	enum State{
+		REG,
+	};
+private:
+	
 	Game* game;
 	Team* team;
 	double x,y,ang;
+	Tank::State state;
 	std::queue<ControlState> ctrl;
 	ControlState p_ctrl;
 	bool dead;
@@ -176,6 +212,8 @@ class Tank{
 	bool check_wall_coll(double& nx, double& ny, double& px, double& py, double& dp);
 	
 	void reset(double x, double y, double ang);
+	
+	bool check_upg(Upgrade u);	
 public:
 	Tank(Game* game, int i, Team* t);
 	~Tank();
@@ -194,6 +232,8 @@ public:
 	void step();
 	
 	void kill();
+
+	bool collide_upgrade(Upgrade u);
 };
 
 
