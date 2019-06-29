@@ -23,6 +23,11 @@ ExInEvent* NetEx::get_event(){
 			cur = decode_char(cur, hh);
 			switch(h){
 			case '\x01':
+				switch(hh){
+				case '\x03':
+					return new NExInEventEndGame(cur, e.data);
+					break;
+				}
 				break;
 			case '\x02':
 				switch(hh){

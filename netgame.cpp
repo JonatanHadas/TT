@@ -127,6 +127,28 @@ void NetGame::remove_shot(GameEventRemoveShot* e){
 	
 	set->serv->send_all(data, end-data, PROTO_REL);
 }
+void NetGame::end_game(GameEventEndGame* e){
+	char* data;
+	
+	size_t size = sizeof(int)* (e->get_scores().size()+1) + 2;
+	
+	data = new char[size];
+	
+	char* end = data;
+	
+	end = encode_char(end, '\x01');
+	end = encode_char(end, '\x03');
+	
+	end = encode_int(end, e->get_scores().size());
+	
+	for(int i = 0; i<e->get_scores().size(); i++){
+		end = encode_int(end, e->get_scores()[i]);
+	}
+	
+	set->serv->send_all(data, end-data, PROTO_REL);
+	
+	delete data;
+}
 
 void NetGame::push_ctrl(int peer_id,char* data){
 	int ind,rnd;
@@ -160,6 +182,7 @@ void NetGame::advance(){
 			score((GameEventScore*)e);
 			break;
 		case GameEvent::TYPE_END_GAME:
+			end_game((GameEventEndGame*)e);
 			break;
 		case GameEvent::TYPE_SHOT_CRT:
 			create_shot((GameEventCreateShot*)e);

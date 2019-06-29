@@ -7,7 +7,7 @@ server<-->client
 stage1
 type |   | meaning  | data
 -----+---+----------+--------
-03   | > | end game | ---
+03   | > | end game | scores
 
 
 stage2
@@ -47,6 +47,8 @@ class NetGame{
 	
 	void create_shot(GameEventCreateShot* e);
 	void remove_shot(GameEventRemoveShot* e);
+	
+	void end_game(GameEventEndGame* e);
 public:
 	NetGame(GameConfig& cf, GameSetup* set);
 	~NetGame();
