@@ -59,6 +59,75 @@ void NetGame::start_round(){
 	delete data;
 }
 
+void NetGame::kill_tank(GameEventTankDeath* e){
+	char data[100];
+	
+	char* end = data;
+	
+	end = encode_char(end, '\x02');
+	end = encode_char(end, '\x02');
+	
+	end = encode_int(end, e->get_ind());
+	
+	set->serv->send_all(data, end-data, PROTO_REL);
+}
+void NetGame::score(GameEventScore* e){
+	char data[100];
+	
+	char* end = data;
+	
+	end = encode_char(end, '\x02');
+	end = encode_char(end, '\x03');
+	
+	end = encode_int(end, e->get_ind());
+	end = encode_int(end, e->get_diff());
+	
+	set->serv->send_all(data, end-data, PROTO_REL);
+}
+void NetGame::create_shot(GameEventCreateShot* e){
+	char data[100];
+	
+	char* end = data;
+	GenShot* gs = e->get_shot();
+	
+	Shot* s;
+	switch(gs->get_type()){
+	case GenShot::TYPE_REG:
+		s = (Shot*) gs;
+		end = encode_char(end, '\x02');
+		end = encode_char(end, '\x10');
+				
+		end = encode_int(end, s->get_id());
+		
+		end = encode_long(end, game->get_time());
+		end = encode_int(end, game->get_round_num());
+		
+		end = encode_int(end, s->get_tank()->get_ind());
+		end = encode_shot_type(end, s->get_type());
+	
+		end = encode_double(end, s->get_x());
+		end = encode_double(end, s->get_y());
+		end = encode_double(end, s->get_vx());
+		end = encode_double(end, s->get_vy());
+		break;
+	}
+	
+	set->serv->send_all(data, end-data, PROTO_REL);
+	
+}
+void NetGame::remove_shot(GameEventRemoveShot* e){
+	char data[100];
+	
+	char* end = data;
+	
+	end = encode_char(end, '\x02');
+	end = encode_char(end, '\x11');
+	
+	end = encode_int(end, e->get_id());
+	
+	set->serv->send_all(data, end-data, PROTO_REL);
+}
+
 void NetGame::push_ctrl(int peer_id,char* data){
 	int ind,rnd;
 	ControlState ctrl;
@@ -85,14 +154,18 @@ void NetGame::advance(){
 			start_round();
 			break;
 		case GameEvent::TYPE_TANK_DEAD:
+			kill_tank((GameEventTankDeath*)e);
 			break;
 		case GameEvent::TYPE_SCORE:
+			score((GameEventScore*)e);
 			break;
 		case GameEvent::TYPE_END_GAME:
 			break;
 		case GameEvent::TYPE_SHOT_CRT:
+			create_shot((GameEventCreateShot*)e);
 			break;
 		case GameEvent::TYPE_SHOT_RMV:
+			remove_shot((GameEventRemoveShot*)e);
 			break;
 		}
 	}

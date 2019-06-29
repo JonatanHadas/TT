@@ -314,7 +314,7 @@ void GameSetup::count(){
 		end = encode_char(end, '\x02');
 		serv->send_all(data, end-data, PROTO_REL);
 		
-		GameConfig cf(players.size(), use_teams ? team_num : cf.tank_num);
+		GameConfig cf(players.size(), use_teams ? team_num : players.size());
 		cf.set = set;
 		int i = 0;
 		for(auto it = players.begin(); it != players.end(); it++, i++){

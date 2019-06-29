@@ -401,6 +401,7 @@ double ShotExtrap::check_wall(){
 	double wxs[4],wys[4],nnx,nny;
 	double t = -1;
 	while(abs(ix - (int)xx)+abs(iy - (int)yy) <= sqrt(vx*vx+vy*vy)*(get_game()->get_time()-ctime-col_t+1)){
+		
 		double tt;
 		for(int i = -1; i<=1; i++){
 			for(int j = -1; j<1; j++){
@@ -432,7 +433,6 @@ double ShotExtrap::check_wall(){
 void ShotExtrap::reflect(){
 	double col_x = x+col_t*vx;
 	double col_y = y+col_t*vy;
-	
 	
 	// reflect
 	colls.push_back({col_x, col_y});

@@ -32,5 +32,10 @@ char* decode_end_mth(char* buf, GameSettings::EndMeth& e);
 char* encode_gamesett(char* buf, GameSettings s);
 char* decode_gamesett(char* buf, GameSettings& s);
 
+#include "game.h"
+
+char* encode_shot_type(char* buf, GenShot::Type t);
+char* decode_shot_type(char* buf, GenShot::Type& t);
+
 
 #endif

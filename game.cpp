@@ -89,7 +89,7 @@ int Team::get_ind(){
 	return ind;
 }
 
-Game::Game(GameConfig& cf){
+Game::Game(GameConfig& cf) : teams(), tanks(){
 	set = cf.set;
 	for(int i = 0; i<cf.team_num; i++) teams.push_back(new Team(i));
 	for(int i = 0; i<cf.tank_num; i++) tanks.push_back(new Tank(this, i, teams[cf.team_inds[i]]));

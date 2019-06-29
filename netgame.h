@@ -19,7 +19,7 @@ type |   | meaning     | data
 02   | > | tank death  | ind
 03   | > | score       | team,diff
      |   |             |
-10   | > | create shot | 
+10   | > | create shot | id, time,round, tank_ind,type, x,y,vx,vy
 11   | > | delete shot | id
 
 
@@ -42,6 +42,11 @@ class NetGame{
 	void send_update();
 	
 	void start_round();
+	void kill_tank(GameEventTankDeath* e);
+	void score(GameEventScore* e);
+	
+	void create_shot(GameEventCreateShot* e);
+	void remove_shot(GameEventRemoveShot* e);
 public:
 	NetGame(GameConfig& cf, GameSetup* set);
 	~NetGame();

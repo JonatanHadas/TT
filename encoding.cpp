@@ -119,3 +119,20 @@ char* decode_gamesett(char* buf, GameSettings& s){
 	buf = decode_end_mth(buf, s.end_mth);
 	return decode_int(buf, s.lim);
 }
+
+#define SHOT_TYPE_NUM 1
+std::pair<GenShot::Type, int> i2sht[SHOT_TYPE_NUM] = {
+	{GenShot::TYPE_REG,0},
+};
+std::map<GenShot::Type, int> sht2i(i2sht, i2sht+SHOT_TYPE_NUM);
+
+char* encode_shot_type(char* buf, GenShot::Type t){
+	return encode_int(buf, sht2i[t]);
+}
+char* decode_shot_type(char* buf, GenShot::Type& t){
+	int i;
+	buf = decode_int(buf, i);
+	t = i2sht[i].first;
+	return buf;
+}
+

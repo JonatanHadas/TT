@@ -33,16 +33,16 @@ ExInEvent* NetEx::get_event(){
 					return new NExInEventTankUpdate(cur,e.data);
 					break;
 				case '\x02':
-//					return new NExInEventTankDeath(cur,e.data);
+					return new NExInEventTankDeath(cur,e.data);
 					break;
 				case '\x03':
-//					return new NExInEventScore(cur,e.data);
+					return new NExInEventScore(cur,e.data);
 					break;
 				case '\x10':
-//					return new NExInEventCreateShot(cur,e.data);
+					return new NExInEventCreateShot(cur,e.data);
 					break;
 				case '\x11':
-//					return new NExInEventRemoveShot(cur,e.data);
+					return new NExInEventRemoveShot(cur,e.data);
 					break;
 				}
 				break;
@@ -130,25 +130,29 @@ double NExInEventStartRound::get_ang(int i){
 }
 
 NExInEventTankDeath::NExInEventTankDeath(char* data, char* del){
+	data = decode_int(data, ind);
 	delete del;
 }
 NExInEventTankDeath::~NExInEventTankDeath(){
 	
 }
 int NExInEventTankDeath::get_ind(){
+	return ind;
 }
 
 NExInEventScore::NExInEventScore(char* data, char* del){
+	data = decode_int(data, ind);
+	data = decode_int(data, diff);
 	delete del;
 }
 NExInEventScore::~NExInEventScore(){
 	
 }
 int NExInEventScore::get_ind(){
-	
+	return ind;
 }
 int NExInEventScore::get_diff(){
-	
+	return diff;
 }
 
 NExInEventEndGame::NExInEventEndGame(char* data, char* del){
@@ -159,47 +163,58 @@ NExInEventEndGame::~NExInEventEndGame(){
 }
 
 NExInEventCreateShot::NExInEventCreateShot(char* data, char* del){
+	data = decode_int(data,id);
+	data = decode_long(data,time);
+	data = decode_int(data,round);
+	data = decode_int(data,tank_ind);
+	data = decode_shot_type(data,type);
+	data = decode_double(data,x);
+	data = decode_double(data,y);
+	data = decode_double(data,vx);
+	data = decode_double(data,vy);
+	
 	delete del;
 }
 NExInEventCreateShot::~NExInEventCreateShot(){
 	
 }
 int NExInEventCreateShot::get_id(){
-	
+	return id;
 }
 GenShot::Type NExInEventCreateShot::get_stype(){
-	
+	return type;
 }
 double NExInEventCreateShot::get_x(){
-	
+	return x;
 }
 double NExInEventCreateShot::get_y(){
-	
+	return y;
 }
 double NExInEventCreateShot::get_vx(){
-	
+	return vx;
 }
 double NExInEventCreateShot::get_vy(){
-	
+	return vy;
 }
 int NExInEventCreateShot::get_tank_ind(){
-	
+	return tank_ind;
 }
 long long int NExInEventCreateShot::get_time(){
-	
+	return time;
 }
 int NExInEventCreateShot::get_round(){
-	
+	return round;
 }
 
 NExInEventRemoveShot::NExInEventRemoveShot(char* data, char* del){
+	data = decode_int(data, id);
 	delete del;
 }
 NExInEventRemoveShot::~NExInEventRemoveShot(){
 	
 }
 int NExInEventRemoveShot::get_id(){
-	
+	return id;
 }
 
 NExInEventTankUpdate::NExInEventTankUpdate(char* data, char* del){

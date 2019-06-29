@@ -31,12 +31,14 @@ public:
 	double get_ang(int i);
 };
 class NExInEventTankDeath : public ExInEventTankDeath{
+	int ind;
 public:
 	NExInEventTankDeath(char* data, char* del);
 	~NExInEventTankDeath();
 	int get_ind();
 };
 class NExInEventScore : public ExInEventScore{
+	int ind,diff;
 public:
 	NExInEventScore(char* data, char* del);
 	~NExInEventScore();
@@ -49,6 +51,12 @@ public:
 	~NExInEventEndGame();
 };
 class NExInEventCreateShot : public ExInEventCreateShot{
+	int id;
+	GenShot::Type type;
+	int tank_ind;
+	long long int time;
+	int	round;
+	double x,y,vx,vy;
 public:
 	NExInEventCreateShot(char* data, char* del);
 	~NExInEventCreateShot();
@@ -63,6 +71,7 @@ public:
 	int get_round();
 };
 class NExInEventRemoveShot : public ExInEventRemoveShot{
+	int id;
 public:
 	NExInEventRemoveShot(char* data, char* del);
 	~NExInEventRemoveShot();
