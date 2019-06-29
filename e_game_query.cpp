@@ -87,6 +87,10 @@ void GameEQ::advance(){
 	game->step();
 }
 
+void GameEQ::leave(){
+	game->leave();
+}
+
 TeamEQ::TeamEQ(TeamExtrap* t){
 	team = t;
 }

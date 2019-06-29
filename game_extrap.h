@@ -119,6 +119,7 @@ public:
 	void push_ctrl(ControlState ctrl, int ind);
 	
 	long long int get_time();
+	void leave();
 
 private:
 	void start_round(ExInEventStartRound* e);
@@ -127,6 +128,7 @@ private:
 	
 	void create_shot(ExInEventCreateShot* e);
 	void remove_shot(int id);
+	
 };
 
 class RoundExtrap{

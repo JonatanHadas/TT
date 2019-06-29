@@ -46,12 +46,12 @@ char* decode_double(char* buf, double& x){
 
 char* encode_long(char* buf, long long int i){
 	long long int* b = reinterpret_cast<long long int*>(buf);
-	i = *(b++);
+	*(b++) = i;
 	return reinterpret_cast<char*>(b);
 }
 char* decode_long(char* buf, long long int& i){
 	long long int* b = reinterpret_cast<long long int*>(buf);
-	*(b++) = i;
+	i = *(b++);
 	return reinterpret_cast<char*>(b);
 }
 #include <string.h>

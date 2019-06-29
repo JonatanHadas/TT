@@ -165,7 +165,7 @@ void GameExtrap::step(){
 		}
 		delete e;
 	}
-	round->advance();
+	if(round) round->advance();
 	for(int i = 0; i<get_tank_num(); i++) get_tank(i)->advance();
 }
 ExEvent* GameExtrap::get_event(){
@@ -209,6 +209,9 @@ void GameExtrap::remove_shot(int id){
 		round->del_shot(id);
 	}
 }
+void GameExtrap::leave(){
+	in->leave();
+}
 
 RoundExtrap::RoundExtrap(GameExtrap* g,Maze* m){
 	game = g;
@@ -238,9 +241,9 @@ void RoundExtrap::del_shot(int id){
 	shots.erase(id);
 }
 
-TankExtrap::TankExtrap(GameExtrap* g,int i, TeamExtrap* t){
+TankExtrap::TankExtrap(GameExtrap* g,int i, TeamExtrap* tm){
 	game = g;
-	team = t;
+	team = tm;
 	ind = i;
 }
 TeamExtrap* TankExtrap::get_team(){
@@ -262,8 +265,10 @@ void TankExtrap::update(ExInEventTankUpdate* e){
 		t = b_t;
 		b_t = e->get_time();
 		while(t < b_t){
-			p_ctrl = ctrl.front();
-			ctrl.pop_front();
+			if(ctrl.size()>0){
+				p_ctrl = ctrl.front();
+				ctrl.pop_front();
+			}
 			t++;
 		}
 		x = e->get_x();
@@ -337,6 +342,8 @@ void TankExtrap::advance(){
 
 			if(check_wall_coll(nx,ny,px,py,dp)) {x=prx; y=pry;}		
 		}
+		
+		t++;
 		
 	}
 };

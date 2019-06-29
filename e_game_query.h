@@ -86,6 +86,8 @@ public:
 	GameQEvent* get_event();
 	
 	void advance();
+	
+	void leave();
 };
 class TeamEQ : public TeamQ{
 	TeamExtrap* team;

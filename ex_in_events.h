@@ -22,6 +22,7 @@ public:
 	virtual ~ExInEvents(){}
 	virtual ExInEvent* get_event() = 0;
 	virtual void push_ctrl(ControlState ctrl, int ind, int rnd) = 0;
+	virtual void leave(){}
 };
 
 class ExInEventStartRound : public ExInEvent{

@@ -74,6 +74,12 @@ bool Maze::vwall(int x, int y){
 	if(x < 0 || x >= w-1 || y < 0 || y >= h) return true;
 	return vwalls[x][y];
 }
+bool Maze::set_hwall(int x, int y, bool val){
+	hwalls[x][y] = val;
+}
+bool Maze::set_vwall(int x, int y, bool val){
+	vwalls[x][y] = val;
+}
 void Maze::generate(std::vector<std::pair<int,int>> c_points, GenMethod m){
 	switch(m){
 	// TODO

@@ -1539,7 +1539,7 @@ bool MainScr::step(){
 			e=clnt->get_event();
 			char* cur;
 			char h,hh, str[1000];
-			int i,c,t;
+			int i,ind,c,t;
 			bool u;
 			GameSettings s;
 			if(e.type == NetEvent::TYPE_NONE) break;
@@ -1600,6 +1600,8 @@ bool MainScr::step(){
 					case '\x09':
 						cur = decode_int(cur, i);
 						play.set_our(i);
+						cur = decode_int(cur, ind);
+						sett.set_id(ind,i);
 						break;
 						
 					case '\x10':
@@ -1855,7 +1857,7 @@ void MainScr::start(){
 		inds[it->first] = i;
 	}
 	for(int i = 0; i<sett.get_player_num(); i++){
-		cf.keys[sett.get_id(i)] = sett.get_ind(i);
+		cf.keys[inds[sett.get_id(i)]] = sett.get_ind(i);
 	}
 	
 	ExInEvents* in = new NetEx(clnt, cf);

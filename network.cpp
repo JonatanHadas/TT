@@ -51,7 +51,7 @@ NetEvent Server::get_event(int time){
 			}
 			break;
 		case ENET_EVENT_TYPE_RECEIVE:
-			if(ids.count(event.peer)>0 && event.channelID == 0){
+			if(ids.count(event.peer)>0){
 				ret.type = NetEvent::TYPE_RECV;
 				ret.len = event.packet->dataLength;
 				ret.data = new char[ret.len];
@@ -79,7 +79,7 @@ void Server::send(char* data, int len, int peer_id, Proto p){
 		int flags = 0;
 		if(p==PROTO_REL) flags |= ENET_PACKET_FLAG_RELIABLE;
 		ENetPacket* pack = enet_packet_create(data, len, flags);
-		enet_peer_send(peers[peer_id],  0, pack);
+		enet_peer_send(peers[peer_id],  p==PROTO_REL ? 0 : 1, pack);
 		enet_host_flush(host);
 	}
 }
@@ -143,7 +143,7 @@ NetEvent Client::get_event(){
 			}
 			break;
 		case ENET_EVENT_TYPE_RECEIVE:
-			if(event.peer == peer && event.channelID == 0){
+			if(event.peer == peer){
 				ret.type = NetEvent::TYPE_RECV;
 				ret.len = event.packet->dataLength;
 				ret.data = new char[ret.len];
@@ -166,6 +166,6 @@ void Client::send(char* data, int len, Proto p){
 	int flags = 0;
 	if(p==PROTO_REL) flags |= ENET_PACKET_FLAG_RELIABLE;
 	ENetPacket* pack = enet_packet_create(data, len, flags);
-	enet_peer_send(peer,  0, pack);
+	enet_peer_send(peer,  p==PROTO_REL ? 0 : 1, pack);
 	enet_host_flush(host);
 }

@@ -20,7 +20,15 @@ bool GameGui::step(){
 	while(SDL_PollEvent(&e)){
 		switch(e.type){
 		case SDL_QUIT:
+			game->leave();
 			return true;
+		case SDL_KEYDOWN:
+			switch(e.key.keysym.sym){
+			case SDLK_ESCAPE:
+				game->leave();
+				return true;
+			}
+			break;
 		}
 	}
 	

@@ -14,6 +14,51 @@ NetGame::~NetGame(){
 	delete game;
 }
 
+void NetGame::start_round(){
+	char* data;
+	Maze* maze = game->get_round()->get_maze();
+	
+	int w = maze->get_w();
+	int h = maze->get_h();
+	size_t size = 2+game->get_tank_num() * (sizeof(int)*2 + sizeof(double)) + sizeof(bool) * (2*w*h-w-h) + 3*sizeof(int);
+	
+	data = new char[size];
+	
+	char* cur = data;
+	
+	cur = encode_char(cur, '\x02');
+	cur = encode_char(cur, '\x00');
+	
+	cur = encode_int(cur, game->get_tank_num());
+	
+	for(int i = 0; i<game->get_tank_num(); i++){
+		Tank* t = game->get_tank(i);
+		
+		cur = encode_int(cur, (int)(t->get_x()));
+		cur = encode_int(cur, (int)(t->get_y()));
+		
+		cur = encode_double(cur, (t->get_ang()));
+	}
+	
+	cur = encode_int(cur, w);
+	cur = encode_int(cur, h);
+	
+	for(int x = 0; x<w; x++){
+		for(int y = 0; y<h-1; y++){
+			cur = encode_bool(cur, maze->hwall(x,y));
+		}
+	}
+	for(int x = 0; x<w-1; x++){
+		for(int y = 0; y<h; y++){
+			cur = encode_bool(cur, maze->vwall(x,y));
+		}
+	}
+	
+	set->serv->send_all(data, cur-data, PROTO_REL);
+	
+	delete data;
+}
+
 void NetGame::push_ctrl(int peer_id,char* data){
 	int ind,rnd;
 	ControlState ctrl;
@@ -28,11 +73,16 @@ void NetGame::push_ctrl(int peer_id,char* data){
 	data = decode_bool(data, ctrl.sht);
 	game->get_tank(ind)->push_control(ctrl);
 	
+	advance();
+}
+
+void NetGame::advance(){
 	game->advance();
 	GameEvent* e;
 	while(e = game->get_event()){
 		switch(e->get_type()){
 		case GameEvent::TYPE_START_RND:
+			start_round();
 			break;
 		case GameEvent::TYPE_TANK_DEAD:
 			break;
@@ -46,9 +96,41 @@ void NetGame::push_ctrl(int peer_id,char* data){
 			break;
 		}
 	}
+	
+	send_update();
+}
+
+void NetGame::send_update(){
+	char data[100];
+	
+	for(int i = 0; i<game->get_tank_num(); i++){
+		char* end = data;
+		end = encode_char(end, '\x02');
+		end = encode_char(end, '\x01');
+		
+		end = encode_int(end, i);
+		
+		end = encode_long(end, game->get_time());
+						
+		Tank* t = game->get_tank(i);
+		end = encode_double(end, t->get_x());
+		end = encode_double(end, t->get_y());
+		end = encode_double(end, t->get_ang());
+		
+		end = encode_bool(end, t->get_ctrl().fd);
+		end = encode_bool(end, t->get_ctrl().bk);
+		end = encode_bool(end, t->get_ctrl().rt);
+		end = encode_bool(end, t->get_ctrl().lt);
+		end = encode_bool(end, t->get_ctrl().sht);
+		
+		
+		
+		set->serv->send_all(data, end-data, PROTO_UNREL);		
+	}
 }
 	
 void NetGame::mainloop(){
+	advance();
 	while(true){
 		char h,hh;
 		char* cur;

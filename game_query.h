@@ -84,6 +84,8 @@ public:
 	virtual GameQEvent* get_event() = 0;
 	
 	virtual void advance() = 0;
+	
+	virtual void leave(){}
 };
 class TeamQ{
 public:

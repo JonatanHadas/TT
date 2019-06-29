@@ -16,9 +16,12 @@ public:
 	~NetEx();
 	ExInEvent* get_event();
 	void push_ctrl(ControlState ctrl, int ind, int rnd);
+	void leave();
 };
 
 class NExInEventStartRound : public ExInEventStartRound{
+	std::vector<std::pair<std::pair<int,int>,double>> tanks;
+	Maze* maze;
 public:
 	NExInEventStartRound(char* data, char* del);
 	~NExInEventStartRound();
@@ -66,6 +69,12 @@ public:
 	int get_id();
 };
 class NExInEventTankUpdate : public ExInEventTankUpdate{
+	double x;
+	double y;
+	double ang;
+	long long int time;
+	int ind;
+	ControlState ctrl;
 public:
 	NExInEventTankUpdate(char* data, char* del);
 	~NExInEventTankUpdate();

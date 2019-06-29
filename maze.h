@@ -19,6 +19,8 @@ public:
 	int get_h();
 	bool hwall(int x, int y); // below point
 	bool vwall(int x, int y); // to right of point
+	bool set_hwall(int x, int y, bool val);
+	bool set_vwall(int x, int y, bool val);
 	void generate(std::vector<std::pair<int,int>> c_points, GenMethod m); // critical points must be connected
 };
 

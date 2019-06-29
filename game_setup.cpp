@@ -308,7 +308,7 @@ void GameSetup::count(){
 		printf(cnt<=0 ? "Go!\n" : "%d\n", cnt);
 	}
 	else{
-		printf("Starting game");
+		printf("Starting game\n");
 		end = data;
 		end = encode_char(end, '\x01');
 		end = encode_char(end, '\x02');

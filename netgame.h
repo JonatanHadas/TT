@@ -15,7 +15,7 @@ type |   | meaning     | data
 -----+---+-------------+--------
 00   | > | start round | tank_poss, maze
 01   | < | controls    | tank_ind, round, ctrl state
-01   | > | tank update | 
+01   | > | tank update | ind,t, x,y,ang, ctrl_state
 02   | > | tank death  | ind
 03   | > | score       | team,diff
      |   |             |
@@ -37,6 +37,11 @@ class NetGame{
 	std::vector<int> ids;
 	
 	void push_ctrl(int peer_id,char* data);
+	
+	void advance();
+	void send_update();
+	
+	void start_round();
 public:
 	NetGame(GameConfig& cf, GameSetup* set);
 	~NetGame();
