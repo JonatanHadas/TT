@@ -97,6 +97,8 @@ Game::Game(GameConfig& cf){
 	set = cf.set;
 	for(int i = 0; i<cf.team_num; i++) teams.push_back(new Team(i));
 	for(int i = 0; i<cf.tank_num; i++) tanks.push_back(new Tank(this, i, teams[cf.team_inds[i]]));
+	
+	for(int i = 0, mask=1; i<UPG_NUM; i++, mask<<=1) if(cf.upg_mask & mask) upgs.push_back(upg_types[i]);
 	round = NULL;
 	round_num = 0;
 	start_round();
@@ -345,8 +347,10 @@ void Round::create_upgrade(){
 		
 		if(x==xx && y==yy) return;
 	}
-	upgs[{x,y}] = upg_types[rand_range(0,UPG_NUM)];
-	game->events.push(new GameEventCreateUpgrade({x,y,upgs[{x,y}]}, game->round_num));
+	if(game->upgs.size()>0){
+		upgs[{x,y}] = game->upgs[rand_range(0,game->upgs.size())];
+		game->events.push(new GameEventCreateUpgrade({x,y,upgs[{x,y}]}, game->round_num));
+	}
 }
 std::map<std::pair<int,int>,Upgrade::Type>::iterator Round::get_upgs(){
 	return upgs.begin();

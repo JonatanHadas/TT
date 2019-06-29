@@ -117,6 +117,7 @@ public:
 class Game{
 	std::vector<Tank*> tanks;
 	std::vector<Team*> teams;
+	std::vector<Upgrade::Type> upgs;
 	Round* round;
 	std::queue<GameEvent*> events;
 	friend Round;

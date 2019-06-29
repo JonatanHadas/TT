@@ -1,6 +1,9 @@
 #ifndef _GAME_CONFIG_H
 #define _GAME_CONFIG_H
 
+#define UPG_MASK_GATLING 0x1
+#define UPG_MASK_ALL 0x1
+
 struct GameSettings{
 	enum ScoreMeth{
 		SCR_LAST,
@@ -20,8 +23,9 @@ struct GameConfig{
 	int tank_num;
 	int team_num;
 	int* team_inds;
+	int upg_mask;
 	GameSettings set;
-	GameConfig(int tank_num, int team_num);
+	GameConfig(int tank_num, int team_num, int mask);
 	~GameConfig();
 };
 
