@@ -23,6 +23,7 @@ ExInEvent* DirectEx::get_event(){
 			switch(((GameEventCreateShot*)e)->get_shot()->get_type()){
 			case GenShot::TYPE_REG:
 			case GenShot::TYPE_GATLING:
+			case GenShot::TYPE_LASER:
 				return new DExInEventCreateShot((GameEventCreateShot*)e);
 				break;
 			}

@@ -21,6 +21,8 @@ class Round;
 class GenShot;
 class Shot;
 class RegShot;
+class GatShot;
+class LaserShot;
 
 //for scoring
 class Team;
@@ -127,6 +129,7 @@ public:
 	enum State{
 		REG,
 		GATLING, GATLING_WAIT, GATLING_SHOOT,
+		LASER, LASER_SHOOT,
 	};
 private:
 	
@@ -147,6 +150,7 @@ private:
 	int timer;
 	
 	friend RegShot;
+	friend LaserShot;
 		
 	bool can_step();
 	void clear_control();
@@ -187,6 +191,7 @@ public:
 	enum Type{
 		TYPE_REG,
 		TYPE_GATLING,
+		TYPE_LASER,
 	};
 private:
 	Tank* tank;
@@ -260,6 +265,14 @@ class GatShot : public Shot{
 public:
 	GatShot(Game* game, Tank* tank);
 	~GatShot();
+	double get_r();
+	int get_ttl();
+	GenShot::Type get_type();
+};
+class LaserShot : public Shot{
+public:
+	LaserShot(Game* game, Tank* tank);
+	~LaserShot();
 	double get_r();
 	int get_ttl();
 	GenShot::Type get_type();
