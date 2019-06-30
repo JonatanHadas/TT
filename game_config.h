@@ -2,7 +2,8 @@
 #define _GAME_CONFIG_H
 
 #define UPG_MASK_GATLING 0x1
-#define UPG_MASK_ALL 0x1
+#define UPG_MASK_LASER 0x2
+#define UPG_MASK_ALL 0x3
 
 struct GameSettings{
 	enum ScoreMeth{

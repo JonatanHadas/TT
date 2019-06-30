@@ -30,17 +30,22 @@
 
 #define GATLING_DIV DEG2RAD(5.0)
 
+#define STEP_LASER 0.7
+#define LASER_TTL 20
+
+#define LASER_R 0.01
+
 #define END_TIME 300
 
 #define UPG_ANG 30.0
 
-#define UPG_NUM 1
+#define UPG_NUM 2
 #define UPG_SIZE 0.3
 
 struct Upgrade{
 	int x,y;
 	enum Type{
-		GATLING,
+		GATLING,LASER,
 	};
 	Upgrade::Type type;
 };

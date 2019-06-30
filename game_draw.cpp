@@ -22,6 +22,7 @@
 
 std::pair<Upgrade::Type, Img> upg2img_a[UPG_NUM] = {
 	{Upgrade::GATLING, IMG_GATLING_SYM},
+	{Upgrade::LASER, IMG_LASER_SYM},
 	};
 std::map<Upgrade::Type, Img> upg2img(upg2img_a,upg2img_a+UPG_NUM);
 
@@ -89,6 +90,17 @@ void BoardDrawer::draw(){
 			SDL_SetTextureColorMod(circ, 0,0,0);
 			SDL_RenderCopy(renderer, circ, NULL, &r);
 			break;
+		case GenShot::TYPE_LASER:
+			sht = (ShotQ*)(*it);
+			SDL_SetRenderDrawColor(renderer, 255,0,0,255);
+			SDL_Point* ps = new SDL_Point[sht->get_colls().size()];
+			for(int i = 0; i<sht->get_colls().size(); i++){
+				ps[i].x = DRC(sht->get_colls()[i].first);
+				ps[i].y = DRC(sht->get_colls()[i].second);
+			}
+			SDL_RenderDrawLines(renderer, ps, sht->get_colls().size());
+			delete ps;
+			break;
 		}
 		
 		delete (*it);
@@ -132,6 +144,10 @@ void BoardDrawer::draw(){
 			case Tank::GATLING_WAIT:
 			case Tank::GATLING_SHOOT:
 				cannon = tank_images[i].gatling[game->get_time()%3];
+				break;
+			case Tank::LASER:
+			case Tank::LASER_SHOOT:
+				cannon = tank_images[i].laser;
 				break;
 			}
 			
