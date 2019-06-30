@@ -85,6 +85,9 @@ GameQEvent* GameDQ::get_event(){
 void GameDQ::advance(){
 	game->advance();
 }
+long long int GameDQ::get_time(){
+	return game->get_time();
+}
 
 TeamDQ::TeamDQ(Team* t){
 	team = t;
@@ -119,6 +122,10 @@ double TankDQ::get_ang(){
 bool TankDQ::is_dead(){
 	return tank->is_dead();
 }
+Tank::State TankDQ::get_state(){
+	return tank->get_state();
+}
+
 void TankDQ::push_ctrl(ControlState ctrl){
 	tank->push_control(ctrl);
 }
@@ -140,9 +147,18 @@ std::set<GenShotQ*> RoundDQ::get_shots(){
 	for(auto it = round->get_shots(); it!=round->end_shots(); it++){
 		switch((*it)->get_type()){
 		case GenShot::TYPE_REG:
+		case GenShot::TYPE_GATLING:
 			ret.insert(new ShotDQ((Shot*)(*it)));
 			break;
 		}
+	}
+	return ret;
+}
+std::set<Upgrade*> RoundDQ::get_upgs(){
+	std::set<Upgrade*> ret;
+	for(auto it = round->get_upgs(); it!=round->end_upgs(); it++){
+		Upgrade* u = new Upgrade({(*it).first.first,(*it).first.second, (*it).second});
+		ret.insert(u);
 	}
 	return ret;
 }

@@ -7,6 +7,10 @@
 #include <stdio.h>
 #include <vector>
 
+Upgrade::Type upg_types[UPG_NUM] = {
+	Upgrade::GATLING,
+};
+
 GameEventTankDeath::GameEventTankDeath(int i){
 	ind = i;
 }
@@ -68,6 +72,31 @@ GenShot::Type GameEventRemoveShot::get_stype(){
 	return type;
 }
 
+GameEventCreateUpgrade::GameEventCreateUpgrade(Upgrade up, int round){
+	u = up;
+	rnd = round;
+}
+Upgrade GameEventCreateUpgrade::get_upg(){
+	return u;
+}
+int GameEventCreateUpgrade::get_round(){
+	return rnd;
+}
+
+GameEventRemoveUpgrade::GameEventRemoveUpgrade(Upgrade u, int round){
+	x = u.x;
+	y = u.y;
+	rnd = round;
+}
+int GameEventRemoveUpgrade::get_x(){
+	return x;
+}
+int GameEventRemoveUpgrade::get_y(){
+	return y;
+}
+int GameEventRemoveUpgrade::get_round(){
+	return rnd;
+}
 
 Team::Team(int i){
 	ind = i;
@@ -93,9 +122,13 @@ Game::Game(GameConfig& cf){
 	set = cf.set;
 	for(int i = 0; i<cf.team_num; i++) teams.push_back(new Team(i));
 	for(int i = 0; i<cf.tank_num; i++) tanks.push_back(new Tank(this, i, teams[cf.team_inds[i]]));
+	
+	for(int i = 0, mask=1; i<UPG_NUM; i++, mask<<=1) if(cf.upg_mask & mask) upgs.push_back(upg_types[i]);
 	round = NULL;
 	round_num = 0;
 	start_round();
+
+	time = 0;
 	
 	cid = 0;
 }
@@ -243,12 +276,16 @@ int Game::get_new_id(){
 int Game::get_round_num(){
 	return round_num;
 }
+// for tests TODO: change to better value
+#define UPG_MAX_TIME 600
+#define UPG_MIN_TIME 300
 
 Round::Round(Game* g){
 	game=g;
 	int min=10,max=20;
 	maze = new Maze(rand_range(min,max), rand_range(min,max));
 	
+	upg_timer = rand_range(UPG_MIN_TIME, UPG_MAX_TIME);
 	
 	std::vector<std::pair<int,int>> tnks;
 		
@@ -291,6 +328,22 @@ void Round::step(){
 		shots.erase(*it);
 	}
 	shts_fd.clear();
+	
+	for(int i = 0; i<game->get_tank_num(); i++){
+		Tank* t = game->get_tank(i);
+		int x = t->get_x();
+		int y = t->get_y();
+		
+		if(upgs.count({x,y})){
+			Upgrade u = {x,y,upgs[{x,y}]};
+			if(t->collide_upgrade(u)) {
+				game->events.push(new GameEventRemoveUpgrade(u, game->round_num));
+				upgs.erase({x,y});
+			}
+		}
+	}	
+	if(upg_timer == 0) create_upgrade();
+	else upg_timer--;
 }
 Maze* Round::get_maze(){
 		return maze;
@@ -310,6 +363,32 @@ std::set<GenShot*>::iterator Round::end_shots(){
 	return shots.end();
 }
 
+void Round::create_upgrade(){
+	int x = rand_range(0,maze->get_w());
+	int y = rand_range(0,maze->get_h());
+	
+	upg_timer = rand_range(UPG_MIN_TIME, UPG_MAX_TIME);	
+	
+	if(upgs.count({x,y}) > 0) return;
+	for(int i = 0; i<game->get_tank_num(); i++){
+		int xx = game->get_tank(i)->get_x();
+		int yy = game->get_tank(i)->get_y();
+		
+		if(x==xx && y==yy) return;
+	}
+	if(game->upgs.size()>0){
+		upgs[{x,y}] = game->upgs[rand_range(0,game->upgs.size())];
+		game->events.push(new GameEventCreateUpgrade({x,y,upgs[{x,y}]}, game->round_num));
+	}
+}
+std::map<std::pair<int,int>,Upgrade::Type>::iterator Round::get_upgs(){
+	return upgs.begin();
+}
+std::map<std::pair<int,int>,Upgrade::Type>::iterator Round::end_upgs(){
+	return upgs.end();
+}
+
+
 Tank::Tank(Game* g, int i, Team* t){
 	team = t;
 	team->num_tot++;
@@ -319,6 +398,7 @@ Tank::Tank(Game* g, int i, Team* t){
 	p_ctrl = {false,false,false,false,false};
 	ind = i;
 	shot_num = 0;
+	state = Tank::REG;
 }
 Tank::~Tank(){
 	
@@ -338,27 +418,68 @@ double Tank::get_ang(){
 bool Tank::is_dead(){
 	return dead;
 }
+Tank::State Tank::get_state(){
+	return state;
+}
+
+#define GATLING_TIME 30
+#define GATLING_INTER 10 
+
 void Tank::step(){
 	if(!is_dead()){
 		double nx,ny,dp,px,py;
 		
-		double pa = ang;
-		
-		int turn = (ctrl.back().lt ? 1 : 0)-(ctrl.back().rt ? 1 : 0);
-		ang += turn * STEP_ANG;
-		
-		if(check_wall_coll(nx,ny,px,py,dp)) ang = pa;
-		
-		double prx = x, pry = y;
-		
-		double step = STEP_DST * ((ctrl.back().fd ? 1 : 0) - (ctrl.back().bk ? REV_RAT : 0));
-		rotate_add(ang, step, 0, x, y);
+		switch(state){
+		case Tank::REG:
+		case Tank::GATLING:
+			double pa = ang;
+			
+			int turn = (ctrl.back().lt ? 1 : 0)-(ctrl.back().rt ? 1 : 0);
+			ang += turn * STEP_ANG;
+			
+			if(check_wall_coll(nx,ny,px,py,dp)) ang = pa;
+			break;
+		}
+		switch(state){
+		case Tank::REG:
+		case Tank::GATLING:
+			double prx = x, pry = y;
+			
+			double step = STEP_DST * ((ctrl.back().fd ? 1 : 0) - (ctrl.back().bk ? REV_RAT : 0));
+			rotate_add(ang, step, 0, x, y);
 
-		if(check_wall_coll(nx,ny,px,py,dp)) {x=prx; y=pry;}
-		
-		
-		if(ctrl.back().sht && !p_ctrl.sht){
-			if(shot_num < MAX_SHOTS) game->get_round()->add_shot(new RegShot(game, this));
+			if(check_wall_coll(nx,ny,px,py,dp)) {x=prx; y=pry;}
+			break;
+		}
+		switch(state){
+		case Tank::REG:
+			if(ctrl.back().sht && !p_ctrl.sht){
+				if(shot_num < MAX_SHOTS) game->get_round()->add_shot(new RegShot(game, this));
+			}
+			break;
+		case Tank::GATLING:
+			if(ctrl.back().sht && !p_ctrl.sht){
+				state = Tank::GATLING_WAIT;
+				timer = GATLING_TIME;
+			}
+			break;
+			
+		case Tank::GATLING_WAIT:
+		case Tank::GATLING_SHOOT:
+			if(!ctrl.back().sht) state = Tank::REG;
+			break;
+		}
+	}
+	
+	if(timer > 0) timer--;
+	else{
+		switch(state){
+		case Tank::GATLING_WAIT:
+			state = GATLING_SHOOT;
+		case Tank::GATLING_SHOOT:
+			timer = GATLING_INTER;
+			game->get_round()->add_shot(new GatShot(game, this));
+			break;
 		}
 	}
 	
@@ -402,6 +523,7 @@ void Tank::reset(double xx, double yy, double a){
 	x = xx; y=yy; ang=a;
 	clear_control();
 	dead = false;
+	state = Tank::REG;
 }
 void Tank::kill(){
 	dead = true;
@@ -411,6 +533,34 @@ void Tank::kill(){
 ControlState Tank::get_ctrl(){
 	return p_ctrl;
 }
+
+bool Tank::check_upg(Upgrade u){
+	double txs[4],tys[4],uxs[4],uys[4];
+	
+	gen_rot_rect(x,y,TANK_H,TANK_W,ang, txs,tys);
+	gen_rot_rect(u.x+0.5, u.y+0.5,UPG_SIZE, UPG_SIZE, DEG2RAD(UPG_ANG), uxs, uys);
+	
+	double nx,ny,dp,px,py;
+	
+	return poly_coll(txs,tys,4,uxs,uys,4,nx,ny,dp,px,py);
+}
+
+std::pair<Upgrade::Type, Tank::State> upg2stt_a[UPG_NUM]={
+	{Upgrade::GATLING,Tank::GATLING},
+};
+
+std::map<Upgrade::Type, Tank::State> upg2stt(upg2stt_a, upg2stt_a+UPG_NUM);
+
+bool Tank::collide_upgrade(Upgrade u){
+	if(is_dead() || state != Tank::REG) return false;
+	bool ret = check_upg(u);
+	if(ret){
+		state = upg2stt[u.type];
+	}
+	return ret;
+}
+
+
 
 GenShot::GenShot(Game* g, Tank* t){
 	game = g;
@@ -597,4 +747,18 @@ int RegShot::get_ttl(){
 }
 GenShot::Type RegShot::get_type(){
 	return GenShot::TYPE_REG;
+}
+
+GatShot::GatShot(Game* game, Tank* tank) : Shot(game, tank, GATLING_DIV, STEP_GATLING){
+}
+GatShot::~GatShot(){
+}
+double GatShot::get_r(){
+	return GATLING_R;
+}
+int GatShot::get_ttl(){
+	return GATLING_TTL;
+}
+GenShot::Type GatShot::get_type(){
+	return GenShot::TYPE_GATLING;
 }

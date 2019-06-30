@@ -8,6 +8,7 @@
 
 #include "maze.h"
 #include "game_config.h"
+#include "game_consts.h"
 
 // a whole game
 class Game;
@@ -16,6 +17,7 @@ class Tank;
 // all round specific data
 class Round;
 
+//Shots
 class GenShot;
 class Shot;
 class RegShot;
@@ -30,7 +32,6 @@ class GameEventScore;
 class GameEventEndGame;
 class GameEventCreateShot;
 class GameEventRemoveShot;
-
 
 class Team{
 	int score;
@@ -52,6 +53,7 @@ public:
 class Game{
 	std::vector<Tank*> tanks;
 	std::vector<Team*> teams;
+	std::vector<Upgrade::Type> upgs;
 	Round* round;
 	std::queue<GameEvent*> events;
 	friend Round;
@@ -94,6 +96,12 @@ class Round{
 	
 	std::set<GenShot*> shots;
 	std::set<GenShot*> shts_fd;
+	
+	std::map<std::pair<int,int>, Upgrade::Type> upgs;
+	
+	int upg_timer;
+	
+	void create_upgrade();
 public:
 	Round(Game* game);
 	~Round();
@@ -104,16 +112,28 @@ public:
 	void delete_shot(GenShot* shot);
 	std::set<GenShot*>::iterator get_shots();
 	std::set<GenShot*>::iterator end_shots();
+	
+	std::map<std::pair<int,int>,Upgrade::Type>::iterator get_upgs();
+	std::map<std::pair<int,int>,Upgrade::Type>::iterator end_upgs();
 };
+
 
 struct ControlState{
 	bool rt,lt,bk,fd,sht;
 };
 
 class Tank{
+public:
+	enum State{
+		REG,
+		GATLING, GATLING_WAIT, GATLING_SHOOT,
+	};
+private:
+	
 	Game* game;
 	Team* team;
 	double x,y,ang;
+	Tank::State state;
 	std::queue<ControlState> ctrl;
 	ControlState p_ctrl;
 	bool dead;
@@ -124,6 +144,8 @@ class Tank{
 	
 	int shot_num;
 	
+	int timer;
+	
 	friend RegShot;
 		
 	bool can_step();
@@ -132,6 +154,8 @@ class Tank{
 	bool check_wall_coll(double& nx, double& ny, double& px, double& py, double& dp);
 	
 	void reset(double x, double y, double ang);
+	
+	bool check_upg(Upgrade u);	
 public:
 	Tank(Game* game, int i, Team* t);
 	~Tank();
@@ -142,6 +166,7 @@ public:
 	double get_y();
 	double get_ang();
 	bool is_dead();
+	Tank::State get_state();
 	
 	int get_ind();
 	
@@ -152,6 +177,8 @@ public:
 	void step();
 	
 	void kill();
+
+	bool collide_upgrade(Upgrade u);
 };
 
 
@@ -159,6 +186,7 @@ class GenShot{
 public:
 	enum Type{
 		TYPE_REG,
+		TYPE_GATLING,
 	};
 private:
 	Tank* tank;
@@ -228,6 +256,14 @@ public:
 	int get_ttl();
 	GenShot::Type get_type();
 };
+class GatShot : public Shot{
+public:
+	GatShot(Game* game, Tank* tank);
+	~GatShot();
+	double get_r();
+	int get_ttl();
+	GenShot::Type get_type();
+};
 
 
 
@@ -240,6 +276,7 @@ public:
 		TYPE_SCORE,
 		TYPE_END_GAME,
 		TYPE_SHOT_CRT, TYPE_SHOT_RMV,
+		TYPE_UPG_CRT, TYPE_UPG_RMV,
 	};
 	virtual Type get_type()=0;
 };
@@ -291,6 +328,23 @@ public:
 	double get_vx();
 	double get_vy();
 	GenShot::Type get_stype();
+};
+class GameEventCreateUpgrade : public GameEvent{
+	Upgrade u; int rnd;
+public:
+	GameEventCreateUpgrade(Upgrade u, int round);
+	Type get_type(){return GameEvent::TYPE_UPG_CRT;}
+	Upgrade get_upg();
+	int get_round();
+};
+class GameEventRemoveUpgrade : public GameEvent{
+	int x,y,rnd;
+public:
+	GameEventRemoveUpgrade(Upgrade u, int round);
+	Type get_type(){return GameEvent::TYPE_UPG_RMV;}
+	int get_x();
+	int get_y();
+	int get_round();
 };
 
 
