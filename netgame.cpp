@@ -127,6 +127,36 @@ void NetGame::remove_shot(GameEventRemoveShot* e){
 	
 	set->serv->send_all(data, end-data, PROTO_REL);
 }
+void NetGame::create_upg(GameEventCreateUpgrade* e){
+	char data[100];
+	
+	char* end = data;
+	
+	end = encode_char(end, '\x02');
+	end = encode_char(end, '\x20');
+	
+	end = encode_int(end, game->get_round_num());
+	end = encode_int(end, e->get_upg().x);
+	end = encode_int(end, e->get_upg().y);
+	end = encode_upgrade(end, e->get_upg().type);
+	
+	set->serv->send_all(data, end-data, PROTO_REL);
+}
+void NetGame::remove_upg(GameEventRemoveUpgrade* e){
+	char data[100];
+	
+	char* end = data;
+	
+	end = encode_char(end, '\x02');
+	end = encode_char(end, '\x21');
+	
+	end = encode_int(end, game->get_round_num());
+	end = encode_int(end, e->get_x());
+	end = encode_int(end, e->get_y());
+	
+	set->serv->send_all(data, end-data, PROTO_REL);
+}
+
 void NetGame::end_game(GameEventEndGame* e){
 	char* data;
 	
@@ -189,6 +219,12 @@ void NetGame::advance(){
 			break;
 		case GameEvent::TYPE_SHOT_RMV:
 			remove_shot((GameEventRemoveShot*)e);
+			break;
+		case GameEvent::TYPE_UPG_CRT:
+			create_upg((GameEventCreateUpgrade*)e);
+			break;
+		case GameEvent::TYPE_UPG_RMV:
+			remove_upg((GameEventRemoveUpgrade*)e);
 			break;
 		}
 	}

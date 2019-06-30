@@ -40,5 +40,8 @@ char* decode_shot_type(char* buf, GenShot::Type& t);
 char* encode_tank_state(char* buf, Tank::State s);
 char* decode_tank_state(char* buf, Tank::State& s);
 
+char* encode_upgrade(char* buf, Upgrade::Type u);
+char* decode_upgrade(char* buf, Upgrade::Type& u);
+
 
 #endif

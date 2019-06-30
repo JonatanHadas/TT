@@ -50,6 +50,8 @@ class NetGame{
 	
 	void create_shot(GameEventCreateShot* e);
 	void remove_shot(GameEventRemoveShot* e);
+	void create_upg(GameEventCreateUpgrade* e);
+	void remove_upg(GameEventRemoveUpgrade* e);
 	
 	void end_game(GameEventEndGame* e);
 public:

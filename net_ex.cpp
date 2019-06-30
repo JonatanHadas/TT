@@ -49,6 +49,12 @@ ExInEvent* NetEx::get_event(){
 				case '\x11':
 					return new NExInEventRemoveShot(cur,e.data);
 					break;
+				case '\x20':
+					return new NExInEventCreateUpgrade(cur,e.data);
+					break;
+				case '\x21':
+					return new NExInEventRemoveUpgrade(cur,e.data);
+					break;
 				}
 				break;
 			}
@@ -264,4 +270,42 @@ ControlState NExInEventTankUpdate::get_ctrl(){
 }
 Tank::State NExInEventTankUpdate::get_state(){
 	return state;
+}
+
+NExInEventCreateUpgrade::NExInEventCreateUpgrade(char* data, char* del){
+	data = decode_int(data, rnd);
+	data = decode_int(data, u.x);
+	data = decode_int(data, u.y);
+	data = decode_upgrade(data, u.type);
+	
+	delete del;
+}
+NExInEventCreateUpgrade::~NExInEventCreateUpgrade(){
+	
+}
+Upgrade NExInEventCreateUpgrade::get_upg(){
+	return u;
+}
+int NExInEventCreateUpgrade::get_round(){
+	return rnd;
+}
+
+NExInEventRemoveUpgrade::NExInEventRemoveUpgrade(char* data, char* del){
+	data = decode_int(data, rnd);
+	data = decode_int(data, x);
+	data = decode_int(data, y);
+	
+	delete del;
+}
+NExInEventRemoveUpgrade::~NExInEventRemoveUpgrade(){
+	
+}
+int NExInEventRemoveUpgrade::get_x(){
+	return x;
+}
+int NExInEventRemoveUpgrade::get_y(){
+	return y;
+}
+int NExInEventRemoveUpgrade::get_round(){
+	return rnd;
 }

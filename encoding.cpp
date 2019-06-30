@@ -155,4 +155,18 @@ char* decode_tank_state(char* buf, Tank::State& s){
 	return buf;
 }
 
+std::pair<Upgrade::Type, int> i2upg[UPG_NUM] = {
+	{Upgrade::GATLING,0},
+};
+std::map<Upgrade::Type, int> upg2i(i2upg, i2upg+UPG_NUM);
+
+char* encode_upgrade(char* buf, Upgrade::Type u){
+	return encode_int(buf, upg2i[u]);
+}
+char* decode_upgrade(char* buf, Upgrade::Type& u){
+	int i;
+	buf = decode_int(buf, i);
+	u = i2upg[i].first;
+	return buf;
+}
 

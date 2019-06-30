@@ -96,5 +96,23 @@ public:
 	ControlState get_ctrl();
 	Tank::State get_state();
 };
+class NExInEventCreateUpgrade : public ExInEventCreateUpgrade{
+	Upgrade u;
+	int rnd;
+public:
+	NExInEventCreateUpgrade(char* data, char* del);
+	~NExInEventCreateUpgrade();
+	Upgrade get_upg();
+	int get_round();
+};
+class NExInEventRemoveUpgrade : public ExInEventRemoveUpgrade{
+	int x,y,rnd;
+public:
+	NExInEventRemoveUpgrade(char* data, char* del);
+	~NExInEventRemoveUpgrade();
+	int get_x();
+	int get_y();
+	int get_round();
+};
 
 #endif
