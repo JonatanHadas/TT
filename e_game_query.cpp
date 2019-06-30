@@ -161,6 +161,7 @@ std::set<GenShotQ*> RoundEQ::get_shots(){
 		switch((*it).second->get_type()){
 		case GenShot::TYPE_REG:
 		case GenShot::TYPE_GATLING:
+		case GenShot::TYPE_LASER:
 			ret.insert(new ShotEQ((ShotExtrap*)((*it).second)));
 			break;
 		}
