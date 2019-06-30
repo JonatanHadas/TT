@@ -34,6 +34,16 @@ double GameEQEventRemoveShot::get_vx(){ return e->get_vx(); }
 double GameEQEventRemoveShot::get_vy(){ return e->get_vy(); }
 GenShot::Type GameEQEventRemoveShot::get_stype(){ return e->get_stype(); }
 
+GameEQEventCreateUpgrade::GameEQEventCreateUpgrade(ExEventCreateUpgrade* event){ e = event; }
+GameEQEventCreateUpgrade::~GameEQEventCreateUpgrade(){ delete e; }
+Upgrade GameEQEventCreateUpgrade::get_upg(){ return e->get_upg(); }
+
+GameEQEventRemoveUpgrade::GameEQEventRemoveUpgrade(ExEventRemoveUpgrade* event){ e = event; }
+GameEQEventRemoveUpgrade::~GameEQEventRemoveUpgrade(){ delete e; }
+int GameEQEventRemoveUpgrade::get_x(){ return e->get_x(); }
+int GameEQEventRemoveUpgrade::get_y(){ return e->get_y(); }
+
+
 GameEQ::GameEQ(GameExtrap* g){
 	game = g;
 	round = new RoundEQ(game->get_round());
@@ -78,12 +88,19 @@ GameQEvent* GameEQ::get_event(){
 			return new GameEQEventCreateShot((ExEventCreateShot*)e);
 		case ExEvent::TYPE_SHT_RMV:
 			return new GameEQEventRemoveShot((ExEventRemoveShot*)e);
+		case ExEvent::TYPE_UPG_CRT:
+			return new GameEQEventCreateUpgrade((ExEventCreateUpgrade*)e);
+		case ExEvent::TYPE_UPG_RMV:
+			return new GameEQEventRemoveUpgrade((ExEventRemoveUpgrade*)e);
 		}
 	}
 	return NULL;
 }
 void GameEQ::advance(){
 	game->step();
+}
+long long int GameEQ::get_time(){
+	return game->get_time();
 }
 
 TeamEQ::TeamEQ(TeamExtrap* t){
@@ -119,6 +136,9 @@ double TankEQ::get_ang(){
 bool TankEQ::is_dead(){
 	return tank->is_dead();
 }
+Tank::State TankEQ::get_state(){
+	return tank->get_state();
+}
 void TankEQ::push_ctrl(ControlState ctrl){
 	tank->push_control(ctrl);
 }
@@ -140,9 +160,18 @@ std::set<GenShotQ*> RoundEQ::get_shots(){
 	for(auto it = round->get_shots(); it!=round->end_shots(); it++){
 		switch((*it).second->get_type()){
 		case GenShot::TYPE_REG:
+		case GenShot::TYPE_GATLING:
 			ret.insert(new ShotEQ((ShotExtrap*)((*it).second)));
 			break;
 		}
+	}
+	return ret;
+}
+std::set<Upgrade*> RoundEQ::get_upgs(){
+	std::set<Upgrade*> ret;
+	for(auto it = round->get_upgs(); it!=round->end_upgs(); it++){
+		Upgrade* u = new Upgrade({(*it).first.first,(*it).first.second, (*it).second});
+		ret.insert(u);
 	}
 	return ret;
 }

@@ -21,6 +21,7 @@ public:
 		TYPE_SCORE,
 		TYPE_END_GAME,
 		TYPE_SHT_CRT, TYPE_SHT_RMV,
+		TYPE_UPG_CRT, TYPE_UPG_RMV,
 	};
 	virtual Type get_type()=0;
 };
@@ -79,6 +80,21 @@ public:
 	double get_vy();
 	GenShot::Type get_stype();
 };
+class ExEventCreateUpgrade : public ExEvent{
+	Upgrade u;
+public:
+	ExEventCreateUpgrade(Upgrade u);
+	Type get_type(){ return TYPE_UPG_CRT; }
+	Upgrade get_upg();
+};
+class ExEventRemoveUpgrade : public ExEvent{
+	int x,y;
+public:
+	ExEventRemoveUpgrade(int x, int y);
+	Type get_type(){ return TYPE_UPG_RMV; }
+	int get_x();
+	int get_y();
+};
 
 
 
@@ -127,6 +143,8 @@ private:
 	
 	void create_shot(ExInEventCreateShot* e);
 	void remove_shot(int id);
+	void create_upgrade(ExInEventCreateUpgrade* e);
+	void remove_upgrade(ExInEventRemoveUpgrade* e);
 };
 
 class RoundExtrap{
@@ -135,6 +153,7 @@ class RoundExtrap{
 	
 	
 	std::map<int,GenShotExtrap*> shots;
+	std::map<std::pair<int,int>,Upgrade::Type> upgs;
 public:
 	RoundExtrap(GameExtrap* game,Maze* maze);
 	Maze* get_maze();
@@ -143,11 +162,16 @@ public:
 	
 	std::map<int, GenShotExtrap*>::iterator get_shots();
 	std::map<int, GenShotExtrap*>::iterator end_shots();
+	std::map<std::pair<int,int>,Upgrade::Type>::iterator get_upgs();
+	std::map<std::pair<int,int>,Upgrade::Type>::iterator end_upgs();
 	
 	GenShotExtrap* get_shot(int id);
 
 	void add_shot(GenShotExtrap* shot);
 	void del_shot(int id);
+	void add_upg(Upgrade u);
+	void del_upg(int x, int y);
+	bool has_upg(int x, int y);
 };
 
 class TankExtrap{
@@ -157,6 +181,7 @@ class TankExtrap{
 	
 	long long int b_t,t;
 	double x,y,ang;
+	Tank::State state;
 	
 	ControlState p_ctrl;
 	std::deque<ControlState> ctrl;
@@ -173,6 +198,8 @@ public:
 	
 	bool is_dead();
 	void kill();
+	
+	Tank::State get_state();
 	
 	void push_control(ControlState ctrl);
 	

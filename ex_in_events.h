@@ -14,6 +14,7 @@ public:
 		TYPE_SCORE,
 		TYPE_END_GAME,
 		TYPE_SHT_CRT, TYPE_SHT_RMV,
+		TYPE_UPG_CRT, TYPE_UPG_RMV,
 	};
 	virtual Type get_type() = 0;
 };
@@ -73,6 +74,19 @@ public:
 	virtual double get_ang() = 0;
 	virtual long long int get_time() = 0;
 	virtual ControlState get_ctrl() = 0;
+};
+class ExInEventCreateUpgrade : public ExInEvent{
+public:
+	Type get_type(){ return TYPE_UPG_CRT; }
+	virtual Upgrade get_upg() = 0;
+	virtual int get_round() = 0;
+};
+class ExInEventRemoveUpgrade : public ExInEvent{
+public:
+	Type get_type(){ return TYPE_UPG_RMV; }
+	virtual int get_x() = 0;
+	virtual int get_y() = 0;
+	virtual int get_round() = 0;
 };
 
 #endif

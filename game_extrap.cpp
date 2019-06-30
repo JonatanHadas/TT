@@ -89,6 +89,23 @@ GenShot::Type ExEventRemoveShot::get_stype(){
 	return type;
 }
 
+ExEventCreateUpgrade::ExEventCreateUpgrade(Upgrade up){
+	u = up;
+}
+Upgrade ExEventCreateUpgrade::get_upg(){
+	return u;
+}
+
+ExEventRemoveUpgrade::ExEventRemoveUpgrade(int ux, int uy){
+	x=ux; y=ux;
+}
+int ExEventRemoveUpgrade::get_x(){
+	return x;
+}
+int ExEventRemoveUpgrade::get_y(){
+	return y;
+}
+
 TeamExtrap::TeamExtrap(int i){
 	ind = i;
 	score = 0;
@@ -161,6 +178,12 @@ void GameExtrap::step(){
 		case ExInEvent::TYPE_SHT_RMV:
 			remove_shot(((ExInEventRemoveShot*)e)->get_id());
 			break;
+		case ExInEvent::TYPE_UPG_CRT:
+			create_upgrade((ExInEventCreateUpgrade*)e);
+			break;
+		case ExInEvent::TYPE_UPG_RMV:
+			remove_upgrade((ExInEventRemoveUpgrade*)e);
+			break;
 		}
 		delete e;
 	}
@@ -208,6 +231,20 @@ void GameExtrap::remove_shot(int id){
 		round->del_shot(id);
 	}
 }
+void GameExtrap::create_upgrade(ExInEventCreateUpgrade* e){
+	if(e->get_round() == round_num){
+		Upgrade u = e->get_upg();
+		round->add_upg(u);
+		events.push(new ExEventCreateUpgrade(u));
+	}
+}
+void GameExtrap::remove_upgrade(ExInEventRemoveUpgrade* e){
+	
+	if(e->get_round() == round_num && round->has_upg(e->get_x(),e->get_y())){
+		round->del_upg(e->get_x(), e->get_y());
+		events.push(new ExEventRemoveUpgrade(e->get_x(), e->get_y()));
+	}
+}
 
 RoundExtrap::RoundExtrap(GameExtrap* g,Maze* m){
 	game = g;
@@ -227,6 +264,13 @@ std::map<int, GenShotExtrap*>::iterator RoundExtrap::get_shots(){
 std::map<int, GenShotExtrap*>::iterator RoundExtrap::end_shots(){
 	return shots.end();
 }
+std::map<std::pair<int,int>,Upgrade::Type>::iterator RoundExtrap::get_upgs(){
+	return upgs.begin();
+}
+std::map<std::pair<int,int>,Upgrade::Type>::iterator RoundExtrap::end_upgs(){
+	return upgs.end();
+}
+
 GenShotExtrap* RoundExtrap::get_shot(int id){
 	return shots.count(id)>0 ? shots[id] : NULL;
 }
@@ -236,11 +280,21 @@ void RoundExtrap::add_shot(GenShotExtrap* shot){
 void RoundExtrap::del_shot(int id){
 	shots.erase(id);
 }
+void RoundExtrap::add_upg(Upgrade u){
+	upgs[{u.x,u.y}] = u.type;
+}
+void RoundExtrap::del_upg(int x, int y){
+	upgs.erase({x,y});
+}
+bool RoundExtrap::has_upg(int x, int y){
+	return upgs.count({x,y})>0;
+}
 
 TankExtrap::TankExtrap(GameExtrap* g,int i, TeamExtrap* t){
 	game = g;
 	team = t;
 	ind = i;
+	state = Tank::REG;
 }
 TeamExtrap* TankExtrap::get_team(){
 	return team;
@@ -278,6 +332,7 @@ void TankExtrap::reset(double xx, double yy, double a){
 	dead = false;
 	p_ctrl = {false,false,false,false,false};
 	ctrl.clear();
+	state = Tank::REG;
 }
 int TankExtrap::get_ind(){
 	return ind;
@@ -285,6 +340,9 @@ int TankExtrap::get_ind(){
 
 bool TankExtrap::is_dead(){
 	return dead;
+}
+Tank::State TankExtrap::get_state(){
+	return state;
 }
 void TankExtrap::kill(){
 	dead = true;
@@ -365,6 +423,8 @@ double ShotExtrap::get_r(){
 	switch(get_type()){
 	case GenShot::TYPE_REG:
 		return SHOT_R;
+	case GenShot::TYPE_GATLING:
+		return GATLING_R;
 	}
 
 }
