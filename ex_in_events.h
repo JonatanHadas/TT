@@ -74,6 +74,7 @@ public:
 	virtual double get_ang() = 0;
 	virtual long long int get_time() = 0;
 	virtual ControlState get_ctrl() = 0;
+	virtual Tank::State get_state() = 0;
 };
 class ExInEventCreateUpgrade : public ExInEvent{
 public:

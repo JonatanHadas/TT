@@ -79,6 +79,7 @@ public:
 	double get_ang();
 	long long int get_time();
 	ControlState get_ctrl();
+	Tank::State get_state();
 };
 class DExInEventCreateUpgrade : public ExInEventCreateUpgrade{
 	GameEventCreateUpgrade* e;

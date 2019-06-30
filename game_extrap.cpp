@@ -322,6 +322,7 @@ void TankExtrap::update(ExInEventTankUpdate* e){
 		x = e->get_x();
 		y = e->get_y();
 		ang = e->get_ang();
+		state = e->get_state();
 	}
 }
 void TankExtrap::reset(double xx, double yy, double a){
@@ -379,20 +380,30 @@ void TankExtrap::advance(){
 		
 		if(!is_dead()){
 			double nx,ny,dp,px,py;
+			switch(state){
+			case Tank::REG:
+			case Tank::GATLING:
 			
-			double pa = ang;
+				double pa = ang;
+				
+				int turn = (cur.lt ? 1 : 0)-(cur.rt ? 1 : 0);
+				ang += turn * STEP_ANG;
+				
+				if(check_wall_coll(nx,ny,px,py,dp)) ang = pa;
+				break;
+			}
+			switch(state){
+			case Tank::REG:
+			case Tank::GATLING:
 			
-			int turn = (cur.lt ? 1 : 0)-(cur.rt ? 1 : 0);
-			ang += turn * STEP_ANG;
-			
-			if(check_wall_coll(nx,ny,px,py,dp)) ang = pa;
-			
-			double prx = x, pry = y;
-			
-			double step = STEP_DST * ((cur.fd ? 1 : 0) - (cur.bk ? REV_RAT : 0));
-			rotate_add(ang, step, 0, x, y);
+				double prx = x, pry = y;
+				
+				double step = STEP_DST * ((cur.fd ? 1 : 0) - (cur.bk ? REV_RAT : 0));
+				rotate_add(ang, step, 0, x, y);
 
-			if(check_wall_coll(nx,ny,px,py,dp)) {x=prx; y=pry;}		
+				if(check_wall_coll(nx,ny,px,py,dp)) {x=prx; y=pry;}		
+				break;
+			}
 		}
 		
 	}

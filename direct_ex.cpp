@@ -87,18 +87,15 @@ double DExInEventTankUpdate::get_y(){ return t->get_y(); }
 double DExInEventTankUpdate::get_ang(){ return t->get_ang(); }
 long long int DExInEventTankUpdate::get_time(){ return g->get_time(); }
 ControlState DExInEventTankUpdate::get_ctrl(){ return t->get_ctrl(); }
+Tank::State DExInEventTankUpdate::get_state(){ return t->get_state(); }
 
 DExInEventCreateUpgrade::DExInEventCreateUpgrade(GameEventCreateUpgrade* event){ e = event; }
 DExInEventCreateUpgrade::~DExInEventCreateUpgrade(){ delete e; }
 Upgrade DExInEventCreateUpgrade::get_upg(){ return e->get_upg(); }
-int DExInEventCreateUpgrade::get_round(){
-	return e->get_round();
-}
+int DExInEventCreateUpgrade::get_round(){ return e->get_round(); }
 
 DExInEventRemoveUpgrade::DExInEventRemoveUpgrade(GameEventRemoveUpgrade* event){ e = event; }
 DExInEventRemoveUpgrade::~DExInEventRemoveUpgrade(){ delete e; }
 int DExInEventRemoveUpgrade::get_x(){ return e->get_x(); }
 int DExInEventRemoveUpgrade::get_y(){ return e->get_y(); }
-int DExInEventRemoveUpgrade::get_round(){
-	return e->get_round();
-}
+int DExInEventRemoveUpgrade::get_round(){ return e->get_round(); }
