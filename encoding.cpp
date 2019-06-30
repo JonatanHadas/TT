@@ -120,9 +120,10 @@ char* decode_gamesett(char* buf, GameSettings& s){
 	return decode_int(buf, s.lim);
 }
 
-#define SHOT_TYPE_NUM 1
+#define SHOT_TYPE_NUM 2
 std::pair<GenShot::Type, int> i2sht[SHOT_TYPE_NUM] = {
 	{GenShot::TYPE_REG,0},
+	{GenShot::TYPE_GATLING,1},
 };
 std::map<GenShot::Type, int> sht2i(i2sht, i2sht+SHOT_TYPE_NUM);
 

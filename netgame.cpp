@@ -93,6 +93,7 @@ void NetGame::create_shot(GameEventCreateShot* e){
 	Shot* s;
 	switch(gs->get_type()){
 	case GenShot::TYPE_REG:
+	case GenShot::TYPE_GATLING:
 		s = (Shot*) gs;
 		end = encode_char(end, '\x02');
 		end = encode_char(end, '\x10');
