@@ -136,3 +136,23 @@ char* decode_shot_type(char* buf, GenShot::Type& t){
 	return buf;
 }
 
+#define TANK_STATE_NUM 4
+std::pair<Tank::State, int> i2stt[TANK_STATE_NUM] = {
+	{Tank::REG,0},
+	{Tank::GATLING,1},
+	{Tank::GATLING_WAIT,2},
+	{Tank::GATLING_SHOOT,3},
+};
+std::map<Tank::State, int> stt2i(i2stt, i2stt+TANK_STATE_NUM);
+
+char* encode_tank_state(char* buf, Tank::State s){
+	return encode_int(buf, stt2i[s]);
+}
+char* decode_tank_state(char* buf, Tank::State& s){
+	int i;
+	buf = decode_int(buf, i);
+	s = i2stt[i].first;
+	return buf;
+}
+
+

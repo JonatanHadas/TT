@@ -15,12 +15,15 @@ type |   | meaning     | data
 -----+---+-------------+--------
 00   | > | start round | tank_poss, maze
 01   | < | controls    | tank_ind, round, ctrl state
-01   | > | tank update | ind,t, x,y,ang, ctrl_state
+01   | > | tank update | ind,t, x,y,ang, ctrl_state, state
 02   | > | tank death  | ind
 03   | > | score       | team,diff
      |   |             |
 10   | > | create shot | id, time,round, tank_ind,type, x,y,vx,vy
 11   | > | delete shot | id
+     |   |             |
+20   | > | create upg  | round, x,y,type
+21   | > | delete upg  | round, x,y
 
 
 */

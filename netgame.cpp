@@ -219,6 +219,7 @@ void NetGame::send_update(){
 		end = encode_bool(end, t->get_ctrl().lt);
 		end = encode_bool(end, t->get_ctrl().sht);
 		
+		end = encode_tank_state(end, t->get_state());
 		
 		
 		set->serv->send_all(data, end-data, PROTO_UNREL);		

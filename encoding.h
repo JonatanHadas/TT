@@ -37,5 +37,8 @@ char* decode_gamesett(char* buf, GameSettings& s);
 char* encode_shot_type(char* buf, GenShot::Type t);
 char* decode_shot_type(char* buf, GenShot::Type& t);
 
+char* encode_tank_state(char* buf, Tank::State s);
+char* decode_tank_state(char* buf, Tank::State& s);
+
 
 #endif

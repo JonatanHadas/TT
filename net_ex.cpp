@@ -237,6 +237,8 @@ NExInEventTankUpdate::NExInEventTankUpdate(char* data, char* del){
 	data = decode_bool(data, ctrl.lt);
 	data = decode_bool(data, ctrl.sht);
 	
+	data = decode_tank_state(data, state);
+	
 		
 	delete del;
 }
@@ -259,4 +261,7 @@ long long int NExInEventTankUpdate::get_time(){
 }
 ControlState NExInEventTankUpdate::get_ctrl(){
 	return ctrl;
+}
+Tank::State NExInEventTankUpdate::get_state(){
+	return state;
 }

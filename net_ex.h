@@ -84,6 +84,7 @@ class NExInEventTankUpdate : public ExInEventTankUpdate{
 	long long int time;
 	int ind;
 	ControlState ctrl;
+	Tank::State state;
 public:
 	NExInEventTankUpdate(char* data, char* del);
 	~NExInEventTankUpdate();
@@ -93,6 +94,7 @@ public:
 	double get_ang();
 	long long int get_time();
 	ControlState get_ctrl();
+	Tank::State get_state();
 };
 
 #endif
