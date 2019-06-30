@@ -120,10 +120,11 @@ char* decode_gamesett(char* buf, GameSettings& s){
 	return decode_int(buf, s.lim);
 }
 
-#define SHOT_TYPE_NUM 2
+#define SHOT_TYPE_NUM 3
 std::pair<GenShot::Type, int> i2sht[SHOT_TYPE_NUM] = {
 	{GenShot::TYPE_REG,0},
 	{GenShot::TYPE_GATLING,1},
+	{GenShot::TYPE_LASER,2},
 };
 std::map<GenShot::Type, int> sht2i(i2sht, i2sht+SHOT_TYPE_NUM);
 
@@ -137,12 +138,14 @@ char* decode_shot_type(char* buf, GenShot::Type& t){
 	return buf;
 }
 
-#define TANK_STATE_NUM 4
+#define TANK_STATE_NUM 6
 std::pair<Tank::State, int> i2stt[TANK_STATE_NUM] = {
 	{Tank::REG,0},
 	{Tank::GATLING,1},
 	{Tank::GATLING_WAIT,2},
 	{Tank::GATLING_SHOOT,3},
+	{Tank::LASER,4},
+	{Tank::LASER_SHOOT,5},
 };
 std::map<Tank::State, int> stt2i(i2stt, i2stt+TANK_STATE_NUM);
 
@@ -158,6 +161,7 @@ char* decode_tank_state(char* buf, Tank::State& s){
 
 std::pair<Upgrade::Type, int> i2upg[UPG_NUM] = {
 	{Upgrade::GATLING,0},
+	{Upgrade::LASER,1},
 };
 std::map<Upgrade::Type, int> upg2i(i2upg, i2upg+UPG_NUM);
 

@@ -1144,6 +1144,7 @@ void SettingMenu::set_kfocus(){
 
 Img upg_imgs[UPG_NUM] = {
 	IMG_GATLING_SYM,
+	IMG_LASER_SYM,
 	};
 void SettingMenu::draw(){
 	draw_back(true);
