@@ -956,6 +956,11 @@ void PlayerSetting::set_id(int i){
 #define TEAM_YW 80
 #define TEAM_MH 40
 
+#define UPG_X 250
+#define UPG_Y 234
+#define UPG_SZ 32
+#define UPG_SP 8
+
 SettingMenu::SettingMenu(SDL_Renderer* ren, MainScr* m) : SubMenu(ren, m), tie_lim(ren,{TIE_X,TIE_Y,TIE_W, TIE_H},0,0,2), game_lim(ren,{LIM_X, LIM_Y, LIM_W, LIM_H},10,0,true), team_num(ren, {TEAM_X, TEAM_Y, TEAM_W, TEAM_H},2,2,true){
 	players_t = SDL_CreateTexture(	rend, SDL_PIXELFORMAT_UNKNOWN, SDL_TEXTUREACCESS_TARGET, 
 									PLST_W + 2*PLST_MAR, SCR_H - 2*PLST_MAR);
@@ -1021,6 +1026,9 @@ SettingMenu::SettingMenu(SDL_Renderer* ren, MainScr* m) : SubMenu(ren, m), tie_l
 	game_lim.set_active(false);
 	team_num.set_active(false);
 	use_teams = false;
+	
+	upg_mask = UPG_MASK_ALL;
+	upg_prs_ind = -1;
 
 	add_player();
 }
@@ -1097,6 +1105,15 @@ SDL_Rect SettingMenu::use_rect(bool use){
 	return r;
 }
 
+SDL_Rect SettingMenu::upg_rect(int ind){
+	SDL_Rect r;
+	r.h = r.w = UPG_SZ;
+	r.x = UPG_X + ind*(r.w + UPG_SP);
+	r.y = UPG_Y;
+	return r;
+}
+
+
 void SettingMenu::set_mfocus(){
 	
 	PlayerSetting* s = NULL;
@@ -1124,6 +1141,10 @@ void SettingMenu::set_kfocus(){
 	if(kfocus && kfocus!=mfocus) kfocus->lose_kfocus();
 	kfocus = mfocus;
 }
+
+Img upg_imgs[UPG_NUM] = {
+	IMG_GATLING_SYM,
+	};
 void SettingMenu::draw(){
 	draw_back(true);
 	
@@ -1231,6 +1252,16 @@ void SettingMenu::draw(){
 		if(in_rect(r, m_x - get_game_rect().x, m_y - get_game_rect().y)) SDL_RenderDrawRect(rend, &r);
 	}
 	
+	
+	for(int i = 0; i<UPG_NUM; i++){
+		r = upg_rect(i);
+		SDL_SetTextureAlphaMod(get_img(upg_imgs[i]), (upg_mask & (1<<i)) ? 255 : 128 );
+		SDL_RenderCopy(rend, get_img(upg_imgs[i]), NULL, &r);
+		SDL_SetTextureAlphaMod(get_img(upg_imgs[i]), 255);
+		if(in_rect(get_game_rect(), m_x, m_y) && main->get_host())
+		if(in_rect(r, m_x - get_game_rect().x, m_y - get_game_rect().y)) SDL_RenderDrawRect(rend, &r);
+	}
+	
 	SDL_SetRenderTarget(rend, tar);
 	
 	r = get_game_rect();
@@ -1325,6 +1356,7 @@ void SettingMenu::event(SDL_Event& e){
 					use = true;
 					if( in_rect(use_rect(use), m_x-gr.x, m_y-gr.y)) main->set_use_teams(use);
 				}
+				for(int i = 0; i<UPG_NUM; i++) if(in_rect(upg_rect(i),m_x-gr.x, m_y-gr.y)) upg_prs_ind = i;
 			}
 			break;
 		case SDL_MOUSEBUTTONUP:
@@ -1332,6 +1364,11 @@ void SettingMenu::event(SDL_Event& e){
 				a_prs = false;
 				add_player();
 			}
+			if(e.button.button == SDL_BUTTON_LEFT){
+				int mask = 1 << upg_prs_ind;
+				if(upg_prs_ind >= 0 && in_rect(upg_rect(upg_prs_ind), m_x-gr.x, m_y-gr.y)) main->set_upgs(mask, !(upg_mask&mask));
+			}
+			upg_prs_ind = -1;
 			break;
 		case SDL_MOUSEWHEEL:
 			if(in_rect(get_players_rect(), m_x, m_y))
@@ -1341,6 +1378,7 @@ void SettingMenu::event(SDL_Event& e){
 	if(kfocus && kfocus->get_msg_upd()) main->update_name(get_ind(kfocus));
 }
 void SettingMenu::lose_mfocus(){
+	upg_prs_ind = -1;
 	SubMenu::lose_mfocus();
 	if(mfocus) mfocus->lose_mfocus();
 	mfocus = NULL;
@@ -1411,6 +1449,12 @@ void SettingMenu::set_id(int ind, int id){
 }
 int SettingMenu::get_id(int ind){
 	return players[ind]->get_id();
+}
+void SettingMenu::set_upg_mask(int mask){
+	upg_mask = mask;
+}
+int SettingMenu::get_upg_mask(){
+	return upg_mask;
 }
 
 MainScr::MainScr(Main* up, Client* c) : State(up), conn(up->get_renderer(),this), play(up->get_renderer(),this), sett(up->get_renderer(),this){
@@ -1630,6 +1674,10 @@ bool MainScr::step(){
 						sett.set_use_teams(u);
 						play.set_use_teams(u);
 						break;
+					case '\x16':
+						cur = decode_int(cur, i);
+						sett.set_upg_mask(i);
+						break;
 					}
 					break;
 				case '\x01':
@@ -1822,6 +1870,20 @@ void MainScr::set_use_teams(bool use){
 	end = encode_bool(end, use);
 	clnt->send(data, end-data, PROTO_REL);	
 }
+void MainScr::set_upgs(int mask, bool val){
+	if(!ihost) return;
+	
+	char data[100];
+	char* end;
+				
+	end = data;
+	end = encode_char(end, '\x00');
+	end = encode_char(end, '\x16');
+	end = encode_int(end, mask);
+	end = encode_bool(end, val);
+	clnt->send(data, end-data, PROTO_REL);	
+}
+
 void MainScr::start_count(){
 	char data[100];
 	char* end;
@@ -1842,7 +1904,7 @@ void MainScr::stop_count(){
 }
 
 void MainScr::start(){
-	GameConfig cf(play.get_player_num(), play.get_use_teams() ? play.get_team_num() : play.get_player_num(), UPG_MASK_ALL/*TODO*/);
+	GameConfig cf(play.get_player_num(), play.get_use_teams() ? play.get_team_num() : play.get_player_num(), sett.get_upg_mask());
 	
 	cf.set = sett.get_settings();
 	

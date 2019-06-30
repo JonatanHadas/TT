@@ -284,6 +284,10 @@ class SettingMenu : public SubMenu{
 	Msg* end_rnd;
 	Msg* end_scr;
 	
+	int upg_mask;
+	int upg_prs_ind;
+	SDL_Rect upg_rect(int ind);
+	
 public:
 	SettingMenu(SDL_Renderer* r, MainScr* main);
 	~SettingMenu();
@@ -318,6 +322,9 @@ public:
 	
 	int get_ind(int ind);
 	int get_id(int ind);
+	
+	void set_upg_mask(int mask);
+	int get_upg_mask();
 };
 
 class MainScr : public State{
@@ -370,6 +377,7 @@ public:
 	void set_tie_lim(int lim);
 	void set_scr_mth(GameSettings::ScoreMeth mth);
 	void set_end_mth(GameSettings::EndMeth mth);
+	void set_upgs(int mask, bool val);
 	
 	void set_team_num(int num);
 	void set_use_teams(bool use);

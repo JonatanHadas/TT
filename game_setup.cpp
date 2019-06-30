@@ -29,6 +29,8 @@ GameSetup::GameSetup(Server* s){
 	cnt = -1;
 	
 	id = 0;
+	
+	upg_mask = UPG_MASK_ALL;
 }
 GameSetup::~GameSetup(){
 	
@@ -60,6 +62,13 @@ void GameSetup::send_all(int peer_id){
 			end = encode_char(end, '\x09');
 			end = encode_int(end, pl.id);
 			end = encode_int(end, it->second.second);
+			serv->send(data, end-data, peer_id, PROTO_REL);
+			
+			end = data;
+			end = encode_char(end, '\x00');
+			end = encode_char(end, '\x16');
+			end = encode_int(end, upg_mask);
+			
 			serv->send(data, end-data, peer_id, PROTO_REL);
 		}
 
@@ -276,6 +285,19 @@ void GameSetup::update_team_num(){
 	end = encode_int(end, team_num);
 	serv->send_all(data, end-data, PROTO_REL);
 }
+void GameSetup::update_upg_mask(int mask, bool val){
+	if(val) upg_mask |= mask;
+	else upg_mask &= ~mask;
+	
+	char data[100];
+	char* end = data;
+	
+	end = encode_char(end, '\x00');
+	end = encode_char(end, '\x16');
+	end = encode_int(end, upg_mask);
+	
+	serv->send_all(data, end-data, PROTO_REL);
+}
 void GameSetup::update_use_teams(){
 	char data[100];
 	char* end;
@@ -314,7 +336,7 @@ void GameSetup::count(){
 		end = encode_char(end, '\x02');
 		serv->send_all(data, end-data, PROTO_REL);
 		
-		GameConfig cf(players.size(), use_teams ? team_num : players.size(), UPG_MASK_ALL);
+		GameConfig cf(players.size(), use_teams ? team_num : players.size(), upg_mask);
 		cf.set = set;
 		int i = 0;
 		for(auto it = players.begin(); it != players.end(); it++, i++){
@@ -359,6 +381,7 @@ void GameSetup::mainloop(){
 		char* cur;
 		char h,hh, str[1000];
 		int i,c,t;
+		bool b;
 		switch (e.type)
 		{
 		case NetEvent::TYPE_CONN:
@@ -444,6 +467,13 @@ void GameSetup::mainloop(){
 					stop_count();
 					cur = decode_bool(cur, use_teams);
 					update_use_teams();
+					break;
+				case '\x16':
+					if(e.peer_id != peers.begin()->first) break;
+					stop_count();
+					cur = decode_int(cur, i);
+					cur = decode_bool(cur, b);
+					update_upg_mask(i, b);
 					break;
 				}
 				break;

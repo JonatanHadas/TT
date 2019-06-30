@@ -63,6 +63,8 @@ type |   | meaning        | data
 14   | > | team number    | num
 15   | <H| use teams      | true/false
 15   | > | use teams      | true/false
+16   | <H| change upgrade | mask, new value
+16   | > | change upgrades| mask
 
 stage1:
 type |   | meaning    | data
@@ -83,6 +85,8 @@ class GameSetup{
 	std::map<int, std::vector<PlayerData>*> peers; //peer_id -> vector<players>
 	std::map<int, std::pair<int,int>> players; //id -> (peer id, index)
 	Server* serv;
+	
+	int upg_mask;
 	
 	int id;
 	int cnt;
@@ -108,6 +112,7 @@ class GameSetup{
 	void update_use_teams();
 	void update_scr_mth();
 	void update_end_mth();
+	void update_upg_mask(int mask, bool val);
 	
 	void start_count();
 	void count();
