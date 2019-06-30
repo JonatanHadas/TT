@@ -1842,7 +1842,7 @@ void MainScr::stop_count(){
 }
 
 void MainScr::start(){
-	GameConfig cf(play.get_player_num(), play.get_use_teams() ? play.get_team_num() : play.get_player_num());
+	GameConfig cf(play.get_player_num(), play.get_use_teams() ? play.get_team_num() : play.get_player_num(), UPG_MASK_ALL/*TODO*/);
 	
 	cf.set = sett.get_settings();
 	

@@ -22,11 +22,16 @@ ExInEvent* DirectEx::get_event(){
 		case GameEvent::TYPE_SHOT_CRT:
 			switch(((GameEventCreateShot*)e)->get_shot()->get_type()){
 			case GenShot::TYPE_REG:
+			case GenShot::TYPE_GATLING:
 				return new DExInEventCreateShot((GameEventCreateShot*)e);
 				break;
 			}
 		case GameEvent::TYPE_SHOT_RMV:
 			return new DExInEventRemoveShot((GameEventRemoveShot*)e);
+		case GameEvent::TYPE_UPG_CRT:
+			return new DExInEventCreateUpgrade((GameEventCreateUpgrade*)e);
+		case GameEvent::TYPE_UPG_RMV:
+			return new DExInEventRemoveUpgrade((GameEventRemoveUpgrade*)e);
 		}
 	}
 	if(t_ind >= 0){
@@ -85,3 +90,15 @@ double DExInEventTankUpdate::get_y(){ return t->get_y(); }
 double DExInEventTankUpdate::get_ang(){ return t->get_ang(); }
 long long int DExInEventTankUpdate::get_time(){ return g->get_time(); }
 ControlState DExInEventTankUpdate::get_ctrl(){ return t->get_ctrl(); }
+Tank::State DExInEventTankUpdate::get_state(){ return t->get_state(); }
+
+DExInEventCreateUpgrade::DExInEventCreateUpgrade(GameEventCreateUpgrade* event){ e = event; }
+DExInEventCreateUpgrade::~DExInEventCreateUpgrade(){ delete e; }
+Upgrade DExInEventCreateUpgrade::get_upg(){ return e->get_upg(); }
+int DExInEventCreateUpgrade::get_round(){ return e->get_round(); }
+
+DExInEventRemoveUpgrade::DExInEventRemoveUpgrade(GameEventRemoveUpgrade* event){ e = event; }
+DExInEventRemoveUpgrade::~DExInEventRemoveUpgrade(){ delete e; }
+int DExInEventRemoveUpgrade::get_x(){ return e->get_x(); }
+int DExInEventRemoveUpgrade::get_y(){ return e->get_y(); }
+int DExInEventRemoveUpgrade::get_round(){ return e->get_round(); }

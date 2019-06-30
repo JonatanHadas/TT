@@ -19,6 +19,8 @@ class GameQEventScore;
 class GameQEventEndGame;
 class GameQEventCreateShot;
 class GameQEventRemoveShot;
+class GameQEventCreateUpgrade;
+class GameQEventRemoveUpgrade;
 
 class GameQEvent{
 public:
@@ -28,6 +30,7 @@ public:
 		TYPE_SCORE,
 		TYPE_END_GAME,
 		TYPE_SHOT_CRT, TYPE_SHOT_RMV, 
+		TYPE_UPG_CRT, TYPE_UPG_RMV,
 	};
 	virtual Type get_type() = 0;
 };
@@ -72,6 +75,17 @@ public:
 	virtual double get_vy() = 0;
 	virtual GenShot::Type get_stype() = 0;
 };
+class GameQEventCreateUpgrade : public GameQEvent{
+public:
+	Type get_type(){return GameQEvent::TYPE_UPG_CRT;}
+	virtual Upgrade get_upg() = 0;
+};
+class GameQEventRemoveUpgrade : public GameQEvent{
+public:
+	Type get_type(){return GameQEvent::TYPE_UPG_RMV;}
+	virtual int get_x() = 0;
+	virtual int get_y() = 0;
+};
 
 class GameQ{
 public:
@@ -86,6 +100,7 @@ public:
 	virtual void advance() = 0;
 	
 	virtual void leave(){}
+	virtual long long int get_time() = 0;
 };
 class TeamQ{
 public:
@@ -101,6 +116,8 @@ public:
 	virtual double get_ang() = 0;
 	virtual bool is_dead() = 0;
 	
+	virtual Tank::State get_state() = 0;
+	
 	virtual int get_ind() = 0;
 	virtual TeamQ* get_team() = 0;
 	
@@ -110,6 +127,7 @@ class RoundQ{
 public:
 	virtual Maze* get_maze() = 0;
 	virtual std::set<GenShotQ*> get_shots() = 0;
+	virtual std::set<Upgrade*> get_upgs() = 0;
 };
 class GenShotQ{
 public:

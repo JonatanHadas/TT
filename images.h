@@ -6,7 +6,7 @@
 struct TankImg{
 	SDL_Texture* body;
 	SDL_Texture* cannon;
-	SDL_Texture* gutling[3];
+	SDL_Texture* gatling[3];
 	SDL_Texture* laser;
 	SDL_Texture* ray_gun0;
 	SDL_Texture* ray_gun1;
@@ -28,7 +28,7 @@ struct TankImg{
 };
 
 enum Img{
-	IMG_GUTLING_SYM, IMG_LASER_SYM, IMG_DEATH_RAY_SYM, IMG_WIFI_SYM, IMG_MISSILE_SYM, IMG_BOMB_SYM, IMG_MINE_SYM, 
+	IMG_GATLING_SYM, IMG_LASER_SYM, IMG_DEATH_RAY_SYM, IMG_WIFI_SYM, IMG_MISSILE_SYM, IMG_BOMB_SYM, IMG_MINE_SYM, 
 	IMG_FRAGMENT
 };
 

@@ -20,7 +20,10 @@
 #define TANKC_D_W TANK_D_W
 #define TANKC_D_H DRC(TANK_H * 1.2)
 
-
+std::pair<Upgrade::Type, Img> upg2img_a[UPG_NUM] = {
+	{Upgrade::GATLING, IMG_GATLING_SYM},
+	};
+std::map<Upgrade::Type, Img> upg2img(upg2img_a,upg2img_a+UPG_NUM);
 
 BoardDrawer::BoardDrawer(GameQ* q, SDL_Renderer* r, GameConfig& cf){
 	renderer = r;
@@ -60,12 +63,25 @@ void BoardDrawer::draw(){
 		}
 	}
 	
+	auto upgs = game->get_round()->get_upgs();
+	for(auto it = upgs.begin(); it!=upgs.end(); it++){
+		SDL_Rect r;
+		r.w = r.h = DRC(UPG_SIZE);
+		r.x = DRC((*it)->x + 0.5)-r.w/2;
+		r.y = DRC((*it)->y + 0.5)-r.h/2;
+		
+		SDL_RenderCopyEx(renderer, get_img(upg2img[(*it)->type]), NULL, &r, UPG_ANG, NULL, SDL_FLIP_NONE);
+		
+		delete (*it);
+	}
+	
 	auto shots = game->get_round()->get_shots();
 	for(auto it = shots.begin(); it != shots.end(); it++){
 		SDL_Rect r;
 		ShotQ* sht;
 		switch((*it)->get_type()){
 		case GenShot::TYPE_REG:
+		case GenShot::TYPE_GATLING:
 			sht = (ShotQ*)(*it);
 			r.w = r.h = DRC(2*sht->get_r());
 			r.x = WALL_D_T + DRC(sht->get_x()) - r.w/2;
@@ -105,11 +121,25 @@ void BoardDrawer::draw(){
 			
 			p.x -= r.x; p.y -= r.y;
 			
-			SDL_RenderCopyEx(renderer,tank_images[i].cannon, NULL, &r, RAD2DEG(ang)+90, &p, SDL_FLIP_NONE);
+			SDL_Texture* cannon;
+			switch(t->get_state()){
+			case Tank::REG:
+				cannon = tank_images[i].cannon;
+				break;
+			case Tank::GATLING:
+				cannon = tank_images[i].gatling[0];
+				break;
+			case Tank::GATLING_WAIT:
+			case Tank::GATLING_SHOOT:
+				cannon = tank_images[i].gatling[game->get_time()%3];
+				break;
+			}
+			
+			SDL_RenderCopyEx(renderer,cannon, NULL, &r, RAD2DEG(ang)+90, &p, SDL_FLIP_NONE);
 		}
 	}
 }
-TankImg* BoardDrawer::get_img(int i){
+TankImg* BoardDrawer::get_tank_img(int i){
 	return tank_images+i;
 }
 
@@ -195,7 +225,7 @@ void GameDrawer::draw(){
 			SDL_Rect r;
 			r.w = TKIMG_W; r.h = TKIMG_H;
 			r.x = x-r.w/2; r.y = y-r.h/2;
-			SDL_RenderCopyEx(	renderer, board->get_img(game->get_team(i)->get_tank(j)->get_ind())->image,
+			SDL_RenderCopyEx(	renderer, board->get_tank_img(game->get_team(i)->get_tank(j)->get_ind())->image,
 								NULL, &r,
 								0,NULL,
 								(j > game->get_team(i)->get_tank_num()/2) ? SDL_FLIP_HORIZONTAL : SDL_FLIP_NONE);

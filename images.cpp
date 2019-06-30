@@ -14,14 +14,14 @@
 #include <stdio.h>
 
 TankImg::TankImg(){
-	body = cannon = gutling[0] = gutling[1] = gutling[2] = laser = ray_gun0 = ray_gun1 = ray_gun2 = ray_gun3 = launcher = missile = thick_cannon = mine_off = mine_on = shards = deathray = broadcast = image = NULL;
+	body = cannon = gatling[0] = gatling[1] = gatling[2] = laser = ray_gun0 = ray_gun1 = ray_gun2 = ray_gun3 = launcher = missile = thick_cannon = mine_off = mine_on = shards = deathray = broadcast = image = NULL;
 }
 TankImg::~TankImg(){
 	if(body) SDL_DestroyTexture(body);
 	if(cannon) SDL_DestroyTexture(cannon);
-	if(gutling[0]) SDL_DestroyTexture(gutling[0]);
-	if(gutling[1]) SDL_DestroyTexture(gutling[1]);
-	if(gutling[2]) SDL_DestroyTexture(gutling[2]);
+	if(gatling[0]) SDL_DestroyTexture(gatling[0]);
+	if(gatling[1]) SDL_DestroyTexture(gatling[1]);
+	if(gatling[2]) SDL_DestroyTexture(gatling[2]);
 	if(laser) SDL_DestroyTexture(laser);
 	if(ray_gun0) SDL_DestroyTexture(ray_gun0);
 	if(ray_gun1) SDL_DestroyTexture(ray_gun1);
@@ -38,13 +38,13 @@ TankImg::~TankImg(){
 	if(image) SDL_DestroyTexture(image);
 }
 bool TankImg::check(){
-	return body && cannon && gutling[0] && gutling[1] && gutling[2] && laser && ray_gun0 && ray_gun1 && ray_gun2 && ray_gun3 && launcher && missile && thick_cannon && mine_off && mine_on && shards && deathray && broadcast && image;
+	return body && cannon && gatling[0] && gatling[1] && gatling[2] && laser && ray_gun0 && ray_gun1 && ray_gun2 && ray_gun3 && launcher && missile && thick_cannon && mine_off && mine_on && shards && deathray && broadcast && image;
 }
 
-// gutling_sym, laser_sym, death_ray_sym, wifi_sym, missile_sym, bomb_sym, mine_sym, fragment
+// gatling_sym, laser_sym, death_ray_sym, wifi_sym, missile_sym, bomb_sym, mine_sym, fragment
 std::vector<SDL_Texture*> texts;
 
-// body, cannon, gutling0..2, laser, ray_gun 0..3, launcher, missile, thick_cannon, mine_on, mine_off, shards, deathray, broadcast, image
+// body, cannon, gatling0..2, laser, ray_gun 0..3, launcher, missile, thick_cannon, mine_on, mine_off, shards, deathray, broadcast, image
 std::vector<SDL_Surface*> surfs;
 
 struct TankTex{
@@ -168,9 +168,9 @@ bool load_images(SDL_Renderer* rend){
 	
 	if(get_surf(DIR TNK "body" PNG))
 	if(get_surf(DIR TNK "cannon" PNG))
-	if(get_surf(DIR TNK "gutling0" PNG))
-	if(get_surf(DIR TNK "gutling1" PNG))
-	if(get_surf(DIR TNK "gutling2" PNG))
+	if(get_surf(DIR TNK "gatling0" PNG))
+	if(get_surf(DIR TNK "gatling1" PNG))
+	if(get_surf(DIR TNK "gatling2" PNG))
 	if(get_surf(DIR TNK "lasergun" PNG))
 	if(get_surf(DIR TNK "raygun0" PNG))
 	if(get_surf(DIR TNK "raygun1" PNG))
@@ -185,7 +185,7 @@ bool load_images(SDL_Renderer* rend){
 	if(get_surf(DIR TNK "deathray" PNG))
 	if(get_surf(DIR TNK "broadcast" PNG))
 	if(get_surf(DIR TNK "image" PNG))
-	if(get_tex(DIR UPG "gutling" PNG, rend))
+	if(get_tex(DIR UPG "gatling" PNG, rend))
 	if(get_tex(DIR UPG "laser" PNG, rend))
 	if(get_tex(DIR UPG "deathray" PNG, rend))
 	if(get_tex(DIR UPG "wifi" PNG, rend))
@@ -200,7 +200,7 @@ bool load_images(SDL_Renderer* rend){
 
 int get_ind(Img i){
 	switch(i){
-	case IMG_GUTLING_SYM:
+	case IMG_GATLING_SYM:
 		return 0;
 	case IMG_LASER_SYM:
 		return 1;
@@ -260,9 +260,9 @@ void generate_tank(int ind, SDL_Renderer* rend, TankImg* img){
 	img->col = tts[ind]->col;
 	img->body = tex_img(ind, surfs[0], rend, true);
 	img->cannon = tex_img(ind, surfs[1], rend, true);
-	img->gutling[0] = tex_img(ind, surfs[2], rend, true);
-	img->gutling[1] = tex_img(ind, surfs[3], rend, true);
-	img->gutling[2] = tex_img(ind, surfs[4], rend, true);
+	img->gatling[0] = tex_img(ind, surfs[2], rend, true);
+	img->gatling[1] = tex_img(ind, surfs[3], rend, true);
+	img->gatling[2] = tex_img(ind, surfs[4], rend, true);
 	img->laser = tex_img(ind, surfs[5], rend, true);
 	img->ray_gun0 = tex_img(ind, surfs[6], rend, true);
 	img->ray_gun1 = tex_img(ind, surfs[7], rend, true);

@@ -80,7 +80,24 @@ public:
 	double get_ang();
 	long long int get_time();
 	ControlState get_ctrl();
+	Tank::State get_state();
 };
-
+class DExInEventCreateUpgrade : public ExInEventCreateUpgrade{
+	GameEventCreateUpgrade* e;
+public:
+	DExInEventCreateUpgrade(GameEventCreateUpgrade* event);
+	~DExInEventCreateUpgrade();
+	Upgrade get_upg();
+	int get_round();
+};
+class DExInEventRemoveUpgrade : public ExInEventRemoveUpgrade{
+	GameEventRemoveUpgrade* e;
+public:
+	DExInEventRemoveUpgrade(GameEventRemoveUpgrade* event);
+	~DExInEventRemoveUpgrade();
+	int get_x();
+	int get_y();
+	int get_round();
+};
 
 #endif
