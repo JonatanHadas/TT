@@ -24,6 +24,7 @@ class RegShot;
 class GatShot;
 class LaserShot;
 class BombShot;
+class DeathRay;
 
 class Controlable;
 
@@ -131,7 +132,8 @@ struct ControlState{
 
 class Controlable{
 public:
-	virtual void set_ctrl(ControlState ctrl) = 0;
+	virtual void die(){}
+	virtual void set_ctrl(ControlState ctrl){}
 };
 
 class Tank{
@@ -141,6 +143,9 @@ public:
 		GATLING, GATLING_WAIT, GATLING_SHOOT,
 		LASER, LASER_SHOOT,
 		BOMB, BOMB_SHOOT,
+		DEATH_RAY,
+		DEATH_RAY_WAIT1, DEATH_RAY_WAIT2, DEATH_RAY_WAIT3, 
+		DEATH_RAY_SHOOT,
 	};
 private:
 	
@@ -163,6 +168,7 @@ private:
 	friend RegShot;
 	friend LaserShot;
 	friend BombShot;
+	friend DeathRay;
 		
 	bool can_step();
 	void clear_control();
@@ -208,6 +214,7 @@ public:
 		TYPE_LASER,
 		TYPE_BOMB,
 		TYPE_FRAGMENT,
+		TYPE_DEATH_RAY,
 	};
 private:
 	Tank* tank;
@@ -328,6 +335,29 @@ public:
 	double get_t();
 	
 	bool is_reusable(); // destoyed by killing tank
+};
+
+class DeathRay : public GenShot, public Controlable{
+	std::vector<std::pair<double,double>> ps;
+	int timer;
+	void find_path();
+public:
+	DeathRay(Game* game, Tank* tank);
+	~DeathRay();
+	bool check_tank(Tank* tank, bool ignore_me);
+	void advance();
+	GenShot::Type get_type();
+	
+	double get_x();
+	double get_y();
+	double get_ang();
+	
+	bool is_reusable();
+	
+	int get_point_num();
+	std::pair<double, double> get_point(int i);
+	
+	void die();
 };
 
 

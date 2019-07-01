@@ -111,5 +111,16 @@ public:
 	int get_round();
 	int get_id();
 };
+class DExInEventCreateDeathRay : public ExInEventCreateDeathRay{
+	GameEventCreateShot* e;
+public:
+	DExInEventCreateDeathRay(GameEventCreateShot* event);
+	~DExInEventCreateDeathRay();
+	int get_point_num();
+	std::pair<double, double> get_point(int i);
+	int get_round();
+	int get_tank_ind();
+	int get_id();
+};
 
 #endif

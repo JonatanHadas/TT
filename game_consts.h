@@ -40,6 +40,12 @@
 
 #define BOMB_R 0.05
 
+#define DR_TTL 30
+#define DR_STEP 0.3
+#define DR_TURN DEG2RAD(0.5)
+#define DR_W 0.05
+
+#define DR_TIME 20
 
 #define FRAG_DST 5.0
 #define FRAG_TTL 90
@@ -50,13 +56,13 @@
 
 #define UPG_ANG 30.0
 
-#define UPG_NUM 3
+#define UPG_NUM 4
 #define UPG_SIZE 0.3
 
 struct Upgrade{
 	int x,y;
 	enum Type{
-		GATLING,LASER,BOMB
+		GATLING,LASER,BOMB,DEATH_RAY
 	};
 	Upgrade::Type type;
 };

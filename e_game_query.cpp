@@ -173,6 +173,9 @@ std::set<GenShotQ*> RoundEQ::get_shots(){
 		case GenShot::TYPE_FRAGMENT:
 			ret.insert(new FragmentEQ((FragmentExtrap*)((*it).second)));
 			break;
+		case GenShot::TYPE_DEATH_RAY:
+			ret.insert(new DeathRayEQ((DeathRayExtrap*)((*it).second)));
+			break;
 		}
 	}
 	return ret;
@@ -230,3 +233,30 @@ GenShot::Type FragmentEQ::get_type(){
 	return frag->get_type();
 }
 
+DeathRayEQ::DeathRayEQ(DeathRayExtrap* d){
+	dr = d;
+}
+int DeathRayEQ::get_point_num(){
+	return dr->get_point_num();
+}
+double DeathRayEQ::get_x(int i){
+	return dr->get_x(i);
+}
+double DeathRayEQ::get_y(int i){
+	return dr->get_y(i);
+}
+double DeathRayEQ::get_x(){
+	return dr->get_x();
+}
+double DeathRayEQ::get_y(){
+	return dr->get_y();
+}
+double DeathRayEQ::get_ang(){
+	return dr->get_ang();
+}
+GenShot::Type DeathRayEQ::get_type(){
+	return dr->get_type();
+}
+int DeathRayEQ::get_tank_ind(){
+	return dr->get_tank()->get_ind();
+}

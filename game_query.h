@@ -149,4 +149,12 @@ public:
 	virtual double get_t() = 0;
 };
 
+class DeathRayQ : public GenShotQ{
+public:
+	virtual int get_tank_ind() = 0;
+	virtual int get_point_num() = 0;
+	virtual double get_x(int i) = 0;
+	virtual double get_y(int i) = 0;
+};
+
 #endif
