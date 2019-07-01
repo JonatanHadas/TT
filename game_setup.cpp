@@ -64,12 +64,6 @@ void GameSetup::send_all(int peer_id){
 			end = encode_int(end, it->second.second);
 			serv->send(data, end-data, peer_id, PROTO_REL);
 			
-			end = data;
-			end = encode_char(end, '\x00');
-			end = encode_char(end, '\x16');
-			end = encode_int(end, upg_mask);
-			
-			serv->send(data, end-data, peer_id, PROTO_REL);
 		}
 
 		end = data;
@@ -82,6 +76,8 @@ void GameSetup::send_all(int peer_id){
 	
 	update_team_num();
 	update_use_teams();
+	
+	update_upg_mask(0,true);// no change
 }
 
 void GameSetup::add_player(int peer_id){
