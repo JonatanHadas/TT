@@ -8,7 +8,7 @@
 #include <vector>
 
 Upgrade::Type upg_types[UPG_NUM] = {
-	Upgrade::GATLING,Upgrade::LASER
+	Upgrade::GATLING,Upgrade::LASER,Upgrade::BOMB,
 };
 
 GameEventTankDeath::GameEventTankDeath(int i){
@@ -277,8 +277,8 @@ int Game::get_round_num(){
 	return round_num;
 }
 // for tests TODO: change to better value
-#define UPG_MAX_TIME 600
-#define UPG_MIN_TIME 300
+#define UPG_MAX_TIME 61
+#define UPG_MIN_TIME 60
 
 Round::Round(Game* g){
 	game=g;
@@ -388,6 +388,13 @@ std::map<std::pair<int,int>,Upgrade::Type>::iterator Round::end_upgs(){
 	return upgs.end();
 }
 
+void Round::explode(double x, double y){
+	for(int i = 0; i<EXPLOSION_NUM; i++){
+		add_shot(new Fragment(game, x,y));
+	}
+}
+
+
 
 Tank::Tank(Game* g, int i, Team* t){
 	team = t;
@@ -399,6 +406,7 @@ Tank::Tank(Game* g, int i, Team* t){
 	ind = i;
 	shot_num = 0;
 	state = Tank::REG;
+	ctbl = NULL;
 }
 Tank::~Tank(){
 	
@@ -433,9 +441,11 @@ void Tank::step(){
 		case Tank::REG:
 		case Tank::GATLING:
 		case Tank::LASER:
+		case Tank::BOMB:
+		case Tank::BOMB_SHOOT:
 			double pa = ang;
 			
-			int turn = (ctrl.back().lt ? 1 : 0)-(ctrl.back().rt ? 1 : 0);
+			int turn = (ctrl.front().lt ? 1 : 0)-(ctrl.front().rt ? 1 : 0);
 			ang += turn * STEP_ANG;
 			
 			if(check_wall_coll(nx,ny,px,py,dp)) ang = pa;
@@ -445,9 +455,11 @@ void Tank::step(){
 		case Tank::REG:
 		case Tank::GATLING:
 		case Tank::LASER:
+		case Tank::BOMB:
+		case Tank::BOMB_SHOOT:
 			double prx = x, pry = y;
 			
-			double step = STEP_DST * ((ctrl.back().fd ? 1 : 0) - (ctrl.back().bk ? REV_RAT : 0));
+			double step = STEP_DST * ((ctrl.front().fd ? 1 : 0) - (ctrl.front().bk ? REV_RAT : 0));
 			rotate_add(ang, step, 0, x, y);
 
 			if(check_wall_coll(nx,ny,px,py,dp)) {x=prx; y=pry;}
@@ -455,12 +467,12 @@ void Tank::step(){
 		}
 		switch(state){
 		case Tank::REG:
-			if(ctrl.back().sht && !p_ctrl.sht){
+			if(ctrl.front().sht && !p_ctrl.sht){
 				if(shot_num < MAX_SHOTS) game->get_round()->add_shot(new RegShot(game, this));
 			}
 			break;
 		case Tank::GATLING:
-			if(ctrl.back().sht && !p_ctrl.sht){
+			if(ctrl.front().sht && !p_ctrl.sht){
 				state = Tank::GATLING_WAIT;
 				timer = GATLING_TIME;
 			}
@@ -468,11 +480,18 @@ void Tank::step(){
 			
 		case Tank::GATLING_WAIT:
 		case Tank::GATLING_SHOOT:
-			if(!ctrl.back().sht) state = Tank::REG;
+			if(!ctrl.front().sht) state = Tank::REG;
 			break;
 		case Tank::LASER:
-			if(ctrl.back().sht && !p_ctrl.sht) 
+			if(ctrl.front().sht && !p_ctrl.sht) 
 				game->get_round()->add_shot(new LaserShot(game,this));
+			break;
+		case Tank::BOMB:
+			if(ctrl.front().sht && !p_ctrl.sht){
+				BombShot* sht = new BombShot(game,this);
+				ctbl = sht;
+				game->get_round()->add_shot(sht);
+			}
 			break;
 		}
 	}
@@ -488,6 +507,8 @@ void Tank::step(){
 			break;
 		}
 	}
+	
+	if(ctbl) ctbl->set_ctrl(ctrl.front());
 	
 	p_ctrl = ctrl.front();
 	ctrl.pop();
@@ -530,6 +551,7 @@ void Tank::reset(double xx, double yy, double a){
 	clear_control();
 	dead = false;
 	state = Tank::REG;
+	ctbl = NULL;
 }
 void Tank::kill(){
 	dead = true;
@@ -554,6 +576,7 @@ bool Tank::check_upg(Upgrade u){
 std::pair<Upgrade::Type, Tank::State> upg2stt_a[UPG_NUM]={
 	{Upgrade::GATLING,Tank::GATLING},
 	{Upgrade::LASER, Tank::LASER},
+	{Upgrade::BOMB, Tank::BOMB},
 };
 
 std::map<Upgrade::Type, Tank::State> upg2stt(upg2stt_a, upg2stt_a+UPG_NUM);
@@ -617,13 +640,13 @@ double Shot::check_wall(){
 	int ix = xx;
 	int iy = yy;
 	int ixx = vx>0 ? 1 : 0;
-	int iyy = vy<0 ? 1 : 0;
+	int iyy = vy>0 ? 1 : 0;
 	int idx = vx>0 ? 1 : -1;
-	int idy = vy<0 ? 1 : -1;
-	int vsg = -idx*idy;
+	int idy = vy>0 ? 1 : -1;
+	int vsg = idx*idy;
 	double wxs[4],wys[4],nnx,nny;
 	double t = -1;
-	while(abs(ix - (int)xx)+abs(iy - (int)yy) <= sqrt(vx*vx+vy*vy)*(tm-col_t+1)){
+	while(abs(ix - (int)xx)+abs(iy - (int)yy) <= 2*sqrt(vx*vx+vy*vy)*(tm-col_t+1)){
 		double tt;
 		for(int i = -1; i<=1; i++){
 			for(int j = -1; j<1; j++){
@@ -769,6 +792,7 @@ int GatShot::get_ttl(){
 GenShot::Type GatShot::get_type(){
 	return GenShot::TYPE_GATLING;
 }
+
 LaserShot::LaserShot(Game* game, Tank* tank) : Shot(game, tank, 0, STEP_LASER){
 	get_tank()->state = Tank::LASER_SHOOT;
 }
@@ -783,4 +807,130 @@ int LaserShot::get_ttl(){
 }
 GenShot::Type LaserShot::get_type(){
 	return GenShot::TYPE_LASER;
+}
+
+BombShot::BombShot(Game* game, Tank* tank) : Shot(game, tank, 0, STEP_BOMB){
+	get_tank()->state = Tank::BOMB_SHOOT;
+	prs = true;
+}
+BombShot::~BombShot(){
+	get_tank()->ctbl = NULL;
+	get_tank()->state = Tank::REG;
+	get_game()->get_round()->explode(get_x(), get_y());
+}
+double BombShot::get_r(){
+	return BOMB_R;
+}
+int BombShot::get_ttl(){
+	return BOMB_TTL;
+}
+GenShot::Type BombShot::get_type(){
+	return GenShot::TYPE_BOMB;
+}
+void BombShot::set_ctrl(ControlState ctrl){
+	if(!ctrl.sht) prs = false;
+	else if(!prs) get_game()->get_round()->delete_shot(this);
+}
+
+Fragment::Fragment(Game* game, double xx,double yy) : GenShot(game, NULL){
+	x=xx;
+	y=yy;
+	ang = DEG2RAD(rand()%360);
+	time = FRAG_TTL;
+	
+	tot_dst = 1.0;
+	check_wall();
+}
+Fragment::~Fragment(){
+	
+}
+
+void Fragment::check_wall(){
+	double xx = x,yy = y;
+	double x2 = get_x(0), y2 = get_y(0);
+	double vx = x2-xx, vy=y2-yy;
+	int ix = xx;
+	int iy = yy;
+	int ixx = vx>0 ? 1 : 0;
+	int iyy = vy>0 ? 1 : 0;
+	int idx = vx>0 ? 1 : -1;
+	int idy = vy>0 ? 1 : -1;
+	int vsg = idx*idy;
+	double wxs[4],wys[4],nnx,nny;
+	bool col = false;
+	while(abs(ix - (int)xx)<= FRAG_DST && abs(iy - (int)yy) <= FRAG_DST && !col){
+		double tt;
+		for(int i = -1; i<=1; i++){
+			for(int j = -1; j<1; j++){
+				gen_rect(ix+i-WALL_THK, iy+j-WALL_THK + 1, 2*WALL_THK + 1, 2*WALL_THK,wxs,wys);
+				if(get_game()->get_round()->get_maze()->hwall(ix+i, iy+j)){
+					double nx,ny;
+					double d = circ_poly_coltime(xx,yy,vx,vy,0.0,wxs,wys,4,nx,ny);
+					if(d >= 0){
+						col = true;
+						if(d < tot_dst) tot_dst = d;
+					}
+				}
+				gen_rect(ix+j-WALL_THK + 1, iy+i-WALL_THK, 2*WALL_THK, 2*WALL_THK + 1,wxs,wys);
+				if(get_game()->get_round()->get_maze()->vwall(ix+j, iy+i)){
+					double nx,ny;
+					double d = circ_poly_coltime(xx,yy,vx,vy,0.0,wxs,wys,4,nx,ny);
+					if(d >= 0){
+						if(d < tot_dst) tot_dst = d;
+					}
+				}
+			}
+		}
+		if( vsg * leftness(ix+ixx,iy+iyy,x,y,x+vx,y+vy) > 0) iy += idy;
+		else ix += idx;
+	}
+}
+
+bool Fragment::check_tank(Tank* t, bool ignore_me){
+	
+	double txs[4],tys[4];
+	double x1 = get_x(time+1),x2 = get_x();
+	double y1 = get_y(time+1),y2 = get_y();
+	
+	gen_rot_rect(t->get_x(), t->get_y(), TANK_W, TANK_H, t->get_ang(), txs, tys);
+	
+	double nx,ny;
+	double tt = circ_poly_coltime(x1,y1,x2-x1,y2-y1,0.0,txs,tys,4,nx,ny);
+	return tt >= 0 && tt<1.0;
+}
+void Fragment::advance(){
+	if(time >0) time--;
+	else get_game()->get_round()->delete_shot(this);
+}
+GenShot::Type Fragment::get_type(){
+	return GenShot::TYPE_FRAGMENT;
+}
+	
+double Fragment::get_ang(){
+	return ang;
+}
+double Fragment::get_x(){
+	return get_x(time);
+}
+double Fragment::get_y(){
+	return get_y(time);
+}
+double Fragment::get_x(double t){
+	return x + cos(ang) * get_dst(t);
+}
+double Fragment::get_y(double t){
+	return y + sin(ang) * get_dst(t);
+}
+double Fragment::get_dst(){
+	return get_dst(time);
+}
+double Fragment::get_dst(double t){
+	return FRAG_DST*std::min(1.0 - pow(t / (double)FRAG_TTL, 2.6),tot_dst);
+}
+	
+bool Fragment::is_reusable(){
+	return true;
+}
+double Fragment::get_t(){
+	return time / (double)FRAG_TTL;
 }

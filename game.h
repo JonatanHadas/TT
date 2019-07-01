@@ -23,6 +23,9 @@ class Shot;
 class RegShot;
 class GatShot;
 class LaserShot;
+class BombShot;
+
+class Controlable;
 
 //for scoring
 class Team;
@@ -117,11 +120,18 @@ public:
 	
 	std::map<std::pair<int,int>,Upgrade::Type>::iterator get_upgs();
 	std::map<std::pair<int,int>,Upgrade::Type>::iterator end_upgs();
+	
+	void explode(double x, double y);
 };
 
 
 struct ControlState{
 	bool rt,lt,bk,fd,sht;
+};
+
+class Controlable{
+public:
+	virtual void set_ctrl(ControlState ctrl) = 0;
 };
 
 class Tank{
@@ -130,6 +140,7 @@ public:
 		REG,
 		GATLING, GATLING_WAIT, GATLING_SHOOT,
 		LASER, LASER_SHOOT,
+		BOMB, BOMB_SHOOT,
 	};
 private:
 	
@@ -151,6 +162,7 @@ private:
 	
 	friend RegShot;
 	friend LaserShot;
+	friend BombShot;
 		
 	bool can_step();
 	void clear_control();
@@ -160,6 +172,8 @@ private:
 	void reset(double x, double y, double ang);
 	
 	bool check_upg(Upgrade u);	
+	
+	Controlable* ctbl;
 public:
 	Tank(Game* game, int i, Team* t);
 	~Tank();
@@ -192,6 +206,8 @@ public:
 		TYPE_REG,
 		TYPE_GATLING,
 		TYPE_LASER,
+		TYPE_BOMB,
+		TYPE_FRAGMENT,
 	};
 private:
 	Tank* tank;
@@ -276,6 +292,42 @@ public:
 	double get_r();
 	int get_ttl();
 	GenShot::Type get_type();
+};
+class BombShot : public Shot, public Controlable{
+	bool prs;
+public:
+	BombShot(Game* game, Tank* tank);
+	~BombShot();
+	double get_r();
+	int get_ttl();
+	GenShot::Type get_type();
+	void set_ctrl(ControlState ctrl);
+};
+
+class Fragment : public GenShot{
+	double x,y,ang;
+	int time;
+	double tot_dst;
+public:
+	Fragment(Game* game, double x,double y);
+	~Fragment();
+	bool check_tank(Tank* tank, bool ignore_me);
+	void advance();
+	GenShot::Type get_type();
+	
+	void check_wall();
+	
+	double get_ang();
+	double get_x();
+	double get_y();
+	double get_x(double t);
+	double get_y(double t);
+	double get_dst();
+	double get_dst(double t);
+	
+	double get_t();
+	
+	bool is_reusable(); // destoyed by killing tank
 };
 
 
