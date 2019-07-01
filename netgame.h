@@ -21,6 +21,7 @@ type |   | meaning     | data
      |   |             |
 10   | > | create shot | id, time,round, tank_ind,type, x,y,vx,vy
 11   | > | delete shot | id
+12   | > | create frag | id, time,round, x,y,ang
      |   |             |
 20   | > | create upg  | round, x,y,type
 21   | > | delete upg  | round, x,y

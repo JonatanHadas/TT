@@ -49,6 +49,8 @@ ExInEvent* NetEx::get_event(){
 				case '\x11':
 					return new NExInEventRemoveShot(cur,e.data);
 					break;
+				case '\x12':
+					return new NExInEventCreateFragment(cur, e.data);
 				case '\x20':
 					return new NExInEventCreateUpgrade(cur,e.data);
 					break;
@@ -309,3 +311,38 @@ int NExInEventRemoveUpgrade::get_y(){
 int NExInEventRemoveUpgrade::get_round(){
 	return rnd;
 }
+
+NExInEventCreateFragment::NExInEventCreateFragment(char* data, char* del){
+	data = decode_int(data, id);
+
+	data = decode_long(data, time);
+	data = decode_int(data, round);
+
+	data = decode_double(data, x);
+	data = decode_double(data, y);
+	data = decode_double(data, ang);
+	
+	delete del;
+}
+NExInEventCreateFragment::~NExInEventCreateFragment(){
+	
+}
+double NExInEventCreateFragment::get_x(){
+	return x;
+}
+double NExInEventCreateFragment::get_y(){
+	return y;
+}
+double NExInEventCreateFragment::get_ang(){
+	return ang;
+}
+long long int NExInEventCreateFragment::get_time(){
+	return time;
+}
+int NExInEventCreateFragment::get_round(){
+	return round;
+}
+int NExInEventCreateFragment::get_id(){
+	return id;
+}
+

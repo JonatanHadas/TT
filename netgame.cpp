@@ -90,13 +90,16 @@ void NetGame::create_shot(GameEventCreateShot* e){
 	char* end = data;
 	GenShot* gs = e->get_shot();
 	
+	end = encode_char(end, '\x02');
+	
 	Shot* s;
+	Fragment* f;
 	switch(gs->get_type()){
 	case GenShot::TYPE_REG:
 	case GenShot::TYPE_GATLING:
 	case GenShot::TYPE_LASER:
+	case GenShot::TYPE_BOMB:
 		s = (Shot*) gs;
-		end = encode_char(end, '\x02');
 		end = encode_char(end, '\x10');
 				
 		end = encode_int(end, s->get_id());
@@ -111,6 +114,19 @@ void NetGame::create_shot(GameEventCreateShot* e){
 		end = encode_double(end, s->get_y());
 		end = encode_double(end, s->get_vx());
 		end = encode_double(end, s->get_vy());
+		break;
+	case GenShot::TYPE_FRAGMENT:
+		f = (Fragment*)gs;
+		end = encode_char(end, '\x12');
+		
+		end = encode_int(end, f->get_id());
+		
+		end = encode_long(end, game->get_time());
+		end = encode_int(end, game->get_round_num());
+		
+		end = encode_double(end, f->get_x());
+		end = encode_double(end, f->get_y());
+		end = encode_double(end, f->get_ang());
 		break;
 	}
 	

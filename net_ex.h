@@ -114,5 +114,21 @@ public:
 	int get_y();
 	int get_round();
 };
+class NExInEventCreateFragment : public ExInEventCreateFragment{
+	double x,y,ang;
+	long long int time;
+	int round;
+	int id;
+public:
+	NExInEventCreateFragment(char* data, char* del);
+	~NExInEventCreateFragment();
+	double get_x();
+	double get_y();
+	double get_ang();
+	long long int get_time();
+	int get_round();
+	int get_id();
+};
+
 
 #endif

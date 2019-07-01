@@ -396,10 +396,10 @@ bool TankExtrap::check_wall_coll(double& nx, double& ny, double& px, double& py,
 	return false;
 }
 void TankExtrap::advance(){
-	auto it = ctrl.rend();
+	auto it = ctrl.rbegin();
 	ControlState cpc = p_ctrl;
 	while(t < game->get_time()){
-		ControlState cur = it==ctrl.rbegin() ? cpc : (cpc=*(it++));
+		ControlState cur = it==ctrl.rend() ? cpc : (cpc=*(it++));
 		
 		if(!is_dead()){
 			double nx,ny,dp,px,py;
