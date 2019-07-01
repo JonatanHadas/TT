@@ -143,6 +143,7 @@ private:
 	
 	void create_shot(ExInEventCreateShot* e);
 	void remove_shot(int id);
+	void create_frag(ExInEventCreateFragment* e);
 	void create_upgrade(ExInEventCreateUpgrade* e);
 	void remove_upgrade(ExInEventRemoveUpgrade* e);
 };
@@ -246,6 +247,29 @@ public:
 	std::vector<std::pair<double, double>>& get_colls();
 	
 	void advance();
+};
+
+class FragmentExtrap : public GenShotExtrap{
+	double x,y, ang;
+	long long int ctime;
+	double tot_dst;
+	void check_wall();
+public:
+	FragmentExtrap(GameExtrap* game, ExInEventCreateFragment* e);
+	double get_x();
+	double get_y();
+	double get_x(double t);
+	double get_y(double t);
+	double get_dst(double t);
+	double get_dst();
+	
+	void advance();
+	
+	long long int get_time();
+	
+	double get_ang();
+	
+	double get_t();
 };
 
 #endif

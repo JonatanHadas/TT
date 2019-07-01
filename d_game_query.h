@@ -157,8 +157,8 @@ public:
 };
 
 class FragmentDQ : public FragmentQ{
-public:
 	Fragment* frag;
+public:
 	FragmentDQ(Fragment* f);
 	double get_x();
 	double get_y();

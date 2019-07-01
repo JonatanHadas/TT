@@ -66,6 +66,13 @@ ExEventRemoveShot::ExEventRemoveShot(GenShotExtrap* s){
 	case GenShot::TYPE_REG:
 		spd = STEP_SHOT;
 		break;
+	case GenShot::TYPE_GATLING:
+		spd = STEP_GATLING;
+		break;
+	case GenShot::TYPE_LASER:
+		break;
+	case GenShot::TYPE_BOMB:
+		break;
 	}
 	vx = cos(s->get_ang())*spd;
 	vy = sin(s->get_ang())*spd;
@@ -178,6 +185,9 @@ void GameExtrap::step(){
 		case ExInEvent::TYPE_SHT_RMV:
 			remove_shot(((ExInEventRemoveShot*)e)->get_id());
 			break;
+		case ExInEvent::TYPE_FRG_CRT:
+			create_frag((ExInEventCreateFragment*)e);
+			break;
 		case ExInEvent::TYPE_UPG_CRT:
 			create_upgrade((ExInEventCreateUpgrade*)e);
 			break;
@@ -229,6 +239,13 @@ void GameExtrap::remove_shot(int id){
 	if(round->get_shot(id)){
 		events.push(new ExEventRemoveShot(round->get_shot(id)));
 		round->del_shot(id);
+	}
+}
+void GameExtrap::create_frag(ExInEventCreateFragment* e){
+	if(e->get_round() == round_num){
+		FragmentExtrap* frag = new FragmentExtrap(this,e);
+		round->add_shot(frag);
+		events.push(new ExEventCreateShot(frag));
 	}
 }
 void GameExtrap::create_upgrade(ExInEventCreateUpgrade* e){
@@ -373,16 +390,19 @@ bool TankExtrap::check_wall_coll(double& nx, double& ny, double& px, double& py,
 	return false;
 }
 void TankExtrap::advance(){
-	auto it = ctrl.begin();
+	auto it = ctrl.rend();
 	ControlState cpc = p_ctrl;
 	while(t < game->get_time()){
-		ControlState cur = it==ctrl.end() ? cpc : (cpc=*(it++));
+		ControlState cur = it==ctrl.rbegin() ? cpc : (cpc=*(it++));
 		
 		if(!is_dead()){
 			double nx,ny,dp,px,py;
 			switch(state){
 			case Tank::REG:
 			case Tank::GATLING:
+			case Tank::LASER:
+			case Tank::BOMB:
+			case Tank::BOMB_SHOOT:
 			
 				double pa = ang;
 				
@@ -395,6 +415,9 @@ void TankExtrap::advance(){
 			switch(state){
 			case Tank::REG:
 			case Tank::GATLING:
+			case Tank::LASER:
+			case Tank::BOMB:
+			case Tank::BOMB_SHOOT:
 			
 				double prx = x, pry = y;
 				
@@ -436,6 +459,10 @@ double ShotExtrap::get_r(){
 		return SHOT_R;
 	case GenShot::TYPE_GATLING:
 		return GATLING_R;
+	case GenShot::TYPE_LASER:
+		return LASER_R;
+	case GenShot::TYPE_BOMB:
+		return BOMB_R;
 	}
 
 }
@@ -528,3 +555,90 @@ void ShotExtrap::advance(){
 		reflect();
 	}
 }
+
+FragmentExtrap::FragmentExtrap(GameExtrap* game, ExInEventCreateFragment* e) : GenShotExtrap(game, NULL,e->get_id(),GenShot::TYPE_FRAGMENT) {
+	x = e->get_x();
+	y = e->get_y();
+	ang = e->get_ang();
+	
+	ctime = e->get_time();
+	
+	tot_dst = 1.0;
+		
+	check_wall();
+}
+double FragmentExtrap::get_x(){
+	return get_x(get_time());
+}
+double FragmentExtrap::get_y(){
+	return get_y(get_time());
+}
+double FragmentExtrap::get_x(double t){
+	return x + cos(ang)*get_dst(t);
+}
+double FragmentExtrap::get_y(double t){
+	return y + sin(ang)*get_dst(t);
+}
+double FragmentExtrap::get_dst(double t){
+	return FRAG_DST*std::min(1.0 - pow(t / (double)FRAG_TTL, 2.6),tot_dst);
+}
+double FragmentExtrap::get_dst(){
+	return get_dst(get_time());
+}
+
+double FragmentExtrap::get_ang(){
+	return ang;
+}
+
+double FragmentExtrap::get_t(){
+	return get_time()/(double)FRAG_TTL;
+}
+
+long long int FragmentExtrap::get_time(){
+	long long int t = ctime + FRAG_TTL - get_game()->get_time();
+	return t<0 ? 0 : t;
+}
+
+
+void FragmentExtrap::check_wall(){
+	double xx = x,yy = y;
+	double x2 = get_x(0), y2 = get_y(0);
+	double vx = x2-xx, vy=y2-yy;
+	int ix = xx;
+	int iy = yy;
+	int ixx = vx>0 ? 1 : 0;
+	int iyy = vy>0 ? 1 : 0;
+	int idx = vx>0 ? 1 : -1;
+	int idy = vy>0 ? 1 : -1;
+	int vsg = idx*idy;
+	double wxs[4],wys[4],nnx,nny;
+	bool col = false;
+	while(abs(ix - (int)xx)<= FRAG_DST && abs(iy - (int)yy) <= FRAG_DST && !col){
+		double tt;
+		for(int i = -1; i<=1; i++){
+			for(int j = -1; j<1; j++){
+				gen_rect(ix+i-WALL_THK, iy+j-WALL_THK + 1, 2*WALL_THK + 1, 2*WALL_THK,wxs,wys);
+				if(get_game()->get_round()->get_maze()->hwall(ix+i, iy+j)){
+					double nx,ny;
+					double d = circ_poly_coltime(xx,yy,vx,vy,0.0,wxs,wys,4,nx,ny);
+					if(d >= 0){
+						col = true;
+						if(d < tot_dst) tot_dst = d;
+					}
+				}
+				gen_rect(ix+j-WALL_THK + 1, iy+i-WALL_THK, 2*WALL_THK, 2*WALL_THK + 1,wxs,wys);
+				if(get_game()->get_round()->get_maze()->vwall(ix+j, iy+i)){
+					double nx,ny;
+					double d = circ_poly_coltime(xx,yy,vx,vy,0.0,wxs,wys,4,nx,ny);
+					if(d >= 0){
+						if(d < tot_dst) tot_dst = d;
+					}
+				}
+			}
+		}
+		if( vsg * leftness(ix+ixx,iy+iyy,x,y,x+vx,y+vy) > 0) iy += idy;
+		else ix += idx;
+	}
+}
+void FragmentExtrap::advance(){}
+

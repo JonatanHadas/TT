@@ -98,5 +98,17 @@ public:
 	int get_y();
 	int get_round();
 };
+class DExInEventCreateFragment : public ExInEventCreateFragment{
+	GameEventCreateShot* e;
+public:
+	DExInEventCreateFragment(GameEventCreateShot* event);
+	~DExInEventCreateFragment();
+	double get_x();
+	double get_y();
+	double get_ang();
+	long long int get_time();
+	int get_round();
+	int get_id();
+};
 
 #endif

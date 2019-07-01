@@ -14,6 +14,7 @@ public:
 		TYPE_SCORE,
 		TYPE_END_GAME,
 		TYPE_SHT_CRT, TYPE_SHT_RMV,
+		TYPE_FRG_CRT,
 		TYPE_UPG_CRT, TYPE_UPG_RMV,
 	};
 	virtual Type get_type() = 0;
@@ -89,5 +90,16 @@ public:
 	virtual int get_y() = 0;
 	virtual int get_round() = 0;
 };
+class ExInEventCreateFragment : public ExInEvent{
+public:
+	Type get_type(){ return TYPE_FRG_CRT; }
+	virtual double get_x() = 0;
+	virtual double get_y() = 0;
+	virtual double get_ang() = 0;
+	virtual long long int get_time() = 0;
+	virtual int get_round() = 0;
+	virtual int get_id() = 0;
+};
+
 
 #endif
