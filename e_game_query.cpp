@@ -167,7 +167,11 @@ std::set<GenShotQ*> RoundEQ::get_shots(){
 		case GenShot::TYPE_REG:
 		case GenShot::TYPE_GATLING:
 		case GenShot::TYPE_LASER:
+		case GenShot::TYPE_BOMB:
 			ret.insert(new ShotEQ((ShotExtrap*)((*it).second)));
+			break;
+		case GenShot::TYPE_FRAGMENT:
+			ret.insert(new FragmentEQ((FragmentExtrap*)((*it).second)));
 			break;
 		}
 	}
@@ -203,3 +207,26 @@ double ShotEQ::get_ang(){
 GenShot::Type ShotEQ::get_type(){
 	return shot->get_type();
 }
+
+FragmentEQ::FragmentEQ(FragmentExtrap* f){
+	frag = f;
+}
+double FragmentEQ::get_x(){
+	return frag->get_x();
+}
+double FragmentEQ::get_y(){
+	return frag->get_y();
+}
+double FragmentEQ::get_ang(){
+	return frag->get_ang();
+}
+double FragmentEQ::get_dst(){
+	return frag->get_dst();
+}
+double FragmentEQ::get_t(){
+	return frag->get_t();
+}
+GenShot::Type FragmentEQ::get_type(){
+	return frag->get_type();
+}
+

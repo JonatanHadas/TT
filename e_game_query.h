@@ -155,4 +155,16 @@ public:
 	GenShot::Type get_type();
 };
 
+class FragmentEQ : public FragmentQ{
+	FragmentExtrap* frag;
+public:
+	FragmentEQ(FragmentExtrap* f);
+	double get_x();
+	double get_y();
+	double get_ang();
+	double get_dst();
+	double get_t();
+	GenShot::Type get_type();
+};
+
 #endif

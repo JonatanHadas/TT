@@ -24,7 +24,10 @@ ExInEvent* DirectEx::get_event(){
 			case GenShot::TYPE_REG:
 			case GenShot::TYPE_GATLING:
 			case GenShot::TYPE_LASER:
+			case GenShot::TYPE_BOMB:
 				return new DExInEventCreateShot((GameEventCreateShot*)e);
+			case GenShot::TYPE_FRAGMENT:
+				return new DExInEventCreateFragment((GameEventCreateShot*)e);
 				break;
 			}
 		case GameEvent::TYPE_SHOT_RMV:
@@ -103,3 +106,12 @@ DExInEventRemoveUpgrade::~DExInEventRemoveUpgrade(){ delete e; }
 int DExInEventRemoveUpgrade::get_x(){ return e->get_x(); }
 int DExInEventRemoveUpgrade::get_y(){ return e->get_y(); }
 int DExInEventRemoveUpgrade::get_round(){ return e->get_round(); }
+
+DExInEventCreateFragment::DExInEventCreateFragment(GameEventCreateShot* event){ e = event; } 
+DExInEventCreateFragment::~DExInEventCreateFragment(){ delete e; }
+double DExInEventCreateFragment::get_x(){ return e->get_shot()->get_x(); }
+double DExInEventCreateFragment::get_y(){ return e->get_shot()->get_y(); }
+double DExInEventCreateFragment::get_ang(){ return e->get_shot()->get_ang(); }
+long long int DExInEventCreateFragment::get_time(){ return e->get_shot()->get_ctime(); }
+int DExInEventCreateFragment::get_round(){ return e->get_shot()->get_cround(); }
+int DExInEventCreateFragment::get_id(){ return e->get_shot()->get_id(); }
