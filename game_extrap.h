@@ -144,6 +144,7 @@ private:
 	void create_shot(ExInEventCreateShot* e);
 	void remove_shot(int id);
 	void create_frag(ExInEventCreateFragment* e);
+	void create_dtry(ExInEventCreateDeathRay* e);
 	void create_upgrade(ExInEventCreateUpgrade* e);
 	void remove_upgrade(ExInEventRemoveUpgrade* e);
 };
@@ -270,6 +271,21 @@ public:
 	double get_ang();
 	
 	double get_t();
+
+};
+
+class DeathRayExtrap : public GenShotExtrap{
+	std::vector<std::pair<double,double>> ps;
+public:
+	DeathRayExtrap(GameExtrap* game, ExInEventCreateDeathRay* e);
+	int get_point_num();
+	double get_x(int i);
+	double get_y(int i);
+	
+	double get_x();
+	double get_y();
+	double get_ang();
+	void advance();
 };
 
 #endif

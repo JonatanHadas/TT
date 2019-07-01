@@ -188,6 +188,9 @@ void GameExtrap::step(){
 		case ExInEvent::TYPE_FRG_CRT:
 			create_frag((ExInEventCreateFragment*)e);
 			break;
+		case ExInEvent::TYPE_DTR_CRT:
+			create_dtry((ExInEventCreateDeathRay*)e);
+			break;
 		case ExInEvent::TYPE_UPG_CRT:
 			create_upgrade((ExInEventCreateUpgrade*)e);
 			break;
@@ -248,6 +251,13 @@ void GameExtrap::create_frag(ExInEventCreateFragment* e){
 		events.push(new ExEventCreateShot(frag));
 	}
 }
+void GameExtrap::create_dtry(ExInEventCreateDeathRay* e){
+	if(e->get_round() == round_num){
+		DeathRayExtrap* dtry = new DeathRayExtrap(this,e);
+		round->add_shot(dtry);
+		events.push(new ExEventCreateShot(dtry));
+	}
+}
 void GameExtrap::create_upgrade(ExInEventCreateUpgrade* e){
 	if(e->get_round() == round_num){
 		Upgrade u = e->get_upg();
@@ -256,7 +266,6 @@ void GameExtrap::create_upgrade(ExInEventCreateUpgrade* e){
 	}
 }
 void GameExtrap::remove_upgrade(ExInEventRemoveUpgrade* e){
-	
 	if(e->get_round() == round_num && round->has_upg(e->get_x(),e->get_y())){
 		round->del_upg(e->get_x(), e->get_y());
 		events.push(new ExEventRemoveUpgrade(e->get_x(), e->get_y()));
@@ -642,3 +651,28 @@ void FragmentExtrap::check_wall(){
 }
 void FragmentExtrap::advance(){}
 
+DeathRayExtrap::DeathRayExtrap(GameExtrap* game, ExInEventCreateDeathRay* e) : GenShotExtrap(game, game->get_tank(e->get_tank_ind()), e->get_id(), GenShot::TYPE_DEATH_RAY){
+	for(int i = 0; i<e->get_point_num(); i++){
+		ps.push_back(e->get_point(i));
+	}
+}
+int DeathRayExtrap::get_point_num(){
+	return ps.size();
+}
+double DeathRayExtrap::get_x(int i){
+	return ps[i].first;
+}
+double DeathRayExtrap::get_y(int i){
+	return ps[i].second;
+}
+
+double DeathRayExtrap::get_x(){
+	return get_tank()->get_x();
+}
+double DeathRayExtrap::get_y(){
+	return get_tank()->get_y();
+}
+double DeathRayExtrap::get_ang(){
+	return get_tank()->get_ang();
+}
+void DeathRayExtrap::advance(){}

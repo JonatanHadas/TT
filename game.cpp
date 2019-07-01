@@ -832,6 +832,7 @@ GenShot::Type LaserShot::get_type(){
 }
 
 BombShot::BombShot(Game* game, Tank* tank) : Shot(game, tank, 0, STEP_BOMB){
+	get_tank()->ctbl = this;
 	get_tank()->state = Tank::BOMB_SHOOT;
 	prs = true;
 }
@@ -959,10 +960,12 @@ double Fragment::get_t(){
 
 DeathRay::DeathRay(Game* game, Tank* tank) : GenShot(game, tank){
 	timer = DR_TTL;
+	get_tank()->ctbl = this;
 	find_path();
 	get_tank()->state = Tank::DEATH_RAY_SHOOT;
 }
 DeathRay::~DeathRay(){
+	get_tank()->ctbl = NULL;
 	get_tank()->state = Tank::REG;
 }
 bool DeathRay::check_tank(Tank* tank, bool ignore_me){

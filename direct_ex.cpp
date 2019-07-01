@@ -25,7 +25,8 @@ ExInEvent* DirectEx::get_event(){
 				return new DExInEventCreateShot((GameEventCreateShot*)e);
 			case GenShot::TYPE_FRAGMENT:
 				return new DExInEventCreateFragment((GameEventCreateShot*)e);
-				break;
+			case GenShot::TYPE_DEATH_RAY:
+				return new DExInEventCreateDeathRay((GameEventCreateShot*)e);
 			}
 		case GameEvent::TYPE_SHOT_RMV:
 			return new DExInEventRemoveShot((GameEventRemoveShot*)e);
@@ -112,3 +113,11 @@ double DExInEventCreateFragment::get_ang(){ return e->get_shot()->get_ang(); }
 long long int DExInEventCreateFragment::get_time(){ return e->get_shot()->get_ctime(); }
 int DExInEventCreateFragment::get_round(){ return e->get_shot()->get_cround(); }
 int DExInEventCreateFragment::get_id(){ return e->get_shot()->get_id(); }
+
+DExInEventCreateDeathRay::DExInEventCreateDeathRay(GameEventCreateShot* event){ e = event; } 
+DExInEventCreateDeathRay::~DExInEventCreateDeathRay(){ delete e; }
+int DExInEventCreateDeathRay::get_point_num(){ return ((DeathRay*)e->get_shot())->get_point_num(); }
+std::pair<double, double> DExInEventCreateDeathRay::get_point(int i){ return ((DeathRay*)e->get_shot())->get_point(i); }
+int DExInEventCreateDeathRay::get_round(){ return e->get_shot()->get_cround(); }
+int DExInEventCreateDeathRay::get_tank_ind(){ return e->get_shot()->get_tank()->get_ind(); }
+int DExInEventCreateDeathRay::get_id(){ return e->get_shot()->get_id(); }

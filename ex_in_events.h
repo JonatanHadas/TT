@@ -15,6 +15,7 @@ public:
 		TYPE_END_GAME,
 		TYPE_SHT_CRT, TYPE_SHT_RMV,
 		TYPE_FRG_CRT,
+		TYPE_DTR_CRT,
 		TYPE_UPG_CRT, TYPE_UPG_RMV,
 	};
 	virtual Type get_type() = 0;
@@ -100,6 +101,14 @@ public:
 	virtual int get_round() = 0;
 	virtual int get_id() = 0;
 };
-
+class ExInEventCreateDeathRay : public ExInEvent{
+public:
+	Type get_type(){ return TYPE_DTR_CRT; }
+	virtual int get_point_num() = 0;
+	virtual std::pair<double, double> get_point(int i) = 0;
+	virtual int get_round() = 0;
+	virtual int get_tank_ind() = 0;
+	virtual int get_id() = 0;
+};
 
 #endif
