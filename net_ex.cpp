@@ -51,6 +51,10 @@ ExInEvent* NetEx::get_event(){
 					break;
 				case '\x12':
 					return new NExInEventCreateFragment(cur, e.data);
+					break;
+				case '\x13':
+					return new NExInEventCreateDeathRay(cur, e.data);
+					break;
 				case '\x20':
 					return new NExInEventCreateUpgrade(cur,e.data);
 					break;
@@ -346,3 +350,42 @@ int NExInEventCreateFragment::get_id(){
 	return id;
 }
 
+NExInEventCreateDeathRay::NExInEventCreateDeathRay(char* data, char* del){
+	data = decode_int(data, id);
+	
+	data = decode_int(data, round);
+	
+	data = decode_int(data, tank_ind);
+	
+	int p_num;
+	
+	data = decode_int(data, p_num);
+	
+	for(int i = 0; i<p_num; i++){
+		double x,y;
+		data = decode_double(data, x);
+		data = decode_double(data, y);
+		
+		ps.push_back({x,y});
+	}
+	
+	delete del;
+}
+NExInEventCreateDeathRay::~NExInEventCreateDeathRay(){
+	
+}
+int NExInEventCreateDeathRay::get_point_num(){
+	return ps.size();
+}
+std::pair<double, double> NExInEventCreateDeathRay::get_point(int i){
+	return ps[i];
+}
+int NExInEventCreateDeathRay::get_round(){
+	return round;
+}
+int NExInEventCreateDeathRay::get_tank_ind(){
+	return tank_ind;
+}
+int NExInEventCreateDeathRay::get_id(){
+	return id;
+}

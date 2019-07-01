@@ -85,7 +85,7 @@ void NetGame::score(GameEventScore* e){
 	set->serv->send_all(data, end-data, PROTO_REL);
 }
 void NetGame::create_shot(GameEventCreateShot* e){
-	char data[100];
+	char data[1000];
 	
 	char* end = data;
 	GenShot* gs = e->get_shot();
@@ -94,6 +94,7 @@ void NetGame::create_shot(GameEventCreateShot* e){
 	
 	Shot* s;
 	Fragment* f;
+	DeathRay* d;
 	switch(gs->get_type()){
 	case GenShot::TYPE_REG:
 	case GenShot::TYPE_GATLING:
@@ -127,6 +128,24 @@ void NetGame::create_shot(GameEventCreateShot* e){
 		end = encode_double(end, f->get_x());
 		end = encode_double(end, f->get_y());
 		end = encode_double(end, f->get_ang());
+		break;
+	case GenShot::TYPE_DEATH_RAY:
+		d = (DeathRay*)gs;
+		end = encode_char(end, '\x13');
+		
+		end = encode_int(end, d->get_id());
+		
+		end = encode_int(end, game->get_round_num());
+		
+		end = encode_int(end, d->get_tank()->get_ind());
+		
+		end = encode_int(end, d->get_point_num());
+		
+		for(int i = 0; i<d->get_point_num(); i++){
+			end = encode_double(end, d->get_point(i).first);
+			end = encode_double(end, d->get_point(i).second);
+		}
+		
 		break;
 	}
 	

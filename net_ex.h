@@ -129,6 +129,20 @@ public:
 	int get_round();
 	int get_id();
 };
+class NExInEventCreateDeathRay : public ExInEventCreateDeathRay{
+	std::vector<std::pair<double, double>> ps;
+	int tank_ind;
+	int id;
+	int round;
+public:
+	NExInEventCreateDeathRay(char* data, char* del);
+	~NExInEventCreateDeathRay();
+	int get_point_num();
+	std::pair<double, double> get_point(int i);
+	int get_round();
+	int get_tank_ind();
+	int get_id();
+};
 
 
 #endif
