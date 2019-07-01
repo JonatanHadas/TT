@@ -149,4 +149,16 @@ public:
 	double get_ang();
 	GenShot::Type get_type();
 };
+
+class FragmentDQ : public FragmentQ{
+public:
+	Fragment* frag;
+	FragmentDQ(Fragment* f);
+	double get_x();
+	double get_y();
+	double get_ang();
+	double get_dst();
+	double get_t();
+	GenShot::Type get_type();
+};
 #endif

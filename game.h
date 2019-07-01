@@ -23,6 +23,7 @@ class Shot;
 class RegShot;
 class GatShot;
 class LaserShot;
+class BombShot;
 
 //for scoring
 class Team;
@@ -179,6 +180,8 @@ public:
 	
 	std::map<std::pair<int,int>,Upgrade::Type>::iterator get_upgs();
 	std::map<std::pair<int,int>,Upgrade::Type>::iterator end_upgs();
+	
+	void explode(double x, double y);
 };
 
 
@@ -214,6 +217,7 @@ private:
 	
 	friend RegShot;
 	friend LaserShot;
+	friend BombShot;
 		
 	bool can_step();
 	void clear_control();
@@ -340,6 +344,32 @@ public:
 	double get_r();
 	int get_ttl();
 	GenShot::Type get_type();
+};
+
+class Fragment : public GenShot{
+	double x,y,ang;
+	int time;
+	double tot_dst;
+public:
+	Fragment(Game* game, double x,double y);
+	~Fragment();
+	bool check_tank(Tank* tank, bool ignore_me);
+	void advance();
+	GenShot::Type get_type();
+	
+	void check_wall();
+	
+	double get_ang();
+	double get_x();
+	double get_y();
+	double get_x(double t);
+	double get_y(double t);
+	double get_dst();
+	double get_dst(double t);
+	
+	double get_t();
+	
+	bool is_reusable(); // destoyed by killing tank
 };
 
 #endif

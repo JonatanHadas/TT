@@ -136,4 +136,10 @@ public:
 	virtual std::vector<std::pair<double,double>>& get_colls() = 0;
 };
 
+class FragmentQ : public GenShotQ{
+public:
+	virtual double get_dst() = 0;
+	virtual double get_t() = 0;
+};
+
 #endif

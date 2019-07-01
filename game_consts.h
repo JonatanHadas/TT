@@ -40,6 +40,12 @@
 
 #define BOMB_R 0.05
 
+
+#define FRAG_DST 5.0
+#define FRAG_TTL 90
+
+#define EXPLOSION_NUM 50
+
 #define END_TIME 300
 
 #define UPG_ANG 30.0

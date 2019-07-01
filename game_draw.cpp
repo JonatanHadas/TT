@@ -81,6 +81,9 @@ void BoardDrawer::draw(){
 	for(auto it = shots.begin(); it != shots.end(); it++){
 		SDL_Rect r;
 		ShotQ* sht;
+		FragmentQ* frg;
+		
+		SDL_Point* ps;
 		switch((*it)->get_type()){
 		case GenShot::TYPE_REG:
 		case GenShot::TYPE_GATLING:
@@ -95,13 +98,25 @@ void BoardDrawer::draw(){
 		case GenShot::TYPE_LASER:
 			sht = (ShotQ*)(*it);
 			SDL_SetRenderDrawColor(renderer, 255,0,0,255);
-			SDL_Point* ps = new SDL_Point[sht->get_colls().size()];
+			ps = new SDL_Point[sht->get_colls().size()];
 			for(int i = 0; i<sht->get_colls().size(); i++){
 				ps[i].x = DRC(sht->get_colls()[i].first);
 				ps[i].y = DRC(sht->get_colls()[i].second);
 			}
 			SDL_RenderDrawLines(renderer, ps, sht->get_colls().size());
 			delete ps;
+			break;
+		case GenShot::TYPE_FRAGMENT:
+			frg = (FragmentQ*)(*it);
+			double ang = 180.0 * frg->get_dst() + RAD2DEG(RAD2DEG(frg->get_ang()));
+			r.x = DRC(frg->get_x());
+			r.y = DRC(frg->get_y());
+			r.w = r.h = 8;
+			r.x -= r.w/2; r.y -= r.h/2;
+			
+			SDL_SetTextureAlphaMod(get_img(IMG_FRAGMENT), (int)(255*(1.0-frg->get_t())));
+			SDL_RenderCopyEx(renderer, get_img(IMG_FRAGMENT), NULL, &r, ang, NULL, SDL_FLIP_NONE);
+			
 			break;
 		}
 		

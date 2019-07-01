@@ -15,7 +15,7 @@ double leftness(double x0, double y0,
 /*
 are --xy1--xy2-- and xy3--xy4 intersecting
 */
-double ls_intersect(double x1, double y1,
+bool ls_intersect(double x1, double y1,
 					double x2, double y2,
 					double x3, double y3,
 					double x4, double y4);
@@ -23,7 +23,7 @@ double ls_intersect(double x1, double y1,
 /*
 are xy1--xy2 and xy3--xy4 intersecting
 */
-double ss_intersect(double x1, double y1,
+bool ss_intersect(double x1, double y1,
 					double x2, double y2,
 					double x3, double y3,
 					double x4, double y4);
@@ -49,7 +49,7 @@ bool poly_coll(	double* x1s, double* y1s, int num1,
 				double* x2s, double* y2s, int num2,
 				double& nx, double& ny, double& dp,
 				double& px, double& py);
-				
+								
 // rects
 // xs and ys mus be of length 4+
 void gen_rect(double x, double y ,double w, double h, double* xs, double* ys);

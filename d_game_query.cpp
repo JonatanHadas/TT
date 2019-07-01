@@ -147,6 +147,8 @@ std::set<GenShotQ*> RoundDQ::get_shots(){
 		case GenShot::TYPE_BOMB:
 			ret.insert(new ShotDQ((Shot*)(*it)));
 			break;
+		case GenShot::TYPE_FRAGMENT:
+			ret.insert(new FragmentDQ((Fragment*)(*it)));
 		}
 	}
 	return ret;
@@ -180,4 +182,26 @@ double ShotDQ::get_ang(){
 }
 GenShot::Type ShotDQ::get_type(){
 	return shot->get_type();
+}
+
+FragmentDQ::FragmentDQ(Fragment* f){
+	frag = f;
+}
+double FragmentDQ::get_x(){
+	return frag->get_x();
+}
+double FragmentDQ::get_y(){
+	return frag->get_y();
+}
+double FragmentDQ::get_ang(){
+	return frag->get_ang();
+}
+double FragmentDQ::get_dst(){
+	return frag->get_dst();
+}
+double FragmentDQ::get_t(){
+	return frag->get_t();
+}
+GenShot::Type FragmentDQ::get_type(){
+	return frag->get_type();
 }
