@@ -151,8 +151,8 @@ public:
 };
 
 class FragmentDQ : public FragmentQ{
-public:
 	Fragment* frag;
+public:
 	FragmentDQ(Fragment* f);
 	double get_x();
 	double get_y();
@@ -161,4 +161,19 @@ public:
 	double get_t();
 	GenShot::Type get_type();
 };
+
+class DeathRayDQ : public DeathRayQ{
+	DeathRay* dr;
+public:
+	DeathRayDQ(DeathRay* d);
+	int get_point_num();
+	double get_x(int i);
+	double get_y(int i);
+	double get_x();
+	double get_y();
+	double get_ang();
+	GenShot::Type get_type();
+	int get_tank_ind();
+};
+
 #endif

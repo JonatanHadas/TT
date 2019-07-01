@@ -8,7 +8,7 @@
 #include <vector>
 
 Upgrade::Type upg_types[UPG_NUM] = {
-	Upgrade::GATLING,Upgrade::LASER,Upgrade::BOMB,
+	Upgrade::GATLING,Upgrade::LASER,Upgrade::BOMB,Upgrade::DEATH_RAY,
 };
 
 GameEventTankDeath::GameEventTankDeath(int i){
@@ -414,6 +414,7 @@ void Tank::step(){
 		case Tank::LASER:
 		case Tank::BOMB:
 		case Tank::BOMB_SHOOT:
+		case Tank::DEATH_RAY:
 			double pa = ang;
 			
 			int turn = (ctrl.front().lt ? 1 : 0)-(ctrl.front().rt ? 1 : 0);
@@ -428,6 +429,7 @@ void Tank::step(){
 		case Tank::LASER:
 		case Tank::BOMB:
 		case Tank::BOMB_SHOOT:
+		case Tank::DEATH_RAY:
 			double prx = x, pry = y;
 			
 			double step = STEP_DST * ((ctrl.front().fd ? 1 : 0) - (ctrl.front().bk ? REV_RAT : 0));
@@ -464,6 +466,12 @@ void Tank::step(){
 				game->get_round()->add_shot(sht);
 			}
 			break;
+		case Tank::DEATH_RAY:
+			if(ctrl.front().sht && !p_ctrl.sht){
+				state = Tank::DEATH_RAY_WAIT1;
+				timer = DR_TIME;
+			}
+			break;
 		}
 	}
 	
@@ -475,6 +483,19 @@ void Tank::step(){
 		case Tank::GATLING_SHOOT:
 			timer = GATLING_INTER;
 			game->get_round()->add_shot(new GatShot(game, this));
+			break;
+		case Tank::DEATH_RAY_WAIT1:
+			timer = DR_TIME;
+			state = Tank::DEATH_RAY_WAIT2;
+			break;
+		case Tank::DEATH_RAY_WAIT2:
+			timer = DR_TIME;
+			state = Tank::DEATH_RAY_WAIT3;
+			break;
+		case Tank::DEATH_RAY_WAIT3:
+			DeathRay* dtr = new DeathRay(game,this);
+			ctbl = dtr;
+			game->get_round()->add_shot(dtr);
 			break;
 		}
 	}
@@ -544,6 +565,7 @@ std::pair<Upgrade::Type, Tank::State> upg2stt_a[UPG_NUM]={
 	{Upgrade::GATLING,Tank::GATLING},
 	{Upgrade::LASER, Tank::LASER},
 	{Upgrade::BOMB, Tank::BOMB},
+	{Upgrade::DEATH_RAY, Tank::DEATH_RAY},
 };
 
 std::map<Upgrade::Type, Tank::State> upg2stt(upg2stt_a, upg2stt_a+UPG_NUM);
@@ -885,4 +907,97 @@ bool Fragment::is_reusable(){
 }
 double Fragment::get_t(){
 	return time / (double)FRAG_TTL;
+}
+
+DeathRay::DeathRay(Game* game, Tank* tank) : GenShot(game, tank){
+	timer = DR_TTL;
+	find_path();
+	get_tank()->state = Tank::DEATH_RAY_SHOOT;
+}
+DeathRay::~DeathRay(){
+	get_tank()->state = Tank::REG;
+}
+bool DeathRay::check_tank(Tank* tank, bool ignore_me){
+	if(tank == get_tank()) return false;
+	
+	double txs[4],tys[4];
+	
+	gen_rot_rect(tank->get_x(), tank->get_y(), TANK_W, TANK_H, tank->get_ang(), txs, tys);
+	
+	for(int i = 1; i<ps.size(); i++){
+		double x1 = ps[i-1].first, y1 = ps[i-1].second, x2 = ps[i].first, y2 = ps[i].second;
+		double nx,ny,t = circ_poly_coltime(x1,y1,x2-x1,y2-y1,0.0,txs,tys,4,nx,ny);
+		if(t >= 0 && t <= 1) return true;
+	}
+	return false;
+}
+void DeathRay::advance(){
+	if(timer>0) timer--;
+	else die();
+}
+GenShot::Type DeathRay::get_type(){
+	return GenShot::TYPE_DEATH_RAY;
+}
+	
+double DeathRay::get_x(){
+	return get_tank()->get_x();
+}
+double DeathRay::get_y(){
+	return get_tank()->get_y();
+}
+double DeathRay::get_ang(){
+	return get_tank()->get_ang();
+}
+	
+bool DeathRay::is_reusable(){
+	return true;
+}
+	
+int DeathRay::get_point_num(){
+	return ps.size();
+}
+std::pair<double, double> DeathRay::get_point(int i){
+	return ps[i];
+}
+
+void DeathRay::find_path(){
+	double ang = get_ang();
+	double x = get_x(), y = get_y();
+	
+	rotate_add(ang, CANNON_L,0, x,y);
+
+	ps.push_back({x,y});
+	Maze* maze = get_game()->get_round()->get_maze();
+	double w = maze->get_w(), h = maze->get_h();
+	while(x > -WALL_THK && y > -WALL_THK && x < w+WALL_THK && y < h+WALL_THK){
+		x += cos(ang)*DR_STEP;
+		y += sin(ang)*DR_STEP;
+		
+		ps.push_back({x,y});
+		
+		Tank* tar = NULL;
+		double val = 0.0;
+		double da = 0.0;
+		for(int i = 0; i<get_game()->get_tank_num(); i++){
+			double tx = 0, ty = 0;
+			Tank* t = get_game()->get_tank(i);
+			rotate_add(-ang, t->get_x() - x, t->get_y() - y, tx, ty);
+			if(tx<DR_STEP) continue;
+			
+			double nv = ty/sqrt(tx*tx+ty*ty);
+			if(tar == NULL || val > nv){
+				val = nv;
+				tar = t;
+				da = atan2(ty,tx);
+			}
+		}
+		if(da > DR_TURN) da = DR_TURN;
+		if(da < DR_TURN) da = -DR_TURN;
+		
+		ang += da;
+	}
+}
+
+void DeathRay::die(){
+	get_game()->get_round()->delete_shot(this);
 }

@@ -24,6 +24,7 @@ std::pair<Upgrade::Type, Img> upg2img_a[UPG_NUM] = {
 	{Upgrade::GATLING, IMG_GATLING_SYM},
 	{Upgrade::LASER, IMG_LASER_SYM},
 	{Upgrade::BOMB, IMG_BOMB_SYM},
+	{Upgrade::DEATH_RAY, IMG_DEATH_RAY_SYM},
 	};
 std::map<Upgrade::Type, Img> upg2img(upg2img_a,upg2img_a+UPG_NUM);
 
@@ -82,8 +83,11 @@ void BoardDrawer::draw(){
 		SDL_Rect r;
 		ShotQ* sht;
 		FragmentQ* frg;
+		DeathRayQ* dtr;
 		
+		double ang;
 		SDL_Point* ps;
+		SDL_Color ctk,ctr;
 		switch((*it)->get_type()){
 		case GenShot::TYPE_REG:
 		case GenShot::TYPE_GATLING:
@@ -108,7 +112,7 @@ void BoardDrawer::draw(){
 			break;
 		case GenShot::TYPE_FRAGMENT:
 			frg = (FragmentQ*)(*it);
-			double ang = 180.0 * frg->get_dst() + RAD2DEG(RAD2DEG(frg->get_ang()));
+			ang = 180.0 * frg->get_dst() + RAD2DEG(RAD2DEG(frg->get_ang()));
 			r.x = DRC(frg->get_x());
 			r.y = DRC(frg->get_y());
 			r.w = r.h = 8;
@@ -116,6 +120,24 @@ void BoardDrawer::draw(){
 			
 			SDL_SetTextureAlphaMod(get_img(IMG_FRAGMENT), (int)(255*(1.0-frg->get_t())));
 			SDL_RenderCopyEx(renderer, get_img(IMG_FRAGMENT), NULL, &r, ang, NULL, SDL_FLIP_NONE);
+			
+			break;
+		case GenShot::TYPE_DEATH_RAY:
+			dtr = (DeathRayQ*)(*it);
+			
+			ps = new SDL_Point[dtr->get_point_num()];
+			
+			for(int i = 0; i<dtr->get_point_num(); i++){
+				ps[i].x = DRC(dtr->get_x(i));
+				ps[i].y = DRC(dtr->get_y(i));
+			}
+			
+			ctk = get_tank_col(dtr->get_tank_ind());
+			
+			SDL_SetRenderDrawColor(renderer, ctk.r, ctk.g, ctk.b, 255);
+			SDL_RenderDrawLines( renderer, ps, dtr->get_point_num());
+			
+			delete ps;
 			
 			break;
 		}
@@ -169,6 +191,19 @@ void BoardDrawer::draw(){
 			case Tank::BOMB:
 			case Tank::BOMB_SHOOT:
 				cannon = tank_images[i].thick_cannon;
+				break;
+			case Tank::DEATH_RAY:
+			case Tank::DEATH_RAY_WAIT1:
+				cannon = tank_images[i].ray_gun0;
+				break;
+			case Tank::DEATH_RAY_WAIT2:
+				cannon = tank_images[i].ray_gun1;
+				break;
+			case Tank::DEATH_RAY_WAIT3:
+				cannon = tank_images[i].ray_gun2;
+				break;
+			case Tank::DEATH_RAY_SHOOT:
+				cannon = tank_images[i].ray_gun3;
 				break;
 			}
 			

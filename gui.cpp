@@ -12,7 +12,7 @@ Main::Main(SDL_Renderer* renderer){
 	std::vector<int> img_inds;
 	for(int i = 0; i<30; i++) img_inds.push_back(i);
 	
-	GameConfig cf(12,4, UPG_MASK_BOMB);
+	GameConfig cf(12,4, UPG_MASK_DEATH_RAY);
 	for(int i = 0; i<cf.tank_num; i++) cf.team_inds[i] = i/3;
 	cf.set.scr_mth = GameSettings::SCR_LAST;
 	cf.set.end_mth = GameSettings::END_NONE;
