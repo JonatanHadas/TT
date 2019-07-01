@@ -192,6 +192,7 @@ public:
 		REG,
 		GATLING, GATLING_WAIT, GATLING_SHOOT,
 		LASER, LASER_SHOOT,
+		BOMB, BOMB_SHOOT,
 	};
 private:
 	
@@ -252,6 +253,8 @@ public:
 		TYPE_REG,
 		TYPE_GATLING,
 		TYPE_LASER,
+		TYPE_BOMB,
+		TYPE_FRAGMENT,
 	};
 private:
 	Tank* tank;
@@ -326,6 +329,14 @@ class LaserShot : public Shot{
 public:
 	LaserShot(Game* game, Tank* tank);
 	~LaserShot();
+	double get_r();
+	int get_ttl();
+	GenShot::Type get_type();
+};
+class BombShot : public Shot{
+public:
+	BombShot(Game* game, Tank* tank);
+	~BombShot();
 	double get_r();
 	int get_ttl();
 	GenShot::Type get_type();

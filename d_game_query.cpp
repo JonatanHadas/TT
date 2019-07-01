@@ -144,6 +144,7 @@ std::set<GenShotQ*> RoundDQ::get_shots(){
 		case GenShot::TYPE_REG:
 		case GenShot::TYPE_GATLING:
 		case GenShot::TYPE_LASER:
+		case GenShot::TYPE_BOMB:
 			ret.insert(new ShotDQ((Shot*)(*it)));
 			break;
 		}

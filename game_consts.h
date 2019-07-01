@@ -35,17 +35,22 @@
 
 #define LASER_R 0.01
 
+#define STEP_BOMB 0.04
+#define BOMB_TTL 1200
+
+#define BOMB_R 0.05
+
 #define END_TIME 300
 
 #define UPG_ANG 30.0
 
-#define UPG_NUM 2
+#define UPG_NUM 3
 #define UPG_SIZE 0.3
 
 struct Upgrade{
 	int x,y;
 	enum Type{
-		GATLING,LASER,
+		GATLING,LASER,BOMB
 	};
 	Upgrade::Type type;
 };

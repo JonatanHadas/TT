@@ -23,6 +23,7 @@
 std::pair<Upgrade::Type, Img> upg2img_a[UPG_NUM] = {
 	{Upgrade::GATLING, IMG_GATLING_SYM},
 	{Upgrade::LASER, IMG_LASER_SYM},
+	{Upgrade::BOMB, IMG_BOMB_SYM},
 	};
 std::map<Upgrade::Type, Img> upg2img(upg2img_a,upg2img_a+UPG_NUM);
 
@@ -83,6 +84,7 @@ void BoardDrawer::draw(){
 		switch((*it)->get_type()){
 		case GenShot::TYPE_REG:
 		case GenShot::TYPE_GATLING:
+		case GenShot::TYPE_BOMB:
 			sht = (ShotQ*)(*it);
 			r.w = r.h = DRC(2*sht->get_r());
 			r.x = WALL_D_T + DRC(sht->get_x()) - r.w/2;
@@ -148,6 +150,10 @@ void BoardDrawer::draw(){
 			case Tank::LASER:
 			case Tank::LASER_SHOOT:
 				cannon = tank_images[i].laser;
+				break;
+			case Tank::BOMB:
+			case Tank::BOMB_SHOOT:
+				cannon = tank_images[i].thick_cannon;
 				break;
 			}
 			

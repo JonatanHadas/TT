@@ -8,7 +8,7 @@
 #include <vector>
 
 Upgrade::Type upg_types[UPG_NUM] = {
-	Upgrade::GATLING,Upgrade::LASER
+	Upgrade::GATLING,Upgrade::LASER,Upgrade::BOMB,
 };
 
 GameEventTankDeath::GameEventTankDeath(int i){
@@ -404,6 +404,7 @@ void Tank::step(){
 		case Tank::REG:
 		case Tank::GATLING:
 		case Tank::LASER:
+		case Tank::BOMB:
 			double pa = ang;
 			
 			int turn = (ctrl.back().lt ? 1 : 0)-(ctrl.back().rt ? 1 : 0);
@@ -416,6 +417,7 @@ void Tank::step(){
 		case Tank::REG:
 		case Tank::GATLING:
 		case Tank::LASER:
+		case Tank::BOMB:
 			double prx = x, pry = y;
 			
 			double step = STEP_DST * ((ctrl.back().fd ? 1 : 0) - (ctrl.back().bk ? REV_RAT : 0));
@@ -444,6 +446,10 @@ void Tank::step(){
 		case Tank::LASER:
 			if(ctrl.back().sht && !p_ctrl.sht) 
 				game->get_round()->add_shot(new LaserShot(game,this));
+			break;
+		case Tank::BOMB:
+			if(ctrl.back().sht && !p_ctrl.sht) 
+				game->get_round()->add_shot(new BombShot(game,this));
 			break;
 		}
 	}
@@ -521,6 +527,7 @@ bool Tank::check_upg(Upgrade u){
 std::pair<Upgrade::Type, Tank::State> upg2stt_a[UPG_NUM]={
 	{Upgrade::GATLING,Tank::GATLING},
 	{Upgrade::LASER, Tank::LASER},
+	{Upgrade::BOMB, Tank::BOMB},
 };
 
 std::map<Upgrade::Type, Tank::State> upg2stt(upg2stt_a, upg2stt_a+UPG_NUM);
@@ -721,6 +728,7 @@ int GatShot::get_ttl(){
 GenShot::Type GatShot::get_type(){
 	return GenShot::TYPE_GATLING;
 }
+
 LaserShot::LaserShot(Game* game, Tank* tank) : Shot(game, tank, 0, STEP_LASER){
 	get_tank()->state = Tank::LASER_SHOOT;
 }
@@ -736,3 +744,20 @@ int LaserShot::get_ttl(){
 GenShot::Type LaserShot::get_type(){
 	return GenShot::TYPE_LASER;
 }
+
+BombShot::BombShot(Game* game, Tank* tank) : Shot(game, tank, 0, STEP_BOMB){
+	get_tank()->state = Tank::BOMB_SHOOT;
+}
+BombShot::~BombShot(){
+	get_tank()->state = Tank::REG;
+}
+double BombShot::get_r(){
+	return BOMB_R;
+}
+int BombShot::get_ttl(){
+	return BOMB_TTL;
+}
+GenShot::Type BombShot::get_type(){
+	return GenShot::TYPE_BOMB;
+}
+
