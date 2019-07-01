@@ -25,6 +25,8 @@ class GatShot;
 class LaserShot;
 class BombShot;
 
+class Controlable;
+
 //for scoring
 class Team;
 
@@ -189,6 +191,11 @@ struct ControlState{
 	bool rt,lt,bk,fd,sht;
 };
 
+class Controlable{
+public:
+	virtual void set_ctrl(ControlState ctrl) = 0;
+};
+
 class Tank{
 public:
 	enum State{
@@ -227,6 +234,8 @@ private:
 	void reset(double x, double y, double ang);
 	
 	bool check_upg(Upgrade u);	
+	
+	Controlable* ctbl;
 public:
 	Tank(Game* game, int i, Team* t);
 	~Tank();
@@ -337,13 +346,15 @@ public:
 	int get_ttl();
 	GenShot::Type get_type();
 };
-class BombShot : public Shot{
+class BombShot : public Shot, public Controlable{
+	bool prs;
 public:
 	BombShot(Game* game, Tank* tank);
 	~BombShot();
 	double get_r();
 	int get_ttl();
 	GenShot::Type get_type();
+	void set_ctrl(ControlState ctrl);
 };
 
 class Fragment : public GenShot{

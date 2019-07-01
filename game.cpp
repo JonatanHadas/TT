@@ -377,6 +377,7 @@ Tank::Tank(Game* g, int i, Team* t){
 	ind = i;
 	shot_num = 0;
 	state = Tank::REG;
+	ctbl = NULL;
 }
 Tank::~Tank(){
 	
@@ -415,7 +416,7 @@ void Tank::step(){
 		case Tank::BOMB_SHOOT:
 			double pa = ang;
 			
-			int turn = (ctrl.back().lt ? 1 : 0)-(ctrl.back().rt ? 1 : 0);
+			int turn = (ctrl.front().lt ? 1 : 0)-(ctrl.front().rt ? 1 : 0);
 			ang += turn * STEP_ANG;
 			
 			if(check_wall_coll(nx,ny,px,py,dp)) ang = pa;
@@ -429,7 +430,7 @@ void Tank::step(){
 		case Tank::BOMB_SHOOT:
 			double prx = x, pry = y;
 			
-			double step = STEP_DST * ((ctrl.back().fd ? 1 : 0) - (ctrl.back().bk ? REV_RAT : 0));
+			double step = STEP_DST * ((ctrl.front().fd ? 1 : 0) - (ctrl.front().bk ? REV_RAT : 0));
 			rotate_add(ang, step, 0, x, y);
 
 			if(check_wall_coll(nx,ny,px,py,dp)) {x=prx; y=pry;}
@@ -437,12 +438,12 @@ void Tank::step(){
 		}
 		switch(state){
 		case Tank::REG:
-			if(ctrl.back().sht && !p_ctrl.sht){
+			if(ctrl.front().sht && !p_ctrl.sht){
 				if(shot_num < MAX_SHOTS) game->get_round()->add_shot(new RegShot(game, this));
 			}
 			break;
 		case Tank::GATLING:
-			if(ctrl.back().sht && !p_ctrl.sht){
+			if(ctrl.front().sht && !p_ctrl.sht){
 				state = Tank::GATLING_WAIT;
 				timer = GATLING_TIME;
 			}
@@ -450,15 +451,18 @@ void Tank::step(){
 			
 		case Tank::GATLING_WAIT:
 		case Tank::GATLING_SHOOT:
-			if(!ctrl.back().sht) state = Tank::REG;
+			if(!ctrl.front().sht) state = Tank::REG;
 			break;
 		case Tank::LASER:
-			if(ctrl.back().sht && !p_ctrl.sht) 
+			if(ctrl.front().sht && !p_ctrl.sht) 
 				game->get_round()->add_shot(new LaserShot(game,this));
 			break;
 		case Tank::BOMB:
-			if(ctrl.back().sht && !p_ctrl.sht) 
-				game->get_round()->add_shot(new BombShot(game,this));
+			if(ctrl.front().sht && !p_ctrl.sht){
+				BombShot* sht = new BombShot(game,this);
+				ctbl = sht;
+				game->get_round()->add_shot(sht);
+			}
 			break;
 		}
 	}
@@ -474,6 +478,8 @@ void Tank::step(){
 			break;
 		}
 	}
+	
+	if(ctbl) ctbl->set_ctrl(ctrl.front());
 	
 	p_ctrl = ctrl.front();
 	ctrl.pop();
@@ -516,6 +522,7 @@ void Tank::reset(double xx, double yy, double a){
 	clear_control();
 	dead = false;
 	state = Tank::REG;
+	ctbl = NULL;
 }
 void Tank::kill(){
 	dead = true;
@@ -756,8 +763,10 @@ GenShot::Type LaserShot::get_type(){
 
 BombShot::BombShot(Game* game, Tank* tank) : Shot(game, tank, 0, STEP_BOMB){
 	get_tank()->state = Tank::BOMB_SHOOT;
+	prs = true;
 }
 BombShot::~BombShot(){
+	get_tank()->ctbl = NULL;
 	get_tank()->state = Tank::REG;
 	get_game()->get_round()->explode(get_x(), get_y());
 }
@@ -769,6 +778,10 @@ int BombShot::get_ttl(){
 }
 GenShot::Type BombShot::get_type(){
 	return GenShot::TYPE_BOMB;
+}
+void BombShot::set_ctrl(ControlState ctrl){
+	if(!ctrl.sht) prs = false;
+	else if(!prs) get_game()->get_round()->delete_shot(this);
 }
 
 Fragment::Fragment(Game* game, double xx,double yy) : GenShot(game, NULL){
