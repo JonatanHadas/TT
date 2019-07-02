@@ -25,6 +25,8 @@ class GatShot;
 class LaserShot;
 class BombShot;
 class DeathRay;
+class Missile;
+class WifiMissile;
 
 class Controlable;
 
@@ -146,6 +148,7 @@ public:
 		DEATH_RAY,
 		DEATH_RAY_WAIT1, DEATH_RAY_WAIT2, DEATH_RAY_WAIT3, 
 		DEATH_RAY_SHOOT,
+		WIFI, WIFI_SHOOT,
 	};
 private:
 	
@@ -169,6 +172,8 @@ private:
 	friend LaserShot;
 	friend BombShot;
 	friend DeathRay;
+	friend Missile;
+	friend WifiMissile;
 		
 	bool can_step();
 	void clear_control();
@@ -203,6 +208,8 @@ public:
 	void kill();
 
 	bool collide_upgrade(Upgrade u);
+	
+	Controlable* get_ctbl();
 };
 
 
@@ -215,6 +222,7 @@ public:
 		TYPE_BOMB,
 		TYPE_FRAGMENT,
 		TYPE_DEATH_RAY,
+		TYPE_WIFI,
 	};
 private:
 	Tank* tank;
@@ -358,6 +366,42 @@ public:
 	std::pair<double, double> get_point(int i);
 	
 	void die();
+};
+
+class Missile : public GenShot{
+	double x,y,vx,vy;
+	bool out_of_tank;
+	int timer;
+	bool check_wall(double& nx, double& ny);
+protected:
+	bool rt,lt;
+public:
+	Missile(Game* game, Tank* tank);
+	virtual ~Missile();
+	bool check_tank(Tank* tank, bool ignore_me);
+	virtual void advance();
+	
+	bool is_resuable();
+	
+	bool get_rt();
+	bool get_lt();
+	
+	double get_x();
+	double get_y();
+	double get_ang();
+	
+	virtual Tank* get_target();
+};
+
+class WifiMissile : public Missile, public Controlable{
+public:
+	WifiMissile(Game* game, Tank* tank);
+	~WifiMissile();
+	
+	void set_ctrl(ControlState ctrl);
+	void die();
+	
+	GenShot::Type get_type();
 };
 
 
