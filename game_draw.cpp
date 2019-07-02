@@ -25,6 +25,7 @@ std::pair<Upgrade::Type, Img> upg2img_a[UPG_NUM] = {
 	{Upgrade::LASER, IMG_LASER_SYM},
 	{Upgrade::BOMB, IMG_BOMB_SYM},
 	{Upgrade::DEATH_RAY, IMG_DEATH_RAY_SYM},
+	{Upgrade::WIFI, IMG_WIFI_SYM},
 	};
 std::map<Upgrade::Type, Img> upg2img(upg2img_a,upg2img_a+UPG_NUM);
 
@@ -84,9 +85,11 @@ void BoardDrawer::draw(){
 		ShotQ* sht;
 		FragmentQ* frg;
 		DeathRayQ* dtr;
+		MissileQ* mis;
 		
 		double ang;
 		SDL_Point* ps;
+		SDL_Point p;
 		SDL_Color ctk,ctr;
 		switch((*it)->get_type()){
 		case GenShot::TYPE_REG:
@@ -140,6 +143,21 @@ void BoardDrawer::draw(){
 			delete ps;
 			
 			break;
+		case GenShot::TYPE_WIFI:
+			mis = (MissileQ*)(*it);
+			
+			p.x = WALL_D_T + DRC(mis->get_x());
+			p.y = WALL_D_T + DRC(mis->get_y());
+			
+			r.w = DRC(MISSILE_W); r.h = DRC(MISSILE_L);
+			r.x = p.x - r.w/2;
+			r.y = p.y - r.h/2;
+			
+			p.x -= r.x; p.y -= r.y;
+			
+			SDL_RenderCopyEx(renderer, tank_images[mis->get_tank_ind()].missile, NULL, &r, RAD2DEG(mis->get_ang())+90, &p, SDL_FLIP_NONE);
+			
+			break;
 		}
 		
 		delete (*it);
@@ -163,6 +181,19 @@ void BoardDrawer::draw(){
 			p.x -= r.x; p.y -= r.y;
 			
 			SDL_RenderCopyEx(renderer,tank_images[i].body, NULL, &r, RAD2DEG(ang)+90, &p, SDL_FLIP_NONE);
+			
+			p.x += r.x; p.y += r.y;
+			
+			if(t->get_state() == Tank::WIFI){
+				r.w = DRC(MISSILE_W); r.h = DRC(MISSILE_L);
+				p.x = WALL_D_T + DRC(t->get_x()); p.y = WALL_D_T + DRC(t->get_y());
+				r.x = p.x - r.w/2;
+				r.y = p.y - DRC(MISSILE_DST) - r.h/2;
+				p.x -= r.x; p.y -= r.y;
+				
+				SDL_RenderCopyEx(renderer, tank_images[i].missile, NULL, &r, RAD2DEG(ang)+90, &p, SDL_FLIP_NONE);
+
+			}
 			
 			p.x = WALL_D_T + DRC(x);
 			p.y = WALL_D_T + DRC(y);
@@ -205,9 +236,14 @@ void BoardDrawer::draw(){
 			case Tank::DEATH_RAY_SHOOT:
 				cannon = tank_images[i].ray_gun3;
 				break;
+			case Tank::WIFI:
+			case Tank::WIFI_SHOOT:
+				cannon = tank_images[i].launcher;
+				break;
 			}
 			
 			SDL_RenderCopyEx(renderer,cannon, NULL, &r, RAD2DEG(ang)+90, &p, SDL_FLIP_NONE);
+
 		}
 	}
 }

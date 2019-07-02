@@ -8,7 +8,7 @@
 #include <vector>
 
 Upgrade::Type upg_types[UPG_NUM] = {
-	Upgrade::GATLING,Upgrade::LASER,Upgrade::BOMB,Upgrade::DEATH_RAY,
+	Upgrade::GATLING,Upgrade::LASER,Upgrade::BOMB,Upgrade::DEATH_RAY,Upgrade::WIFI,
 };
 
 GameEventTankDeath::GameEventTankDeath(int i){
@@ -444,6 +444,7 @@ void Tank::step(){
 		case Tank::BOMB:
 		case Tank::BOMB_SHOOT:
 		case Tank::DEATH_RAY:
+		case Tank::WIFI:
 			double pa = ang;
 			
 			int turn = (ctrl.front().lt ? 1 : 0)-(ctrl.front().rt ? 1 : 0);
@@ -459,6 +460,7 @@ void Tank::step(){
 		case Tank::BOMB:
 		case Tank::BOMB_SHOOT:
 		case Tank::DEATH_RAY:
+		case Tank::WIFI:
 			double prx = x, pry = y;
 			
 			double step = STEP_DST * ((ctrl.front().fd ? 1 : 0) - (ctrl.front().bk ? REV_RAT : 0));
@@ -490,9 +492,7 @@ void Tank::step(){
 			break;
 		case Tank::BOMB:
 			if(ctrl.front().sht && !p_ctrl.sht){
-				BombShot* sht = new BombShot(game,this);
-				ctbl = sht;
-				game->get_round()->add_shot(sht);
+				game->get_round()->add_shot(new BombShot(game,this));
 			}
 			break;
 		case Tank::DEATH_RAY:
@@ -501,35 +501,39 @@ void Tank::step(){
 				timer = DR_TIME;
 			}
 			break;
-		}
-	}
-	
-	if(timer > 0) timer--;
-	else{
-		switch(state){
-		case Tank::GATLING_WAIT:
-			state = GATLING_SHOOT;
-		case Tank::GATLING_SHOOT:
-			timer = GATLING_INTER;
-			game->get_round()->add_shot(new GatShot(game, this));
-			break;
-		case Tank::DEATH_RAY_WAIT1:
-			timer = DR_TIME;
-			state = Tank::DEATH_RAY_WAIT2;
-			break;
-		case Tank::DEATH_RAY_WAIT2:
-			timer = DR_TIME;
-			state = Tank::DEATH_RAY_WAIT3;
-			break;
-		case Tank::DEATH_RAY_WAIT3:
-			DeathRay* dtr = new DeathRay(game,this);
-			ctbl = dtr;
-			game->get_round()->add_shot(dtr);
+		case Tank::WIFI:
+			if(ctrl.front().sht && !p_ctrl.sht){
+				game->get_round()->add_shot(new WifiMissile(game,this));
+			}
 			break;
 		}
-	}
 	
-	if(ctbl) ctbl->set_ctrl(ctrl.front());
+	
+		if(timer > 0) timer--;
+		else{
+			switch(state){
+			case Tank::GATLING_WAIT:
+				state = GATLING_SHOOT;
+			case Tank::GATLING_SHOOT:
+				timer = GATLING_INTER;
+				game->get_round()->add_shot(new GatShot(game, this));
+				break;
+			case Tank::DEATH_RAY_WAIT1:
+				timer = DR_TIME;
+				state = Tank::DEATH_RAY_WAIT2;
+				break;
+			case Tank::DEATH_RAY_WAIT2:
+				timer = DR_TIME;
+				state = Tank::DEATH_RAY_WAIT3;
+				break;
+			case Tank::DEATH_RAY_WAIT3:
+				game->get_round()->add_shot(new DeathRay(game,this));
+				break;
+			}
+		}
+		
+		if(ctbl) ctbl->set_ctrl(ctrl.front());
+	}
 	
 	p_ctrl = ctrl.front();
 	ctrl.pop();
@@ -599,6 +603,7 @@ std::pair<Upgrade::Type, Tank::State> upg2stt_a[UPG_NUM]={
 	{Upgrade::LASER, Tank::LASER},
 	{Upgrade::BOMB, Tank::BOMB},
 	{Upgrade::DEATH_RAY, Tank::DEATH_RAY},
+	{Upgrade::WIFI, Tank::WIFI},
 };
 
 std::map<Upgrade::Type, Tank::State> upg2stt(upg2stt_a, upg2stt_a+UPG_NUM);
@@ -612,7 +617,12 @@ bool Tank::collide_upgrade(Upgrade u){
 	return ret;
 }
 
-
+Controlable* Tank::get_ctbl(){
+	return ctbl;
+}
+Missile* Tank::get_missile(){
+	return missile;
+}
 
 GenShot::GenShot(Game* g, Tank* t){
 	game = g;
@@ -834,6 +844,7 @@ GenShot::Type LaserShot::get_type(){
 BombShot::BombShot(Game* game, Tank* tank) : Shot(game, tank, 0, STEP_BOMB){
 	get_tank()->ctbl = this;
 	get_tank()->state = Tank::BOMB_SHOOT;
+	get_tank()->ctbl = this;
 	prs = true;
 }
 BombShot::~BombShot(){
@@ -962,6 +973,7 @@ DeathRay::DeathRay(Game* game, Tank* tank) : GenShot(game, tank){
 	timer = DR_TTL;
 	get_tank()->ctbl = this;
 	find_path();
+	get_tank()->ctbl = this;
 	get_tank()->state = Tank::DEATH_RAY_SHOOT;
 }
 DeathRay::~DeathRay(){
@@ -1051,4 +1063,124 @@ void DeathRay::find_path(){
 
 void DeathRay::die(){
 	get_game()->get_round()->delete_shot(this);
+}
+
+
+Missile::Missile(Game* game, Tank* tank) : GenShot(game, tank){
+	out_of_tank = false;
+	double ang = get_tank()->get_ang();
+	x = get_tank()->get_x() + cos(ang) * MISSILE_DST;
+	y = get_tank()->get_y() + sin(ang) * MISSILE_DST;
+	
+	vx = STEP_MISSILE * cos(ang);
+	vy = STEP_MISSILE * sin(ang);
+	
+	timer = MISSILE_TTL;
+	
+	get_tank()->missile = this;
+}
+Missile::~Missile(){
+	get_tank()->state = Tank::REG;
+	get_tank()->missile = NULL;
+}
+bool Missile::check_tank(Tank* tank, bool ignore_me){
+	double txs[4],tys[4],mxs[4],mys[4];
+	gen_rot_rect(tank->get_x(), tank->get_y(), TANK_W, TANK_H, tank->get_ang(), txs, tys);
+	gen_rot_rect(x,y,MISSILE_W,MISSILE_L,get_ang(),mxs,mys);
+	double nx,ny,px,py,dp;
+	
+	bool ret = poly_coll(txs,tys,4,mxs,mys,4,nx,ny,dp,px,py);
+
+	if(tank == get_tank() && !ret) out_of_tank = true;
+	
+	if(tank == get_tank() && ignore_me || !out_of_tank) return false;
+	return ret;
+}
+void Missile::advance(){
+	x += vx;
+	y += vy;
+	
+	double vvx=vx,vvy=vy;
+	double turn = MISSILE_TURN * ((lt ? 1 : 0)-(rt ? 1 : 0));
+	vx=vy=0;
+	rotate_add(turn, vvx,vvy,vx,vy);
+	
+	double nx,ny;
+	if(check_wall(nx,ny)){
+		if(nx*vx<0) vx = -vx;
+		if(ny*vy<0) vy = -vy;
+		
+		out_of_tank = true;
+	}
+	
+	if(timer > 0) timer--;
+	else get_game()->get_round()->delete_shot(this);
+}
+
+bool Missile::check_wall(double& nx, double& ny){
+	double mxs[4],mys[4],wxs[4],wys[4];
+	double px,py,dp;
+	
+	int ix = x;
+	int iy = y;
+	gen_rot_rect(x,y,MISSILE_W,MISSILE_L,get_ang(),mxs,mys);
+	for(int i = -1; i<=1; i++){
+		for(int j = -1; j<1; j++){
+			gen_rect(ix+i-WALL_THK, iy+j-WALL_THK + 1, 2*WALL_THK + 1, 2*WALL_THK,wxs,wys);
+			if(get_game()->get_round()->get_maze()->hwall(ix+i, iy+j)){
+				if(poly_coll(mxs,mys,4,wxs,wys,4,nx,ny,dp,px,py)) return true;
+			}
+			gen_rect(ix+j-WALL_THK + 1, iy+i-WALL_THK, 2*WALL_THK, 2*WALL_THK + 1,wxs,wys);
+			if(get_game()->get_round()->get_maze()->vwall(ix+j, iy+i)){
+				if(poly_coll(mxs,mys,4,wxs,wys,4,nx,ny,dp,px,py)) return true;
+			}
+		}
+	}
+	return false;
+}
+	
+bool Missile::is_resuable(){
+	return false;
+}
+	
+bool Missile::get_rt(){
+	return rt;
+}
+bool Missile::get_lt(){
+	return lt;
+}
+
+double Missile::get_x(){
+	return x;
+}
+double Missile::get_y(){
+	return y;
+}
+double Missile::get_ang(){
+	return atan2(vy,vx);
+}
+	
+Tank* Missile::get_target(){
+	return NULL;
+}
+
+WifiMissile::WifiMissile(Game* game, Tank* tank) : Missile(game, tank){
+	get_tank()->state = Tank::WIFI_SHOOT;
+	get_tank()->ctbl = this;
+}
+WifiMissile::~WifiMissile(){
+	get_tank()->ctbl = NULL;
+}
+
+	
+void WifiMissile::set_ctrl(ControlState ctrl){
+	rt = ctrl.rt;
+	lt = ctrl.lt;
+}
+void WifiMissile::die(){
+	rt = lt = false;
+}
+
+GenShot::Type WifiMissile::get_type(){
+	return GenShot::TYPE_WIFI;
 }

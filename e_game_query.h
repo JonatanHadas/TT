@@ -181,4 +181,17 @@ public:
 	int get_tank_ind();
 };
 
+class MissileEQ : public MissileQ{
+	MissileExtrap* mis;
+public:
+	MissileEQ(MissileExtrap* m);
+	int get_tank_ind();
+	int get_tar_ind();
+	double get_x();
+	double get_y();
+	double get_ang();
+	
+	GenShot::Type get_type();
+};
+
 #endif

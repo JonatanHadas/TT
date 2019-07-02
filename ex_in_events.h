@@ -79,6 +79,15 @@ public:
 	virtual long long int get_time() = 0;
 	virtual ControlState get_ctrl() = 0;
 	virtual Tank::State get_state() = 0;
+
+	virtual double get_missile_x() = 0;
+	virtual double get_missile_y() = 0;
+	virtual double get_missile_ang() = 0;
+	virtual bool get_missile_rt() = 0;
+	virtual bool get_missile_lt() = 0;
+	virtual int get_missile_id() = 0;
+	virtual int get_missile_target() = 0;
+	
 };
 class ExInEventCreateUpgrade : public ExInEvent{
 public:

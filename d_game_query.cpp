@@ -158,6 +158,9 @@ std::set<GenShotQ*> RoundDQ::get_shots(){
 		case GenShot::TYPE_DEATH_RAY:
 			ret.insert(new DeathRayDQ((DeathRay*)(*it)));
 			break;
+		case GenShot::TYPE_WIFI:
+			ret.insert(new MissileDQ((Missile*)(*it)));
+			break;
 		}
 	}
 	return ret;
@@ -241,4 +244,27 @@ GenShot::Type DeathRayDQ::get_type(){
 }
 int DeathRayDQ::get_tank_ind(){
 	return dr->get_tank()->get_ind();
+}
+
+MissileDQ::MissileDQ(Missile* m){
+	mis = m;
+}
+int MissileDQ::get_tank_ind(){
+	return mis->get_tank()->get_ind();
+}
+int MissileDQ::get_tar_ind(){
+	return mis->get_target()->get_ind();
+}
+double MissileDQ::get_x(){
+	return mis->get_x();
+}
+double MissileDQ::get_y(){
+	return mis->get_y();
+}
+double MissileDQ::get_ang(){
+	return mis->get_ang();
+}
+	
+GenShot::Type MissileDQ::get_type(){
+	return mis->get_type();
 }
