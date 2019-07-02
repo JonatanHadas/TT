@@ -93,6 +93,13 @@ double DExInEventTankUpdate::get_ang(){ return t->get_ang(); }
 long long int DExInEventTankUpdate::get_time(){ return g->get_time(); }
 ControlState DExInEventTankUpdate::get_ctrl(){ return t->get_ctrl(); }
 Tank::State DExInEventTankUpdate::get_state(){ return t->get_state(); }
+double DExInEventTankUpdate::get_missile_x(){  return t->get_missile()->get_x(); }
+double DExInEventTankUpdate::get_missile_y(){ return t->get_missile()->get_y(); }
+double DExInEventTankUpdate::get_missile_ang(){ return t->get_missile()->get_ang(); }
+bool DExInEventTankUpdate::get_missile_rt(){ return t->get_missile()->get_rt(); }
+bool DExInEventTankUpdate::get_missile_lt(){ return t->get_missile()->get_lt(); }
+int DExInEventTankUpdate::get_missile_id(){ return t->get_missile()->get_id(); }
+int DExInEventTankUpdate::get_missile_target(){ Tank* tar = t->get_missile()->get_target(); return tar ? tar->get_ind() : -1; }
 
 DExInEventCreateUpgrade::DExInEventCreateUpgrade(GameEventCreateUpgrade* event){ e = event; }
 DExInEventCreateUpgrade::~DExInEventCreateUpgrade(){ delete e; }

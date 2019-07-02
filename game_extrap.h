@@ -12,6 +12,7 @@ class TeamExtrap;
 
 class GenShotExtrap;
 class ShotExtrap;
+class MissileExtrap;
 
 class ExEvent{
 public:
@@ -188,6 +189,8 @@ class TankExtrap{
 	ControlState p_ctrl;
 	std::deque<ControlState> ctrl;
 	
+	MissileExtrap* missile;
+	
 	bool dead;
 	bool check_wall_coll(double& nx, double& ny, double& px, double& py, double& dp);
 public:
@@ -286,6 +289,25 @@ public:
 	double get_y();
 	double get_ang();
 	void advance();
+};
+
+class MissileExtrap : public GenShotExtrap{
+	double x,y,vx,vy;
+	bool rt,lt;
+	TankExtrap* target;
+	friend TankExtrap;
+	void step();
+	bool check_wall(double& nx, double& ny);
+public:
+	MissileExtrap(GameExtrap* g, TankExtrap* t, GenShot::Type tp, int id);
+	
+	double get_x();
+	double get_y();
+	double get_ang();
+	
+	void advance();
+	void update(ExInEventTankUpdate* e);
+	TankExtrap* get_target();
 };
 
 #endif

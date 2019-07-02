@@ -185,6 +185,7 @@ private:
 	bool check_upg(Upgrade u);	
 	
 	Controlable* ctbl;
+	Missile* missile;
 public:
 	Tank(Game* game, int i, Team* t);
 	~Tank();
@@ -210,6 +211,7 @@ public:
 	bool collide_upgrade(Upgrade u);
 	
 	Controlable* get_ctbl();
+	Missile* get_missile();
 };
 
 

@@ -620,6 +620,9 @@ bool Tank::collide_upgrade(Upgrade u){
 Controlable* Tank::get_ctbl(){
 	return ctbl;
 }
+Missile* Tank::get_missile(){
+	return missile;
+}
 
 GenShot::GenShot(Game* g, Tank* t){
 	game = g;
@@ -1073,9 +1076,12 @@ Missile::Missile(Game* game, Tank* tank) : GenShot(game, tank){
 	vy = STEP_MISSILE * sin(ang);
 	
 	timer = MISSILE_TTL;
+	
+	get_tank()->missile = this;
 }
 Missile::~Missile(){
 	get_tank()->state = Tank::REG;
+	get_tank()->missile = NULL;
 }
 bool Missile::check_tank(Tank* tank, bool ignore_me){
 	double txs[4],tys[4],mxs[4],mys[4];

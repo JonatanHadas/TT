@@ -321,6 +321,7 @@ TankExtrap::TankExtrap(GameExtrap* g,int i, TeamExtrap* t){
 	team = t;
 	ind = i;
 	state = Tank::REG;
+	missile = NULL;
 }
 TeamExtrap* TankExtrap::get_team(){
 	return team;
@@ -349,6 +350,29 @@ void TankExtrap::update(ExInEventTankUpdate* e){
 		y = e->get_y();
 		ang = e->get_ang();
 		state = e->get_state();
+		
+		if(e->get_state() == Tank::WIFI_SHOOT){
+			if(missile && missile->get_id() != e->get_missile_id()){
+				game->get_round()->del_shot(missile->get_id());
+				missile = NULL;
+			}
+			if(!missile){
+				GenShot::Type tp;
+				int id = e->get_missile_id();
+				switch(state){
+				case Tank::WIFI_SHOOT:
+					tp = GenShot::TYPE_WIFI;
+					break;
+				}
+				missile = new MissileExtrap(game, this, tp, id);
+				game->get_round()->add_shot(missile);
+			}
+			missile->update(e);
+		}
+		else if(missile){
+			game->get_round()->del_shot(missile->get_id());
+			missile = NULL;
+		}
 	}
 }
 void TankExtrap::reset(double xx, double yy, double a){
@@ -360,6 +384,7 @@ void TankExtrap::reset(double xx, double yy, double a){
 	p_ctrl = {false,false,false,false,false};
 	ctrl.clear();
 	state = Tank::REG;
+	missile = NULL;
 }
 int TankExtrap::get_ind(){
 	return ind;
@@ -403,7 +428,8 @@ void TankExtrap::advance(){
 	ControlState cpc = p_ctrl;
 	while(t < game->get_time()){
 		ControlState cur = it==ctrl.rbegin() ? cpc : (cpc=*(it++));
-		
+		double pa;
+		int turn;
 		if(!is_dead()){
 			double nx,ny,dp,px,py;
 			switch(state){
@@ -412,13 +438,19 @@ void TankExtrap::advance(){
 			case Tank::LASER:
 			case Tank::BOMB:
 			case Tank::BOMB_SHOOT:
+			case Tank::DEATH_RAY:
+			case Tank::WIFI:
 			
-				double pa = ang;
+				pa = ang;
 				
-				int turn = (cur.lt ? 1 : 0)-(cur.rt ? 1 : 0);
+				turn = (cur.lt ? 1 : 0)-(cur.rt ? 1 : 0);
 				ang += turn * STEP_ANG;
 				
 				if(check_wall_coll(nx,ny,px,py,dp)) ang = pa;
+				break;
+			case Tank::WIFI_SHOOT:
+				missile->rt = cur.rt;
+				missile->lt = cur.lt;
 				break;
 			}
 			switch(state){
@@ -427,6 +459,8 @@ void TankExtrap::advance(){
 			case Tank::LASER:
 			case Tank::BOMB:
 			case Tank::BOMB_SHOOT:
+			case Tank::DEATH_RAY:
+			case Tank::WIFI:
 			
 				double prx = x, pry = y;
 				
@@ -437,7 +471,7 @@ void TankExtrap::advance(){
 				break;
 			}
 		}
-		
+		if(missile) missile->step();
 	}
 };
 
@@ -676,3 +710,73 @@ double DeathRayExtrap::get_ang(){
 	return get_tank()->get_ang();
 }
 void DeathRayExtrap::advance(){}
+
+
+MissileExtrap::MissileExtrap(GameExtrap* g, TankExtrap* t, GenShot::Type tp, int id) : GenShotExtrap(g, t, id, tp){
+	target = NULL;
+};
+	
+double MissileExtrap::get_x(){
+	return x;
+}
+double MissileExtrap::get_y(){
+	return y;
+}
+double MissileExtrap::get_ang(){
+	return atan2(vy,vx);
+}
+	
+void MissileExtrap::step(){
+	x += vx;
+	y += vy;
+	
+	double vvx=vx,vvy=vy;
+	double turn = MISSILE_TURN * ((lt ? 1 : 0)-(rt ? 1 : 0));
+	vx=vy=0;
+	rotate_add(turn, vvx,vvy,vx,vy);
+	
+	double nx,ny;
+	if(check_wall(nx,ny)){
+		if(nx*vx<0) vx = -vx;
+		if(ny*vy<0) vy = -vy;
+		
+	}
+	
+}
+
+bool MissileExtrap::check_wall(double& nx, double& ny){
+	double mxs[4],mys[4],wxs[4],wys[4];
+	double px,py,dp;
+	
+	int ix = x;
+	int iy = y;
+	gen_rot_rect(x,y,MISSILE_W,MISSILE_L,get_ang(),mxs,mys);
+	for(int i = -1; i<=1; i++){
+		for(int j = -1; j<1; j++){
+			gen_rect(ix+i-WALL_THK, iy+j-WALL_THK + 1, 2*WALL_THK + 1, 2*WALL_THK,wxs,wys);
+			if(get_game()->get_round()->get_maze()->hwall(ix+i, iy+j)){
+				if(poly_coll(mxs,mys,4,wxs,wys,4,nx,ny,dp,px,py)) return true;
+			}
+			gen_rect(ix+j-WALL_THK + 1, iy+i-WALL_THK, 2*WALL_THK, 2*WALL_THK + 1,wxs,wys);
+			if(get_game()->get_round()->get_maze()->vwall(ix+j, iy+i)){
+				if(poly_coll(mxs,mys,4,wxs,wys,4,nx,ny,dp,px,py)) return true;
+			}
+		}
+	}
+	return false;
+}
+void MissileExtrap::advance(){}
+void MissileExtrap::update(ExInEventTankUpdate* e){
+	x = e->get_missile_x();
+	y = e->get_missile_y();
+	double ang = e->get_missile_ang();
+	vx = STEP_MISSILE * cos(ang);
+	vy = STEP_MISSILE * sin(ang);
+	rt = e->get_missile_rt();
+	lt = e->get_missile_lt();
+	target = get_game()->get_tank(e->get_missile_target());
+}
+TankExtrap* MissileExtrap::get_target(){
+	return target;
+}
+

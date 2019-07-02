@@ -80,6 +80,15 @@ public:
 	long long int get_time();
 	ControlState get_ctrl();
 	Tank::State get_state();
+
+	double get_missile_x();
+	double get_missile_y();
+	double get_missile_ang();
+	bool get_missile_rt();
+	bool get_missile_lt();
+	int get_missile_id();
+	int get_missile_target();
+
 };
 class DExInEventCreateUpgrade : public ExInEventCreateUpgrade{
 	GameEventCreateUpgrade* e;
