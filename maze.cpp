@@ -50,6 +50,8 @@ Maze::Maze(int wd, int ht){
 			if(j>0) hwalls[i][j-1] = false;
 		}
 	}
+	
+	dists = dxs = dys = NULL;
 }
 #include <stdio.h>
 Maze::~Maze(){
@@ -86,4 +88,98 @@ void Maze::generate(std::vector<std::pair<int,int>> c_points, GenMethod m){
 		wall_rem(w,h,hwalls,vwalls,c_points);
 		break;
 	}
+}
+
+void Maze::calc_dists(){
+	clear_dists();
+	
+	dists = new int***[w];
+	dxs = new int***[w];
+	dys = new int***[w];
+	
+	for(int x1 = 0; x1<w; x1++){
+	dists[x1] = new int**[h];
+	dxs[x1] = new int**[h];
+	dys[x1] = new int**[h];
+	for(int y1 = 0; y1<h; y1++){
+		dists[x1][y1] = new int*[w];
+		dxs[x1][y1] = new int*[w];
+		dys[x1][y1] = new int*[w];
+		for(int x2 = 0; x2<w; x2++){
+		dists[x1][y1][x2] = new int[h];
+		dxs[x1][y1][x2] = new int[h];
+		dys[x1][y1][x2] = new int[h];
+		for(int y2 = 0; y2<h; y2++){
+			if(	(x1==x2 && y1==y2+1 && !hwall(x2,y2)) ||
+				(x1==x2 && y1==y2-1 && !hwall(x1,y1)) ||
+				(x1==x2+1 && y1==y2 && !vwall(x2,y2)) ||
+				(x1==x2-1 && y1==y2 && !vwall(x1,y1))){
+				
+				dxs[x1][y1][x2][y2] = x2-x1;
+				dys[x1][y1][x2][y2] = y2-y1;
+				dists[x1][y1][x2][y2] = 1;
+				
+			}
+			else if (x1 == x2 && y1 == y2){
+				dists[x1][y1][x2][y2] = 0;
+				dxs[x1][y1][x2][y2] = 0;
+				dys[x1][y1][x2][y2] = 0;
+			}
+			else{
+				dists[x1][y1][x2][y2] = -1;
+				dxs[x1][y1][x2][y2] = 0;
+				dys[x1][y1][x2][y2] = 0;
+			}
+		}
+		}
+	}
+	}
+	for(int x1 = 0; x1<w; x1++){
+	for(int y1 = 0; y1<h; y1++){
+		for(int x2 = 0; x2<w; x2++){
+		for(int y2 = 0; y2<h; y2++){
+			for(int x3 = 0; x3<w; x3++){
+			for(int y3 = 0; y3<h; y3++){
+				if(dists[x2][y2][x1][y1]<0 || dists[x1][y1][x3][y3]<0) continue;
+				int nd = dists[x2][y2][x1][y1] + dists[x1][y1][x3][y3];
+				if(nd<dists[x2][y2][x3][y3] || dists[x2][y2][x3][y3]<0){
+					dists[x2][y2][x3][y3] = nd;
+					dxs[x2][y2][x3][y3] = dxs[x2][y2][x1][y1];
+					dys[x2][y2][x3][y3] = dys[x2][y2][x1][y1];
+				}
+			}
+			}	
+		}
+		}	
+	}
+	}
+}
+void Maze::clear_dists(){
+	if(dists){
+		for(int x1=0;x1<w;x1++){
+			for(int y1=0;y1<h;y1++){
+				for(int x2=0;x2<w;x2++){
+					delete[] dists[x1][y1][x2];
+					delete[] dxs[x1][y1][x2];
+					delete[] dys[x1][y1][x2];
+				}
+				delete[] dists[x1][y1];
+				delete[] dxs[x1][y1];
+				delete[] dys[x1][y1];
+			}
+			delete[] dists[x1];
+			delete[] dxs[x1];
+			delete[] dys[x1];
+		}
+		delete[] dists;
+		delete[] dxs;
+		delete[] dys;
+	}
+	dxs = dys = dists = NULL;
+}
+int Maze::dist(int x1,int y1, int x2, int y2, int& dx, int& dy){
+	if(x1<0 || x2<0 || y1<0 || y2<0 || x1>=w || x2>=w || y1>=h || y2>=h) return -1;
+	dx = dxs[x1][y1][x2][y2];
+	dy = dys[x1][y1][x2][y2];
+	return dists[x1][y1][x2][y2];
 }
