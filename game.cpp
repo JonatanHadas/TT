@@ -1036,7 +1036,7 @@ bool Missile::check_tank(Tank* tank, bool ignore_me){
 
 	if(tank == get_tank() && !ret) out_of_tank = true;
 	
-	if(tank == get_tank() && ignore_me || !out_of_tank) return false;
+	if(tank == get_tank() && !ignore_me && !out_of_tank) return false;
 	return ret;
 }
 void Missile::advance(){

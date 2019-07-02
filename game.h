@@ -423,7 +423,6 @@ public:
 
 class Missile : public GenShot{
 	double x,y,vx,vy;
-	bool out_of_tank;
 	int timer;
 	bool check_wall(double& nx, double& ny);
 protected:
