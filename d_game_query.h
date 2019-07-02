@@ -176,4 +176,17 @@ public:
 	int get_tank_ind();
 };
 
+class MissileDQ : public MissileQ{
+	Missile* mis;
+public:
+	MissileDQ(Missile* m);
+	int get_tank_ind();
+	int get_tar_ind();
+	double get_x();
+	double get_y();
+	double get_ang();
+	
+	GenShot::Type get_type();
+};
+
 #endif

@@ -150,4 +150,10 @@ public:
 	virtual double get_y(int i) = 0;
 };
 
+class MissileQ : public GenShotQ{
+public:
+	virtual int get_tank_ind() = 0;
+	virtual int get_tar_ind() = 0;
+};
+
 #endif
