@@ -1147,6 +1147,7 @@ Img upg_imgs[UPG_NUM] = {
 	IMG_LASER_SYM,
 	IMG_BOMB_SYM,
 	IMG_DEATH_RAY_SYM,
+	IMG_WIFI_SYM,
 	};
 void SettingMenu::draw(){
 	draw_back(true);

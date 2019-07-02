@@ -147,15 +147,19 @@ void NetGame::create_shot(GameEventCreateShot* e){
 		}
 		
 		break;
+	case GenShot::TYPE_WIFI:
+		end = encode_char(end, '\x1f');
 	}
 	
 	set->serv->send_all(data, end-data, PROTO_REL);
 	
 }
 void NetGame::remove_shot(GameEventRemoveShot* e){
+	if(e->get_stype() == GenShot::TYPE_WIFI) return;
 	char data[100];
 	
 	char* end = data;
+	
 	
 	end = encode_char(end, '\x02');
 	end = encode_char(end, '\x11');
@@ -294,7 +298,20 @@ void NetGame::send_update(){
 		
 		end = encode_tank_state(end, t->get_state());
 		
+		Missile* m = t->get_missile();
+		end = encode_int(end, m ? m->get_id() : 0);
+			
+		end = encode_double(end, m ? m->get_x() : 0.0);
+		end = encode_double(end, m ? m->get_y() : 0.0);
+		end = encode_double(end, m ? m->get_ang() : 0.0);
 		
+		end = encode_bool(end, m ? m->get_rt() : false);
+		end = encode_bool(end, m ? m->get_lt() : false);
+		
+		Tank* tar = m ? m->get_target() : NULL;
+		end = encode_int(end, tar ? tar->get_ind() : -1);
+		
+			
 		set->serv->send_all(data, end-data, PROTO_UNREL);		
 	}
 }

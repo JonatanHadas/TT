@@ -782,7 +782,8 @@ void MissileExtrap::update(ExInEventTankUpdate* e){
 	vy = STEP_MISSILE * sin(ang);
 	rt = e->get_missile_rt();
 	lt = e->get_missile_lt();
-	target = get_game()->get_tank(e->get_missile_target());
+	int t_ind = e->get_missile_target();
+	target = t_ind < 0 ? NULL : get_game()->get_tank(t_ind);
 }
 TankExtrap* MissileExtrap::get_target(){
 	return target;

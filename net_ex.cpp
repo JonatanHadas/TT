@@ -250,8 +250,19 @@ NExInEventTankUpdate::NExInEventTankUpdate(char* data, char* del){
 	data = decode_bool(data, ctrl.sht);
 	
 	data = decode_tank_state(data, state);
-	
 		
+	data = decode_int(data, m_id);
+	
+	data = decode_double(data, m_x);
+	data = decode_double(data, m_y);
+	data = decode_double(data, m_a);
+
+	data = decode_bool(data, m_rt);
+	data = decode_bool(data, m_lt);
+	
+	data = decode_int(data, m_tar);
+	
+
 	delete del;
 }
 NExInEventTankUpdate::~NExInEventTankUpdate(){
@@ -276,6 +287,27 @@ ControlState NExInEventTankUpdate::get_ctrl(){
 }
 Tank::State NExInEventTankUpdate::get_state(){
 	return state;
+}
+double NExInEventTankUpdate::get_missile_x(){
+	return m_x;
+}
+double NExInEventTankUpdate::get_missile_y(){
+	return m_y;
+}
+double NExInEventTankUpdate::get_missile_ang(){
+	return m_a;
+}
+bool NExInEventTankUpdate::get_missile_rt(){
+	return m_rt;
+}
+bool NExInEventTankUpdate::get_missile_lt(){
+	return m_lt;
+}
+int NExInEventTankUpdate::get_missile_id(){
+	return m_id;
+}
+int NExInEventTankUpdate::get_missile_target(){
+	return m_tar;
 }
 
 NExInEventCreateUpgrade::NExInEventCreateUpgrade(char* data, char* del){

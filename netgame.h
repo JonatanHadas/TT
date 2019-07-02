@@ -15,7 +15,7 @@ type |   | meaning     | data
 -----+---+-------------+--------
 00   | > | start round | tank_poss, maze
 01   | < | controls    | tank_ind, round, ctrl state
-01   | > | tank update | ind,t, x,y,ang, ctrl_state, state
+01   | > | tank update | ind,t, x,y,ang, ctrl_state, state, missile: id, x,y,ang, rt,lt, tar
 02   | > | tank death  | ind
 03   | > | score       | team,diff
      |   |             |
@@ -23,6 +23,7 @@ type |   | meaning     | data
 11   | > | delete shot | id
 12   | > | create frag | id, time,round, x,y,ang
 13   | > | create dtry | id, round, tank_ind, num, x0,y0,x1,y1,...
+1f   | > | no-op shot  | ---
      |   |             |
 20   | > | create upg  | round, x,y,type
 21   | > | delete upg  | round, x,y

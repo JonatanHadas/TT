@@ -407,6 +407,7 @@ Tank::Tank(Game* g, int i, Team* t){
 	shot_num = 0;
 	state = Tank::REG;
 	ctbl = NULL;
+	missile = NULL;
 }
 Tank::~Tank(){
 	

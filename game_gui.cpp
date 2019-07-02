@@ -44,7 +44,6 @@ bool GameGui::step(){
 		
 		game->get_tank(keys[i].first)->push_ctrl(ctrl);
 	}
-	
 	game->advance();
 	drawer->draw();
 	return false;

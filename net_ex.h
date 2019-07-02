@@ -85,6 +85,10 @@ class NExInEventTankUpdate : public ExInEventTankUpdate{
 	int ind;
 	ControlState ctrl;
 	Tank::State state;
+	
+	double m_x,m_y,m_a;
+	bool m_rt, m_lt;
+	int m_id, m_tar;
 public:
 	NExInEventTankUpdate(char* data, char* del);
 	~NExInEventTankUpdate();
@@ -95,6 +99,15 @@ public:
 	long long int get_time();
 	ControlState get_ctrl();
 	Tank::State get_state();
+
+	double get_missile_x();
+	double get_missile_y();
+	double get_missile_ang();
+	bool get_missile_rt();
+	bool get_missile_lt();
+	int get_missile_id();
+	int get_missile_target();
+
 };
 class NExInEventCreateUpgrade : public ExInEventCreateUpgrade{
 	Upgrade u;
