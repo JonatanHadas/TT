@@ -418,6 +418,7 @@ bool TankExtrap::check_wall_coll(double& nx, double& ny, double& px, double& py,
 	double txs[4],tys[4],wxs[4],wys[4];
 	int ix = x, iy = y;
 	gen_rot_rect(x,y,TANK_H, TANK_W, ang, txs,tys);
+	if(game->get_round()==NULL) return false;
 	for(int i = -1; i<=1; i++){
 		for(int j = -1; j<1; j++){
 			gen_rect(ix+i-WALL_THK, iy+j-WALL_THK + 1, 2*WALL_THK + 1, 2*WALL_THK,wxs,wys);

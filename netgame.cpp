@@ -148,6 +148,7 @@ void NetGame::create_shot(GameEventCreateShot* e){
 		
 		break;
 	case GenShot::TYPE_WIFI:
+	case GenShot::TYPE_MISSILE:
 		end = encode_char(end, '\x1f');
 	}
 	
