@@ -177,6 +177,7 @@ std::set<GenShotQ*> RoundEQ::get_shots(){
 			ret.insert(new DeathRayEQ((DeathRayExtrap*)((*it).second)));
 			break;
 		case GenShot::TYPE_WIFI:
+		case GenShot::TYPE_MISSILE:
 			ret.insert(new MissileEQ((MissileExtrap*)((*it).second)));
 			break;
 		}

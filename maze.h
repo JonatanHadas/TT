@@ -6,6 +6,9 @@
 class Maze{
 	bool** hwalls;
 	bool** vwalls;
+	int**** dxs;
+	int**** dys;
+	int**** dists;
 	int w,h;
 public:
 	enum GenMethod{
@@ -22,6 +25,10 @@ public:
 	void set_hwall(int x, int y, bool val);
 	void set_vwall(int x, int y, bool val);
 	void generate(std::vector<std::pair<int,int>> c_points, GenMethod m); // critical points must be connected
+	
+	void calc_dists();
+	void clear_dists();
+	int dist(int x1,int y1, int x2, int y2, int& dx, int& dy);
 };
 
 #endif
