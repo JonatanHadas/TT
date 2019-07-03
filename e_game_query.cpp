@@ -184,6 +184,13 @@ std::set<GenShotQ*> RoundEQ::get_shots(){
 	}
 	return ret;
 }
+std::set<MineQ*> RoundEQ::get_mines(){
+	std::set<MineQ*> ret;
+	for(auto it = round->get_mines(); it!=round->end_mines(); it++){
+		ret.insert(new MineEQ(it->second));
+	}
+	return ret;
+}
 std::set<Upgrade*> RoundEQ::get_upgs(){
 	std::set<Upgrade*> ret;
 	for(auto it = round->get_upgs(); it!=round->end_upgs(); it++){
@@ -287,4 +294,26 @@ double MissileEQ::get_ang(){
 	
 GenShot::Type MissileEQ::get_type(){
 	return mis->get_type();
+}
+
+MineEQ::MineEQ(MineExtrap* m){
+	mine = m;
+}
+double MineEQ::get_x(){
+	return mine->get_x();
+}
+double MineEQ::get_y(){
+	return mine->get_y();
+}
+double MineEQ::get_ang(){
+	return mine->get_ang();
+}
+bool MineEQ::get_started(){
+	return mine->get_started();
+}
+bool MineEQ::get_active(){
+	return mine->get_active();
+}
+int MineEQ::get_tank_ind(){
+	return mine->get_tank()->get_ind();
 }

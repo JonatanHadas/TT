@@ -37,6 +37,14 @@ ExInEvent* DirectEx::get_event(){
 			return new DExInEventCreateUpgrade((GameEventCreateUpgrade*)e);
 		case GameEvent::TYPE_UPG_RMV:
 			return new DExInEventRemoveUpgrade((GameEventRemoveUpgrade*)e);
+		case GameEvent::TYPE_MIN_CRT:
+			return new DExInEventCreateMine((GameEventCreateMine*)e);
+		case GameEvent::TYPE_MIN_RMV:
+			return new DExInEventRemoveMine((GameEventRemoveMine*)e);
+		case GameEvent::TYPE_MIN_ACT:
+			return new DExInEventActivateMine((GameEventActivateMine*)e);
+		case GameEvent::TYPE_MIN_STR:
+			return new DExInEventStartMine((GameEventStartMine*)e);
 		}
 	}
 	if(t_ind >= 0){
@@ -131,3 +139,24 @@ std::pair<double, double> DExInEventCreateDeathRay::get_point(int i){ return ((D
 int DExInEventCreateDeathRay::get_round(){ return e->get_shot()->get_cround(); }
 int DExInEventCreateDeathRay::get_tank_ind(){ return e->get_shot()->get_tank()->get_ind(); }
 int DExInEventCreateDeathRay::get_id(){ return e->get_shot()->get_id(); }
+
+DExInEventCreateMine::DExInEventCreateMine(GameEventCreateMine* event){ e = event; } 
+DExInEventCreateMine::~DExInEventCreateMine(){ delete e; }
+int DExInEventCreateMine::get_id(){ return e->get_mine()->get_id(); }
+double DExInEventCreateMine::get_x(){ return e->get_mine()->get_x(); }
+double DExInEventCreateMine::get_y(){ return e->get_mine()->get_y(); }
+double DExInEventCreateMine::get_ang(){ return e->get_mine()->get_ang(); }
+int DExInEventCreateMine::get_round(){ return e->get_mine()->get_round(); }
+int DExInEventCreateMine::get_tank_ind(){ return e->get_mine()->get_tank()->get_ind(); }
+
+DExInEventRemoveMine::DExInEventRemoveMine(GameEventRemoveMine* event){ e = event; } 
+DExInEventRemoveMine::~DExInEventRemoveMine(){ delete e; }
+int DExInEventRemoveMine::get_id(){ return e->get_id(); }
+
+DExInEventStartMine::DExInEventStartMine(GameEventStartMine* event){ e = event; } 
+DExInEventStartMine::~DExInEventStartMine(){ delete e; }
+int DExInEventStartMine::get_id(){ return e->get_id(); }
+
+DExInEventActivateMine::DExInEventActivateMine(GameEventActivateMine* event){ e = event; } 
+DExInEventActivateMine::~DExInEventActivateMine(){ delete e; }
+int DExInEventActivateMine::get_id(){ return e->get_id(); }

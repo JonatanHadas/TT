@@ -87,6 +87,15 @@ public:
 	int get_x();
 	int get_y();
 };
+class GameDQEventCreateMine : public GameQEventCreateMine{
+	GameEventCreateMine* e;
+public:
+	GameDQEventCreateMine(GameEventCreateMine* event);
+	~GameDQEventCreateMine();
+	double get_x();
+	double get_y();
+	double get_ang();
+};
 
 class GameDQ : public GameQ{
 	Game* game;
@@ -141,6 +150,7 @@ public:
 	RoundDQ(Round* round);
 	Maze* get_maze();
 	std::set<GenShotQ*> get_shots();
+	std::set<MineQ*> get_mines();
 	std::set<Upgrade*> get_upgs();
 };
 
@@ -193,6 +203,18 @@ public:
 	double get_ang();
 	
 	GenShot::Type get_type();
+};
+
+class MineDQ : public MineQ{
+	Mine* mine;
+public:
+	MineDQ(Mine* m);
+	double get_x();
+	double get_y();
+	double get_ang();
+	bool get_started();
+	bool get_active();
+	int get_tank_ind();
 };
 
 #endif

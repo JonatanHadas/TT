@@ -34,6 +34,12 @@ double GameDQEventRemoveShot::get_vx(){ return e->get_vx(); }
 double GameDQEventRemoveShot::get_vy(){ return e->get_vy(); }
 GenShot::Type GameDQEventRemoveShot::get_stype(){ return e->get_stype(); }
 
+GameDQEventCreateMine::GameDQEventCreateMine(GameEventCreateMine* event){ e = event; }
+GameDQEventCreateMine::~GameDQEventCreateMine(){ delete e; }
+double GameDQEventCreateMine::get_x(){ return e->get_mine()->get_x(); }
+double GameDQEventCreateMine::get_y(){ return e->get_mine()->get_y(); }
+double GameDQEventCreateMine::get_ang(){ return e->get_mine()->get_ang(); }
+
 GameDQ::GameDQ(Game* g){
 	game = g;
 	round = new RoundDQ(game->get_round());
@@ -78,6 +84,8 @@ GameQEvent* GameDQ::get_event(){
 			return new GameDQEventCreateShot((GameEventCreateShot*)e);
 		case GameEvent::TYPE_SHOT_RMV:
 			return new GameDQEventRemoveShot((GameEventRemoveShot*)e);
+		case GameEvent::TYPE_MIN_CRT:
+			return new GameDQEventCreateMine((GameEventCreateMine*)e);
 		}
 	}
 	return NULL;
@@ -163,6 +171,13 @@ std::set<GenShotQ*> RoundDQ::get_shots(){
 			ret.insert(new MissileDQ((Missile*)(*it)));
 			break;
 		}
+	}
+	return ret;
+}
+std::set<MineQ*> RoundDQ::get_mines(){
+	std::set<MineQ*> ret;
+	for(auto it = round->get_mines(); it!=round->end_mines(); it++){
+		ret.insert(new MineDQ(*it));
 	}
 	return ret;
 }
@@ -268,4 +283,26 @@ double MissileDQ::get_ang(){
 	
 GenShot::Type MissileDQ::get_type(){
 	return mis->get_type();
+}
+
+MineDQ::MineDQ(Mine* m){
+	mine = m;
+}
+double MineDQ::get_x(){
+	return mine->get_x();
+}
+double MineDQ::get_y(){
+	return mine->get_y();
+}
+double MineDQ::get_ang(){
+	return mine->get_ang();
+}
+bool MineDQ::get_started(){
+	return mine->get_started();
+}
+bool MineDQ::get_active(){
+	return mine->get_active();
+}
+int MineDQ::get_tank_ind(){
+	return mine->get_tank()->get_ind();
 }

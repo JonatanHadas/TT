@@ -113,6 +113,13 @@ int ExEventRemoveUpgrade::get_y(){
 	return y;
 }
 
+ExEventCreateMine::ExEventCreateMine(MineExtrap* mine){
+	m = mine;
+}
+MineExtrap* ExEventCreateMine::get_mine(){
+	return m;
+}
+
 TeamExtrap::TeamExtrap(int i){
 	ind = i;
 	score = 0;
@@ -198,6 +205,18 @@ void GameExtrap::step(){
 		case ExInEvent::TYPE_UPG_RMV:
 			remove_upgrade((ExInEventRemoveUpgrade*)e);
 			break;
+		case ExInEvent::TYPE_MIN_CRT:
+			create_mine((ExInEventCreateMine*)e);
+			break;
+		case ExInEvent::TYPE_MIN_RMV:
+			remove_mine((ExInEventRemoveMine*)e);
+			break;
+		case ExInEvent::TYPE_MIN_ACT:
+			activate_mine((ExInEventActivateMine*)e);
+			break;
+		case ExInEvent::TYPE_MIN_STR:
+			start_mine((ExInEventStartMine*)e);
+			break;
 		}
 		delete e;
 	}
@@ -275,6 +294,22 @@ void GameExtrap::remove_upgrade(ExInEventRemoveUpgrade* e){
 		events.push(new ExEventRemoveUpgrade(e->get_x(), e->get_y()));
 	}
 }
+void GameExtrap::create_mine(ExInEventCreateMine* e){
+	if(e->get_round() == round_num){
+		MineExtrap* mine = new MineExtrap(this, e);
+		round->add_mine(mine);
+		events.push(new ExEventCreateMine(mine));
+	}
+}
+void GameExtrap::remove_mine(ExInEventRemoveMine* e){
+	round->del_mine(e->get_id());
+}
+void GameExtrap::activate_mine(ExInEventActivateMine* e){
+	round->activate_mine(e->get_id());
+}
+void GameExtrap::start_mine(ExInEventStartMine* e){
+	round->start_mine(e->get_id());
+}
 
 RoundExtrap::RoundExtrap(GameExtrap* g,Maze* m){
 	game = g;
@@ -294,6 +329,12 @@ std::map<int, GenShotExtrap*>::iterator RoundExtrap::get_shots(){
 std::map<int, GenShotExtrap*>::iterator RoundExtrap::end_shots(){
 	return shots.end();
 }
+std::map<int, MineExtrap*>::iterator RoundExtrap::get_mines(){
+	return mines.begin();
+}
+std::map<int, MineExtrap*>::iterator RoundExtrap::end_mines(){
+	return mines.end();
+}
 std::map<std::pair<int,int>,Upgrade::Type>::iterator RoundExtrap::get_upgs(){
 	return upgs.begin();
 }
@@ -309,6 +350,18 @@ void RoundExtrap::add_shot(GenShotExtrap* shot){
 }
 void RoundExtrap::del_shot(int id){
 	shots.erase(id);
+}
+void RoundExtrap::add_mine(MineExtrap* mine){
+	mines.insert({mine->get_id(), mine});
+}
+void RoundExtrap::del_mine(int id){
+	if(mines.count(id)>0) mines.erase(id);
+}
+void RoundExtrap::activate_mine(int id){
+	if(mines.count(id)>0) mines[id]->active = true;
+}
+void RoundExtrap::start_mine(int id){
+	if(mines.count(id)>0) mines[id]->started = true;
 }
 void RoundExtrap::add_upg(Upgrade u){
 	upgs[{u.x,u.y}] = u.type;
@@ -797,3 +850,37 @@ TankExtrap* MissileExtrap::get_target(){
 	return target;
 }
 
+MineExtrap::MineExtrap(GameExtrap* g, ExInEventCreateMine* e){
+	game = g;
+	x = e->get_x();
+	y = e->get_y();
+	ang = e->get_ang();
+	id = e->get_id();
+	started = active = false;
+	
+	tank = g->get_tank(e->get_tank_ind());
+}
+double MineExtrap::get_x(){
+	return x;
+}
+double MineExtrap::get_y(){
+	return y;
+}
+double MineExtrap::get_ang(){
+	return ang;
+}
+
+int MineExtrap::get_id(){
+	return id;
+}
+
+bool MineExtrap::get_started(){
+	return started;
+}
+bool MineExtrap::get_active(){
+	return active;
+}
+
+TankExtrap* MineExtrap::get_tank(){
+	return tank;
+}

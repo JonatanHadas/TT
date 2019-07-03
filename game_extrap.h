@@ -14,6 +14,8 @@ class GenShotExtrap;
 class ShotExtrap;
 class MissileExtrap;
 
+class MineExtrap;
+
 class ExEvent{
 public:
 	enum Type{
@@ -23,6 +25,7 @@ public:
 		TYPE_END_GAME,
 		TYPE_SHT_CRT, TYPE_SHT_RMV,
 		TYPE_UPG_CRT, TYPE_UPG_RMV,
+		TYPE_MIN_CRT, 
 	};
 	virtual Type get_type()=0;
 };
@@ -96,6 +99,13 @@ public:
 	int get_x();
 	int get_y();
 };
+class ExEventCreateMine : public ExEvent{
+	MineExtrap* m;
+public:
+	ExEventCreateMine(MineExtrap* mine);
+	Type get_type(){ return TYPE_MIN_CRT; }
+	MineExtrap* get_mine();
+};
 
 
 
@@ -149,6 +159,10 @@ private:
 	void create_dtry(ExInEventCreateDeathRay* e);
 	void create_upgrade(ExInEventCreateUpgrade* e);
 	void remove_upgrade(ExInEventRemoveUpgrade* e);
+	void create_mine(ExInEventCreateMine* e);
+	void remove_mine(ExInEventRemoveMine* e);
+	void activate_mine(ExInEventActivateMine* e);
+	void start_mine(ExInEventStartMine* e);
 };
 
 class RoundExtrap{
@@ -157,6 +171,7 @@ class RoundExtrap{
 	
 	
 	std::map<int,GenShotExtrap*> shots;
+	std::map<int,MineExtrap*> mines;
 	std::map<std::pair<int,int>,Upgrade::Type> upgs;
 public:
 	RoundExtrap(GameExtrap* game,Maze* maze);
@@ -166,6 +181,8 @@ public:
 	
 	std::map<int, GenShotExtrap*>::iterator get_shots();
 	std::map<int, GenShotExtrap*>::iterator end_shots();
+	std::map<int, MineExtrap*>::iterator get_mines();
+	std::map<int, MineExtrap*>::iterator end_mines();
 	std::map<std::pair<int,int>,Upgrade::Type>::iterator get_upgs();
 	std::map<std::pair<int,int>,Upgrade::Type>::iterator end_upgs();
 	
@@ -173,6 +190,10 @@ public:
 
 	void add_shot(GenShotExtrap* shot);
 	void del_shot(int id);
+	void add_mine(MineExtrap* mine);
+	void del_mine(int id);
+	void activate_mine(int id);
+	void start_mine(int id);
 	void add_upg(Upgrade u);
 	void del_upg(int x, int y);
 	bool has_upg(int x, int y);
@@ -309,6 +330,28 @@ public:
 	void advance();
 	void update(ExInEventTankUpdate* e);
 	TankExtrap* get_target();
+};
+
+class MineExtrap{
+	double x,y,ang;
+	bool started,active;
+	int id;
+	TankExtrap* tank;
+	GameExtrap* game;
+	
+	friend RoundExtrap;
+public:
+	MineExtrap(GameExtrap* game, ExInEventCreateMine* e);
+	double get_x();
+	double get_y();
+	double get_ang();
+	
+	int get_id();
+	
+	bool get_started();
+	bool get_active();
+	
+	TankExtrap* get_tank();
 };
 
 #endif

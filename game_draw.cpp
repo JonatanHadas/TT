@@ -27,6 +27,7 @@ std::pair<Upgrade::Type, Img> upg2img_a[UPG_NUM] = {
 	{Upgrade::DEATH_RAY, IMG_DEATH_RAY_SYM},
 	{Upgrade::WIFI, IMG_WIFI_SYM},
 	{Upgrade::MISSILE, IMG_MISSILE_SYM},
+	{Upgrade::MINE, IMG_MINE_SYM},
 	};
 std::map<Upgrade::Type, Img> upg2img(upg2img_a,upg2img_a+UPG_NUM);
 
@@ -68,6 +69,28 @@ void BoardDrawer::draw(){
 		}
 	}
 	
+	auto mines = game->get_round()->get_mines();
+	for(auto it = mines.begin(); it!=mines.end(); it++){
+		if((*it)->get_started()){
+			SDL_Rect r;
+			SDL_Point p;
+			r.w = r.h = DRC(2*MINE_SIZE);
+			p.x = DRC((*it)->get_x());
+			p.y = DRC((*it)->get_y());
+
+			r.x = p.x - r.w/2;
+			r.y = p.y - r.h/2;
+			
+			p.x -= r.x; p.y -= r.y;
+			
+			int i = (*it)->get_tank_ind();
+			
+			SDL_Texture* img = (*it)->get_active() ? tank_images[i].mine_on : tank_images[i].mine_off;
+			
+			SDL_RenderCopyEx(renderer, img, NULL, &r, RAD2DEG((*it)->get_ang())+90, &p, SDL_FLIP_NONE);
+		}
+	}
+	
 	auto upgs = game->get_round()->get_upgs();
 	for(auto it = upgs.begin(); it!=upgs.end(); it++){
 		SDL_Rect r;
@@ -79,7 +102,7 @@ void BoardDrawer::draw(){
 		
 		delete (*it);
 	}
-	
+		
 	auto shots = game->get_round()->get_shots();
 	for(auto it = shots.begin(); it != shots.end(); it++){
 		SDL_Rect r;
@@ -200,10 +223,6 @@ void BoardDrawer::draw(){
 			p.x = WALL_D_T + DRC(x);
 			p.y = WALL_D_T + DRC(y);
 			r.w = TANKC_D_W; r.h = TANKC_D_H;
-			r.x = p.x - r.w/2;
-			r.y = p.y - r.h/2;
-			
-			p.x -= r.x; p.y -= r.y;
 			
 			SDL_Texture* cannon;
 			switch(t->get_state()){
@@ -244,8 +263,17 @@ void BoardDrawer::draw(){
 			case Tank::MISSILE_SHOOT:
 				cannon = tank_images[i].launcher;
 				break;
+			case Tank::MINE:
+				cannon = tank_images[i].mine_off;
+				r.w = r.h = DRC(2*MINE_SIZE);
+				break;
 			}
 			
+			r.x = p.x - r.w/2;
+			r.y = p.y - r.h/2;
+			
+			p.x -= r.x; p.y -= r.y;
+
 			SDL_RenderCopyEx(renderer,cannon, NULL, &r, RAD2DEG(ang)+90, &p, SDL_FLIP_NONE);
 
 		}

@@ -50,6 +50,8 @@
 #define FRAG_DST 5.0
 #define FRAG_TTL 90
 
+#define EXPLOSION_NUM 100
+
 #define STEP_MISSILE 0.035
 #define MISSILE_TURN DEG2RAD(5.0)
 #define MISSILE_TTL 1200
@@ -60,19 +62,22 @@
 
 #define HOMING_TIME 60
 
-#define EXPLOSION_NUM 50
-
-#define END_TIME 300
+#define MINE_DST 0.5
+#define MINE_SIZE 0.15
+#define MINE_TIME 60
+#define MINE_NUM 3
 
 #define UPG_ANG 30.0
 
-#define UPG_NUM 6
+#define UPG_NUM 7
 #define UPG_SIZE 0.3
+
+#define END_TIME 300
 
 struct Upgrade{
 	int x,y;
 	enum Type{
-		GATLING,LASER,BOMB,DEATH_RAY,WIFI,MISSILE,
+		GATLING,LASER,BOMB,DEATH_RAY,WIFI,MISSILE,MINE,
 	};
 	Upgrade::Type type;
 };

@@ -140,6 +140,7 @@ public:
 	RoundEQ(RoundExtrap* round);
 	Maze* get_maze();
 	std::set<GenShotQ*> get_shots();
+	std::set<MineQ*> get_mines();
 	std::set<Upgrade*> get_upgs();
 };
 
@@ -192,6 +193,18 @@ public:
 	double get_ang();
 	
 	GenShot::Type get_type();
+};
+
+class MineEQ : public MineQ{
+	MineExtrap* mine;
+public:
+	MineEQ(MineExtrap* m);
+	double get_x();
+	double get_y();
+	double get_ang();
+	bool get_started();
+	bool get_active();
+	int get_tank_ind();
 };
 
 #endif

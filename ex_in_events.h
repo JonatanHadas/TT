@@ -17,6 +17,8 @@ public:
 		TYPE_FRG_CRT,
 		TYPE_DTR_CRT,
 		TYPE_UPG_CRT, TYPE_UPG_RMV,
+		TYPE_MIN_CRT, TYPE_MIN_RMV,
+		TYPE_MIN_ACT, TYPE_MIN_STR,
 	};
 	virtual Type get_type() = 0;
 };
@@ -121,5 +123,29 @@ public:
 	virtual int get_tank_ind() = 0;
 	virtual int get_id() = 0;
 };
-
+class ExInEventCreateMine : public ExInEvent{
+public:
+	Type get_type(){ return TYPE_MIN_CRT; }
+	virtual int get_id() = 0;
+	virtual double get_x() = 0;
+	virtual double get_y() = 0;
+	virtual double get_ang() = 0;
+	virtual int get_round() = 0;
+	virtual int get_tank_ind() = 0;
+};
+class ExInEventRemoveMine : public ExInEvent{
+public:
+	Type get_type(){ return TYPE_MIN_RMV; }
+	virtual int get_id() = 0;
+};
+class ExInEventStartMine : public ExInEvent{
+public:
+	Type get_type(){ return TYPE_MIN_STR; }
+	virtual int get_id() = 0;
+};
+class ExInEventActivateMine : public ExInEvent{
+public:
+	Type get_type(){ return TYPE_MIN_ACT; }
+	virtual int get_id() = 0;
+};
 #endif

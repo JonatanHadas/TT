@@ -8,7 +8,7 @@
 #include <vector>
 
 Upgrade::Type upg_types[UPG_NUM] = {
-	Upgrade::GATLING,Upgrade::LASER,Upgrade::BOMB,Upgrade::DEATH_RAY,Upgrade::WIFI,Upgrade::MISSILE,
+	Upgrade::GATLING,Upgrade::LASER,Upgrade::BOMB,Upgrade::DEATH_RAY,Upgrade::WIFI,Upgrade::MISSILE,Upgrade::MINE,
 };
 
 GameEventTankDeath::GameEventTankDeath(int i){
@@ -97,6 +97,35 @@ int GameEventRemoveUpgrade::get_y(){
 int GameEventRemoveUpgrade::get_round(){
 	return rnd;
 }
+
+GameEventCreateMine::GameEventCreateMine(Mine* m){
+	mine = m;
+}
+Mine* GameEventCreateMine::get_mine(){
+	return mine;
+}
+
+GameEventActivateMine::GameEventActivateMine(Mine* m){
+	id = m->get_id();
+}
+int GameEventActivateMine::get_id(){
+	return id;
+}
+
+GameEventStartMine::GameEventStartMine(Mine* m){
+	id = m->get_id();
+}
+int GameEventStartMine::get_id(){
+	return id;
+}
+
+GameEventRemoveMine::GameEventRemoveMine(Mine* m){
+	id = m->get_id();
+}
+int GameEventRemoveMine::get_id(){
+	return id;
+}
+
 
 Team::Team(int i){
 	ind = i;
@@ -329,6 +358,16 @@ void Round::step(){
 		shots.erase(*it);
 	}
 	shts_fd.clear();
+
+	for(auto it = get_mines(); it != end_mines(); it++){
+		(*it)->advance();
+	}
+	for(auto it = mines_fd.begin(); it != mines_fd.end(); it++){
+		delete (*it);
+		mines.erase(*it);
+	}
+	mines_fd.clear();
+
 	
 	for(int i = 0; i<game->get_tank_num(); i++){
 		Tank* t = game->get_tank(i);
@@ -362,6 +401,21 @@ std::set<GenShot*>::iterator Round::get_shots(){
 }
 std::set<GenShot*>::iterator Round::end_shots(){
 	return shots.end();
+}
+
+void Round::add_mine(Mine* mine){
+	game->events.push(new GameEventCreateMine(mine));
+	mines.insert(mine);
+}
+void Round::delete_mine(Mine* mine){
+	game->events.push(new GameEventRemoveMine(mine));
+	mines_fd.insert(mine);
+}
+std::set<Mine*>::iterator Round::get_mines(){
+	return mines.begin();
+}
+std::set<Mine*>::iterator Round::end_mines(){
+	return mines.end();
 }
 
 void Round::create_upgrade(){
@@ -409,6 +463,7 @@ Tank::Tank(Game* g, int i, Team* t){
 	state = Tank::REG;
 	ctbl = NULL;
 	missile = NULL;
+	cnt = MINE_NUM-1;
 }
 Tank::~Tank(){
 	
@@ -449,6 +504,7 @@ void Tank::step(){
 		case Tank::WIFI:
 		case Tank::MISSILE:
 		case Tank::MISSILE_SHOOT:
+		case Tank::MINE:
 			double pa = ang;
 			
 			int turn = (ctrl.front().lt ? 1 : 0)-(ctrl.front().rt ? 1 : 0);
@@ -467,6 +523,7 @@ void Tank::step(){
 		case Tank::WIFI:
 		case Tank::MISSILE:
 		case Tank::MISSILE_SHOOT:
+		case Tank::MINE:
 			double prx = x, pry = y;
 			
 			double step = STEP_DST * ((ctrl.front().fd ? 1 : 0) - (ctrl.front().bk ? REV_RAT : 0));
@@ -515,6 +572,16 @@ void Tank::step(){
 		case Tank::MISSILE:
 			if(ctrl.front().sht && !p_ctrl.sht){
 				game->get_round()->add_shot(new HomingMissile(game,this));
+			}
+			break;
+		case Tank::MINE:
+			if(ctrl.front().sht && !p_ctrl.sht){
+				game->get_round()->add_mine(new Mine(game,this));
+				if(cnt>0) cnt--;
+				else{
+					state = Tank::REG;
+					cnt = MINE_NUM-1;
+				}
 			}
 			break;
 		}
@@ -588,6 +655,7 @@ void Tank::reset(double xx, double yy, double a){
 	dead = false;
 	state = Tank::REG;
 	ctbl = NULL;
+	cnt = MINE_NUM-1;
 }
 void Tank::kill(){
 	dead = true;
@@ -616,6 +684,7 @@ std::pair<Upgrade::Type, Tank::State> upg2stt_a[UPG_NUM]={
 	{Upgrade::DEATH_RAY, Tank::DEATH_RAY},
 	{Upgrade::WIFI, Tank::WIFI},
 	{Upgrade::MISSILE, Tank::MISSILE},
+	{Upgrade::MINE, Tank::MINE},
 };
 
 std::map<Upgrade::Type, Tank::State> upg2stt(upg2stt_a, upg2stt_a+UPG_NUM);
@@ -1253,3 +1322,86 @@ void HomingMissile::advance(){
 	Missile::advance();
 }
 
+Mine::Mine(Game* g, Tank* t){
+	game = g;
+	tank = t;
+	
+	ang = t->get_ang();
+	x = t->get_x() - cos(ang)*MINE_DST;
+	y = t->get_y() - sin(ang)*MINE_DST;
+	
+	started = active = false;
+	id = g->get_new_id();
+	timer = MINE_TIME;
+	
+	round = game->get_round_num();
+}
+Mine::~Mine(){
+	game->get_round()->explode(x,y);
+}
+void Mine::advance(){
+	if(active){
+		if(timer>0) timer--;
+		else game->get_round()->delete_mine(this);
+	}
+	else{
+		bool stepped = false;
+		for(int i = 0; i<game->get_tank_num(); i++){
+			stepped |= check_tank(game->get_tank(i));
+		}
+		
+		if( !started && stepped ){
+			started = true;
+			game->events.push(new GameEventStartMine(this));
+		}
+		if( started && !stepped ){
+			active = true;
+			game->events.push(new GameEventActivateMine(this));
+		}
+	}
+}
+	
+double Mine::get_x(){
+	return x;
+}
+double Mine::get_y(){
+	return y;
+}
+double Mine::get_ang(){
+	return ang;
+}
+	
+int Mine::get_id(){
+	return id;
+}
+bool Mine::check_tank(Tank* t){
+	if(t->is_dead()) return false;
+	
+	double txs[4],tys[4],mxs[6] = {x,x,x,x,x,x},mys[6] = {y,y,y,y,y,y};
+	
+	for(int i = 0; i<3; i++){
+		rotate_add(ang + i*DEG2RAD(120), MINE_SIZE*0.8, -MINE_SIZE*0.2, mxs[2*i],mys[2*i]);
+		rotate_add(ang + i*DEG2RAD(120), MINE_SIZE*0.8, MINE_SIZE*0.2, mxs[2*i+1],mys[2*i+1]);
+	}
+	
+	gen_rot_rect(t->get_x(), t->get_y(), TANK_W, TANK_H, t->get_ang(), txs, tys);
+	
+	double nx,ny,dp,px,py;
+	
+	return poly_coll(txs,tys,4,mxs,mys,6,nx,ny,dp,px,py);
+}
+
+bool Mine::get_started(){
+	return started;
+}
+bool Mine::get_active(){
+	return active;
+}
+
+Tank* Mine::get_tank(){
+	return tank;
+}
+
+int Mine::get_round(){
+	return round;
+}
