@@ -29,6 +29,8 @@ class Missile;
 class WifiMissile;
 class HomingMissile;
 
+class Mine;
+
 class Controlable;
 
 //for scoring
@@ -43,6 +45,8 @@ public:
 		TYPE_END_GAME,
 		TYPE_SHOT_CRT, TYPE_SHOT_RMV,
 		TYPE_UPG_CRT, TYPE_UPG_RMV,
+		TYPE_MIN_CRT, TYPE_MIN_RMV,
+		TYPE_MIN_ACT, TYPE_MIN_STR,
 	};
 	virtual Type get_type()=0;
 };
@@ -105,6 +109,34 @@ public:
 	int get_y();
 	int get_round();
 };
+class GameEventCreateMine : public GameEvent{
+	Mine* mine;
+public:
+	GameEventCreateMine(Mine* m);
+	Type get_type(){return GameEvent::TYPE_MIN_CRT;}
+	Mine* get_mine();
+};
+class GameEventActivateMine : public GameEvent{
+	int id;
+public:
+	GameEventActivateMine(Mine* m);
+	Type get_type(){return GameEvent::TYPE_MIN_ACT;}
+	int get_id();
+};
+class GameEventStartMine : public GameEvent{
+	int id;
+public:
+	GameEventStartMine(Mine* m);
+	Type get_type(){return GameEvent::TYPE_MIN_STR;}
+	int get_id();
+};
+class GameEventRemoveMine : public GameEvent{
+	int id;
+public:
+	GameEventRemoveMine(Mine* m);
+	Type get_type(){return GameEvent::TYPE_MIN_RMV;}
+	int get_id();
+};
 
 class Team{
 	int score;
@@ -130,6 +162,7 @@ class Game{
 	Round* round;
 	std::queue<GameEvent*> events;
 	friend Round;
+	friend Mine;
 	
 	long long int time;
 	int end_timer;
@@ -168,6 +201,9 @@ class Round{
 	std::set<GenShot*> shots;
 	std::set<GenShot*> shts_fd;
 	
+	std::set<Mine*> mines;
+	std::set<Mine*> mines_fd;
+	
 	std::map<std::pair<int,int>, Upgrade::Type> upgs;
 	
 	int upg_timer;
@@ -183,6 +219,11 @@ public:
 	void delete_shot(GenShot* shot);
 	std::set<GenShot*>::iterator get_shots();
 	std::set<GenShot*>::iterator end_shots();
+
+	void add_mine(Mine* mine);
+	void delete_mine(Mine* mine);
+	std::set<Mine*>::iterator get_mines();
+	std::set<Mine*>::iterator end_mines();
 	
 	std::map<std::pair<int,int>,Upgrade::Type>::iterator get_upgs();
 	std::map<std::pair<int,int>,Upgrade::Type>::iterator end_upgs();
@@ -213,6 +254,7 @@ public:
 		DEATH_RAY_SHOOT,
 		WIFI, WIFI_SHOOT,
 		MISSILE, MISSILE_SHOOT,
+		MINE,
 	};
 private:
 	
@@ -231,6 +273,7 @@ private:
 	int shot_num;
 	
 	int timer;
+	int cnt;
 	
 	friend RegShot;
 	friend LaserShot;
@@ -471,6 +514,33 @@ public:
 	
 	void home_target();
 	void advance();
+};
+
+class Mine{
+	double x,y,ang;
+	bool started;
+	bool active;
+	int timer;
+	Game* game;
+	Tank* tank;
+	
+	int id;
+	bool check_tank(Tank* t);
+public:
+	Mine(Game* game, Tank* tank);
+	~Mine();
+	void advance();
+	
+	double get_x();
+	double get_y();
+	double get_ang();
+	
+	int get_id();
+	
+	bool get_started();
+	bool get_active();
+	
+	Tank* get_tank();
 };
 
 #endif

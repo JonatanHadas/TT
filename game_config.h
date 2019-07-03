@@ -7,7 +7,8 @@
 #define UPG_MASK_DEATH_RAY 0x8
 #define UPG_MASK_WIFI 0x10
 #define UPG_MASK_MISSILE 0x20
-#define UPG_MASK_ALL 0x3f
+#define UPG_MASK_MINE 0x40
+#define UPG_MASK_ALL 0x7f
 
 struct GameSettings{
 	enum ScoreMeth{

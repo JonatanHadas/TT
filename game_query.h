@@ -12,6 +12,8 @@ class TeamQ;
 class GenShotQ;
 class ShotQ;
 
+class MineQ;
+
 class GameQEvent;
 class GameQEventStartRnd;
 class GameQEventTankDeath;
@@ -31,6 +33,7 @@ public:
 		TYPE_END_GAME,
 		TYPE_SHOT_CRT, TYPE_SHOT_RMV, 
 		TYPE_UPG_CRT, TYPE_UPG_RMV,
+		TYPE_MIN_CRT,
 	};
 	virtual Type get_type() = 0;
 };
@@ -81,6 +84,13 @@ public:
 	virtual int get_x() = 0;
 	virtual int get_y() = 0;
 };
+class GameQEventCreateMine : public GameQEvent{
+public:
+	Type get_type(){return GameQEvent::TYPE_MIN_CRT;}
+	virtual double get_x() = 0;
+	virtual double get_y() = 0;
+	virtual double get_ang() = 0;
+};
 
 class GameQ{
 public:
@@ -120,6 +130,7 @@ class RoundQ{
 public:
 	virtual Maze* get_maze() = 0;
 	virtual std::set<GenShotQ*> get_shots() = 0;
+	virtual std::set<MineQ*> get_mines() = 0;
 	virtual std::set<Upgrade*> get_upgs() = 0;
 };
 class GenShotQ{
@@ -154,6 +165,16 @@ class MissileQ : public GenShotQ{
 public:
 	virtual int get_tank_ind() = 0;
 	virtual int get_tar_ind() = 0;
+};
+
+class MineQ{
+public:
+	virtual double get_x() = 0;
+	virtual double get_y() = 0;
+	virtual double get_ang() = 0;
+	virtual bool get_started() = 0;
+	virtual bool get_active() = 0;
+	virtual int get_tank_ind() = 0;
 };
 
 #endif
