@@ -154,6 +154,7 @@ std::set<GenShotQ*> RoundDQ::get_shots(){
 			ret.insert(new DeathRayDQ((DeathRay*)(*it)));
 			break;
 		case GenShot::TYPE_WIFI:
+		case GenShot::TYPE_MISSILE:
 			ret.insert(new MissileDQ((Missile*)(*it)));
 			break;
 		}

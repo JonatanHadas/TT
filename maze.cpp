@@ -55,6 +55,7 @@ Maze::Maze(int wd, int ht){
 }
 #include <stdio.h>
 Maze::~Maze(){
+	clear_dists();
 	for(int i = 0; i<w; i++){
 		if(i>0) delete[] vwalls[i-1];
 		delete[] hwalls[i];
