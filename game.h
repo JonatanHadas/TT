@@ -445,6 +445,8 @@ class Mine{
 	Game* game;
 	Tank* tank;
 	
+	int round;
+	
 	int id;
 	bool check_tank(Tank* t);
 public:
@@ -462,6 +464,8 @@ public:
 	bool get_active();
 	
 	Tank* get_tank();
+	
+	int get_round();
 };
 
 

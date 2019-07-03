@@ -130,5 +130,37 @@ public:
 	int get_tank_ind();
 	int get_id();
 };
-
+class DExInEventCreateMine : public ExInEventCreateMine{
+	GameEventCreateMine* e;
+public:
+	DExInEventCreateMine(GameEventCreateMine* event);
+	~DExInEventCreateMine();
+	int get_id();
+	double get_x();
+	double get_y();
+	double get_ang();
+	int get_round();
+	int get_tank_ind();
+};
+class DExInEventRemoveMine : public ExInEventRemoveMine{
+	GameEventRemoveMine* e;
+public:
+	DExInEventRemoveMine(GameEventRemoveMine* event);
+	~DExInEventRemoveMine();
+	int get_id();
+};
+class DExInEventStartMine : public ExInEventStartMine{
+	GameEventStartMine* e;
+public:
+	DExInEventStartMine(GameEventStartMine* event);
+	~DExInEventStartMine();
+	int get_id();
+};
+class DExInEventActivateMine : public ExInEventActivateMine{
+	GameEventActivateMine* e;
+public:
+	DExInEventActivateMine(GameEventActivateMine* event);
+	~DExInEventActivateMine();
+	int get_id();
+};
 #endif

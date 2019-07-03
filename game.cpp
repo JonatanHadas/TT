@@ -1332,6 +1332,8 @@ Mine::Mine(Game* g, Tank* t){
 	started = active = false;
 	id = g->get_new_id();
 	timer = MINE_TIME;
+	
+	round = game->get_round_num();
 }
 Mine::~Mine(){
 	game->get_round()->explode(x,y);
@@ -1397,4 +1399,8 @@ bool Mine::get_active(){
 
 Tank* Mine::get_tank(){
 	return tank;
+}
+
+int Mine::get_round(){
+	return round;
 }
