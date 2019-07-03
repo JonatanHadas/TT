@@ -351,7 +351,7 @@ void TankExtrap::update(ExInEventTankUpdate* e){
 		ang = e->get_ang();
 		state = e->get_state();
 		
-		if(e->get_state() == Tank::WIFI_SHOOT){
+		if(e->get_state() == Tank::WIFI_SHOOT || e->get_state() == Tank::MISSILE_SHOOT){
 			if(missile && missile->get_id() != e->get_missile_id()){
 				game->get_round()->del_shot(missile->get_id());
 				missile = NULL;
@@ -362,6 +362,9 @@ void TankExtrap::update(ExInEventTankUpdate* e){
 				switch(state){
 				case Tank::WIFI_SHOOT:
 					tp = GenShot::TYPE_WIFI;
+					break;
+				case Tank::MISSILE_SHOOT:
+					tp = GenShot::TYPE_MISSILE;
 					break;
 				}
 				missile = new MissileExtrap(game, this, tp, id);
@@ -440,6 +443,8 @@ void TankExtrap::advance(){
 			case Tank::BOMB_SHOOT:
 			case Tank::DEATH_RAY:
 			case Tank::WIFI:
+			case Tank::MISSILE:
+			case Tank::MISSILE_SHOOT:
 			
 				pa = ang;
 				
@@ -461,6 +466,8 @@ void TankExtrap::advance(){
 			case Tank::BOMB_SHOOT:
 			case Tank::DEATH_RAY:
 			case Tank::WIFI:
+			case Tank::MISSILE:
+			case Tank::MISSILE_SHOOT:
 			
 				double prx = x, pry = y;
 				
