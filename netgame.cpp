@@ -169,6 +169,61 @@ void NetGame::remove_shot(GameEventRemoveShot* e){
 	
 	set->serv->send_all(data, end-data, PROTO_REL);
 }
+void NetGame::create_mine(GameEventCreateMine* e){
+	char data[100];
+	
+	char* end = data;
+	
+	end = encode_char(end, '\x02');
+	end = encode_char(end, '\x30');
+	
+	end = encode_int(end, e->get_mine()->get_id());
+	end = encode_int(end, e->get_mine()->get_round());
+
+	end = encode_double(end, e->get_mine()->get_x());
+	end = encode_double(end, e->get_mine()->get_y());
+	end = encode_double(end, e->get_mine()->get_ang());
+	
+	end = encode_int(end, e->get_mine()->get_tank()->get_ind());
+
+	set->serv->send_all(data, end-data, PROTO_REL);
+}
+void NetGame::remove_mine(GameEventRemoveMine* e){
+	char data[100];
+	
+	char* end = data;
+	
+	end = encode_char(end, '\x02');
+	end = encode_char(end, '\x31');
+	
+	end = encode_int(end, e->get_id());
+
+	set->serv->send_all(data, end-data, PROTO_REL);
+}
+void NetGame::activate_mine(GameEventActivateMine* e){
+	char data[100];
+	
+	char* end = data;
+	
+	end = encode_char(end, '\x02');
+	end = encode_char(end, '\x32');
+	
+	end = encode_int(end, e->get_id());
+
+	set->serv->send_all(data, end-data, PROTO_REL);
+}
+void NetGame::start_mine(GameEventStartMine* e){
+	char data[100];
+	
+	char* end = data;
+	
+	end = encode_char(end, '\x02');
+	end = encode_char(end, '\x33');
+	
+	end = encode_int(end, e->get_id());
+
+	set->serv->send_all(data, end-data, PROTO_REL);
+}
 void NetGame::create_upg(GameEventCreateUpgrade* e){
 	char data[100];
 	
@@ -267,6 +322,18 @@ void NetGame::advance(){
 			break;
 		case GameEvent::TYPE_UPG_RMV:
 			remove_upg((GameEventRemoveUpgrade*)e);
+			break;
+		case GameEvent::TYPE_MIN_CRT:
+			create_mine((GameEventCreateMine*)e);
+			break;
+		case GameEvent::TYPE_MIN_RMV:
+			remove_mine((GameEventRemoveMine*)e);
+			break;
+		case GameEvent::TYPE_MIN_ACT:
+			activate_mine((GameEventActivateMine*)e);
+			break;
+		case GameEvent::TYPE_MIN_STR:
+			start_mine((GameEventStartMine*)e);
 			break;
 		}
 	}

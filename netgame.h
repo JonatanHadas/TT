@@ -27,6 +27,12 @@ type |   | meaning     | data
      |   |             |
 20   | > | create upg  | round, x,y,type
 21   | > | delete upg  | round, x,y
+     |   |             |
+30   | > | create mine | id, round, x,y,ang, tank_ind
+31   | > | remove mine | id
+32   | > | actvt mine  | id
+33   | > | start mine  | id
+     |   |             |
 
 
 */
@@ -53,6 +59,10 @@ class NetGame{
 	
 	void create_shot(GameEventCreateShot* e);
 	void remove_shot(GameEventRemoveShot* e);
+	void create_mine(GameEventCreateMine* e);
+	void remove_mine(GameEventRemoveMine* e);
+	void activate_mine(GameEventActivateMine* e);
+	void start_mine(GameEventStartMine* e);
 	void create_upg(GameEventCreateUpgrade* e);
 	void remove_upg(GameEventRemoveUpgrade* e);
 	

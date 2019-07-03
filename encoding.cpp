@@ -143,7 +143,7 @@ char* decode_shot_type(char* buf, GenShot::Type& t){
 	return buf;
 }
 
-#define TANK_STATE_NUM 17
+#define TANK_STATE_NUM 18
 std::pair<Tank::State, int> i2stt[TANK_STATE_NUM] = {
 	{Tank::REG,0},
 	{Tank::GATLING,1},
@@ -162,6 +162,7 @@ std::pair<Tank::State, int> i2stt[TANK_STATE_NUM] = {
 	{Tank::WIFI_SHOOT,14},
 	{Tank::MISSILE,15},
 	{Tank::MISSILE_SHOOT,16},
+	{Tank::MINE, 17},
 };
 std::map<Tank::State, int> stt2i(i2stt, i2stt+TANK_STATE_NUM);
 
@@ -182,6 +183,7 @@ std::pair<Upgrade::Type, int> i2upg[UPG_NUM] = {
 	{Upgrade::DEATH_RAY,3},
 	{Upgrade::WIFI,4},
 	{Upgrade::MISSILE,5},
+	{Upgrade::MINE, 6},
 };
 std::map<Upgrade::Type, int> upg2i(i2upg, i2upg+UPG_NUM);
 

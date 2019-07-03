@@ -61,6 +61,18 @@ ExInEvent* NetEx::get_event(){
 				case '\x21':
 					return new NExInEventRemoveUpgrade(cur,e.data);
 					break;
+				case '\x30':
+					return new NExInEventCreateMine(cur, e.data);
+					break;
+				case '\x31':
+					return new NExInEventRemoveMine(cur, e.data);
+					break;
+				case '\x32':
+					return new NExInEventActivateMine(cur, e.data);
+					break;
+				case '\x33':
+					return new NExInEventStartMine(cur, e.data);
+					break;
 				}
 				break;
 			}
@@ -421,3 +433,75 @@ int NExInEventCreateDeathRay::get_tank_ind(){
 int NExInEventCreateDeathRay::get_id(){
 	return id;
 }
+
+NExInEventCreateMine::NExInEventCreateMine(char* data, char* del){
+	data = decode_int(data, id);
+	
+	data = decode_int(data, round);
+	
+	data = decode_double(data, x);
+	data = decode_double(data, y);
+	data = decode_double(data, ang);
+	
+	data = decode_int(data, tank_ind);
+	
+	delete del;
+}
+NExInEventCreateMine::~NExInEventCreateMine(){
+	
+}
+int NExInEventCreateMine::get_id(){
+	return id;
+}
+double NExInEventCreateMine::get_x(){
+	return x;
+}
+double NExInEventCreateMine::get_y(){
+	return y;
+}
+double NExInEventCreateMine::get_ang(){
+	return ang;
+}
+int NExInEventCreateMine::get_round(){
+	return round;
+}
+int NExInEventCreateMine::get_tank_ind(){
+	return tank_ind;
+}
+
+NExInEventRemoveMine::NExInEventRemoveMine(char* data, char* del){
+	data = decode_int(data, id);
+	
+	delete del;
+}
+NExInEventRemoveMine::~NExInEventRemoveMine(){
+	
+}
+int NExInEventRemoveMine::get_id(){
+	return id;
+}
+
+NExInEventStartMine::NExInEventStartMine(char* data, char* del){
+	data = decode_int(data, id);
+	
+	delete del;
+}
+NExInEventStartMine::~NExInEventStartMine(){
+	
+}
+int NExInEventStartMine::get_id(){
+	return id;
+}
+
+NExInEventActivateMine::NExInEventActivateMine(char* data, char* del){
+	data = decode_int(data, id);
+	
+	delete del;
+}
+NExInEventActivateMine::~NExInEventActivateMine(){
+	
+}
+int NExInEventActivateMine::get_id(){
+	return id;
+}
+

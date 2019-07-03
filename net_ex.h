@@ -156,6 +156,39 @@ public:
 	int get_tank_ind();
 	int get_id();
 };
-
+class NExInEventCreateMine : public ExInEventCreateMine{
+	int id, round, tank_ind;
+	double x,y,ang;
+public:
+	NExInEventCreateMine(char* data, char* del);
+	~NExInEventCreateMine();
+	int get_id();
+	double get_x();
+	double get_y();
+	double get_ang();
+	int get_round();
+	int get_tank_ind();
+};
+class NExInEventRemoveMine : public ExInEventRemoveMine{
+	int id;
+public:
+	NExInEventRemoveMine(char* data, char* del);
+	~NExInEventRemoveMine();
+	int get_id();
+};
+class NExInEventStartMine : public ExInEventStartMine{
+	int id;
+public:
+	NExInEventStartMine(char* data, char* del);
+	~NExInEventStartMine();
+	int get_id();
+};
+class NExInEventActivateMine : public ExInEventActivateMine{
+	int id;
+public:
+	NExInEventActivateMine(char* data, char* del);
+	~NExInEventActivateMine();
+	int get_id();
+};
 
 #endif
