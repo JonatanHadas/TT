@@ -58,19 +58,21 @@
 #define MISSILE_W 0.07
 #define MISSILE_L 0.20
 
+#define HOMING_TIME 60
+
 #define EXPLOSION_NUM 50
 
 #define END_TIME 300
 
 #define UPG_ANG 30.0
 
-#define UPG_NUM 5
+#define UPG_NUM 6
 #define UPG_SIZE 0.3
 
 struct Upgrade{
 	int x,y;
 	enum Type{
-		GATLING,LASER,BOMB,DEATH_RAY,WIFI,
+		GATLING,LASER,BOMB,DEATH_RAY,WIFI,MISSILE,
 	};
 	Upgrade::Type type;
 };

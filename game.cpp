@@ -8,7 +8,7 @@
 #include <vector>
 
 Upgrade::Type upg_types[UPG_NUM] = {
-	Upgrade::GATLING,Upgrade::LASER,Upgrade::BOMB,Upgrade::DEATH_RAY,Upgrade::WIFI,
+	Upgrade::GATLING,Upgrade::LASER,Upgrade::BOMB,Upgrade::DEATH_RAY,Upgrade::WIFI,Upgrade::MISSILE,
 };
 
 GameEventTankDeath::GameEventTankDeath(int i){
@@ -305,6 +305,7 @@ Round::Round(Game* g){
 	}
 	
 	maze->generate(tnks, Maze::GEN_WALL_REM);
+	maze->calc_dists();
 }
 Round::~Round(){
 	delete maze;
@@ -445,6 +446,8 @@ void Tank::step(){
 		case Tank::BOMB_SHOOT:
 		case Tank::DEATH_RAY:
 		case Tank::WIFI:
+		case Tank::MISSILE:
+		case Tank::MISSILE_SHOOT:
 			double pa = ang;
 			
 			int turn = (ctrl.front().lt ? 1 : 0)-(ctrl.front().rt ? 1 : 0);
@@ -461,6 +464,8 @@ void Tank::step(){
 		case Tank::BOMB_SHOOT:
 		case Tank::DEATH_RAY:
 		case Tank::WIFI:
+		case Tank::MISSILE:
+		case Tank::MISSILE_SHOOT:
 			double prx = x, pry = y;
 			
 			double step = STEP_DST * ((ctrl.front().fd ? 1 : 0) - (ctrl.front().bk ? REV_RAT : 0));
@@ -504,6 +509,11 @@ void Tank::step(){
 		case Tank::WIFI:
 			if(ctrl.front().sht && !p_ctrl.sht){
 				game->get_round()->add_shot(new WifiMissile(game,this));
+			}
+			break;
+		case Tank::MISSILE:
+			if(ctrl.front().sht && !p_ctrl.sht){
+				game->get_round()->add_shot(new HomingMissile(game,this));
 			}
 			break;
 		}
@@ -604,6 +614,7 @@ std::pair<Upgrade::Type, Tank::State> upg2stt_a[UPG_NUM]={
 	{Upgrade::BOMB, Tank::BOMB},
 	{Upgrade::DEATH_RAY, Tank::DEATH_RAY},
 	{Upgrade::WIFI, Tank::WIFI},
+	{Upgrade::MISSILE, Tank::MISSILE},
 };
 
 std::map<Upgrade::Type, Tank::State> upg2stt(upg2stt_a, upg2stt_a+UPG_NUM);
@@ -1093,7 +1104,7 @@ bool Missile::check_tank(Tank* tank, bool ignore_me){
 
 	if(tank == get_tank() && !ret) out_of_tank = true;
 	
-	if(tank == get_tank() && ignore_me || !out_of_tank) return false;
+	if(tank == get_tank() && !ignore_me && !out_of_tank) return false;
 	return ret;
 }
 void Missile::advance(){
@@ -1184,3 +1195,60 @@ void WifiMissile::die(){
 GenShot::Type WifiMissile::get_type(){
 	return GenShot::TYPE_WIFI;
 }
+
+HomingMissile::HomingMissile(Game* game, Tank* tank) : Missile(game, tank){
+	rt = lt = false;
+	target = NULL;
+	timer = HOMING_TIME;
+	get_tank()->state = Tank::MISSILE_SHOOT;
+}
+HomingMissile::~HomingMissile(){
+	get_tank()->state = Tank::REG;
+}
+	
+GenShot::Type HomingMissile::get_type(){
+	return GenShot::TYPE_MISSILE;
+}
+	
+void HomingMissile::home_target(){
+	target = NULL;
+	int dx,dy,dist;
+	int x = get_x(), y = get_y();
+	Maze* maze = get_game()->get_round()->get_maze();
+	for(int i = 0; i<get_game()->get_tank_num(); i++){
+		Tank* t = get_game()->get_tank(i);
+		
+		int ddx,ddy, ddist = maze->dist(x, y, t->get_x(), t->get_y(), ddx,ddy);
+		if(ddist >= 0 && (target == NULL || ddist<dist)){
+			target = t;
+			dist = ddist;
+			dx = ddx; dy = ddy;
+		}
+	}
+	double tx, ty;
+	double ttx = 0,tty = 0;
+	if(target == NULL){
+		rt = lt = false;
+	}
+	else{
+		if(dist == 0){
+			tx = target->get_x();
+			ty = target->get_y();
+		}
+		else{
+			tx = x+dx+0.5;
+			ty = y+dy+0.5;
+		}
+		rotate_add(-get_ang(), tx-get_x(), ty-get_y(), ttx, tty);
+		rt = tty<0;
+		lt = tty>0;
+	}
+}
+
+void HomingMissile::advance(){
+	if(timer > 0) timer--;
+	else home_target();
+	
+	Missile::advance();
+}
+

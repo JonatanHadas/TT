@@ -27,6 +27,7 @@ class BombShot;
 class DeathRay;
 class Missile;
 class WifiMissile;
+class HomingMissile;
 
 class Controlable;
 
@@ -149,6 +150,7 @@ public:
 		DEATH_RAY_WAIT1, DEATH_RAY_WAIT2, DEATH_RAY_WAIT3, 
 		DEATH_RAY_SHOOT,
 		WIFI, WIFI_SHOOT,
+		MISSILE, MISSILE_SHOOT,
 	};
 private:
 	
@@ -174,6 +176,7 @@ private:
 	friend DeathRay;
 	friend Missile;
 	friend WifiMissile;
+	friend HomingMissile;
 		
 	bool can_step();
 	void clear_control();
@@ -225,6 +228,7 @@ public:
 		TYPE_FRAGMENT,
 		TYPE_DEATH_RAY,
 		TYPE_WIFI,
+		TYPE_MISSILE,
 	};
 private:
 	Tank* tank;
@@ -372,7 +376,6 @@ public:
 
 class Missile : public GenShot{
 	double x,y,vx,vy;
-	bool out_of_tank;
 	int timer;
 	bool check_wall(double& nx, double& ny);
 protected:
@@ -404,6 +407,19 @@ public:
 	void die();
 	
 	GenShot::Type get_type();
+};
+
+class HomingMissile : public Missile{
+	Tank* target;
+	int timer;
+public:
+	HomingMissile(Game* game, Tank* tank);
+	~HomingMissile();
+	
+	GenShot::Type get_type();
+	
+	void home_target();
+	void advance();
 };
 
 

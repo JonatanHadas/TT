@@ -26,6 +26,7 @@ std::pair<Upgrade::Type, Img> upg2img_a[UPG_NUM] = {
 	{Upgrade::BOMB, IMG_BOMB_SYM},
 	{Upgrade::DEATH_RAY, IMG_DEATH_RAY_SYM},
 	{Upgrade::WIFI, IMG_WIFI_SYM},
+	{Upgrade::MISSILE, IMG_MISSILE_SYM},
 	};
 std::map<Upgrade::Type, Img> upg2img(upg2img_a,upg2img_a+UPG_NUM);
 
@@ -144,6 +145,7 @@ void BoardDrawer::draw(){
 			
 			break;
 		case GenShot::TYPE_WIFI:
+		case GenShot::TYPE_MISSILE:
 			mis = (MissileQ*)(*it);
 			
 			p.x = WALL_D_T + DRC(mis->get_x());
@@ -184,7 +186,7 @@ void BoardDrawer::draw(){
 			
 			p.x += r.x; p.y += r.y;
 			
-			if(t->get_state() == Tank::WIFI){
+			if(t->get_state() == Tank::WIFI || t->get_state() == Tank::MISSILE){
 				r.w = DRC(MISSILE_W); r.h = DRC(MISSILE_L);
 				p.x = WALL_D_T + DRC(t->get_x()); p.y = WALL_D_T + DRC(t->get_y());
 				r.x = p.x - r.w/2;
@@ -238,6 +240,8 @@ void BoardDrawer::draw(){
 				break;
 			case Tank::WIFI:
 			case Tank::WIFI_SHOOT:
+			case Tank::MISSILE:
+			case Tank::MISSILE_SHOOT:
 				cannon = tank_images[i].launcher;
 				break;
 			}
