@@ -346,6 +346,7 @@ private:
 	Tank* tank;
 	Game* game;
 	int id;
+	int time;
 protected:
 	bool out_of_tank;
 	Game* get_game();
@@ -364,6 +365,8 @@ public:
 	virtual bool is_reusable(); // destoyed by killing tank
 	
 	int get_id();
+	
+	int get_time();
 };
 class Shot : public GenShot{
 private:

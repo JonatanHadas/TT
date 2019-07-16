@@ -172,6 +172,7 @@ public:
 class MissileQ : public GenShotQ{
 public:
 	virtual int get_tar_ind() = 0;
+	virtual int get_time() = 0;
 };
 
 class MineQ{

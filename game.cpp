@@ -682,6 +682,7 @@ Controlable* Tank::get_ctbl(){
 GenShot::GenShot(Game* g, Tank* t){
 	game = g;
 	tank = t;
+	time = game->get_time();
 	id = game->get_new_id();
 }
 GenShot::~GenShot(){}
@@ -693,6 +694,9 @@ Game* GenShot::get_game(){
 }
 int GenShot::get_id(){
 	return id;
+}
+int GenShot::get_time(){
+	return game->get_time() - time;
 }
 
 
