@@ -47,6 +47,7 @@ public:
 		TYPE_UPG_CRT, TYPE_UPG_RMV,
 		TYPE_MIN_CRT, TYPE_MIN_RMV,
 		TYPE_MIN_ACT, TYPE_MIN_STR,
+		TYPE_TANK_STUCK,
 	};
 	virtual Type get_type()=0;
 };
@@ -137,6 +138,15 @@ public:
 	Type get_type(){return GameEvent::TYPE_MIN_RMV;}
 	int get_id();
 };
+class GameEventTankStuck : public GameEvent{
+	Tank* t;
+	double spd;
+public:
+	GameEventTankStuck(Tank* tk, double s);
+	Type get_type(){return GameEvent::TYPE_TANK_STUCK;}
+	Tank* get_tank();
+	double get_spd();
+};
 
 class Team{
 	int score;
@@ -162,6 +172,7 @@ class Game{
 	Round* round;
 	std::queue<GameEvent*> events;
 	friend Round;
+	friend Tank;
 	friend Mine;
 	
 	long long int time;

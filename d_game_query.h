@@ -91,6 +91,14 @@ public:
 	double get_ang();
 	int get_ind();
 };
+class GameDQEventTankStuck : public GameQEventTankStuck{
+	GameEventTankStuck* e;
+public:
+	GameDQEventTankStuck(GameEventTankStuck* event);
+	~GameDQEventTankStuck();
+	int get_ind();
+	double get_spd();
+};
 
 class GameDQ : public GameQ{
 	Game* game;

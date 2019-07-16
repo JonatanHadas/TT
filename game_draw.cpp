@@ -517,6 +517,64 @@ void BoardDrawer::place_mine(GameQEventCreateMine* e){
 	back_fx.add_effect(fo);
 }
 
+void BoardDrawer::tank_stuck(GameQEventTankStuck* e){
+	TankQ* tank = game->get_tank(e->get_ind());
+	double spd = e->get_spd();
+	
+	double x = tank->get_x(), y = tank->get_y(), ang = tank->get_ang();
+	
+	double rx = -0.4*TANK_H * (spd > 0 ? 1 : -1);
+
+	if(rand_range(0,2)<1){
+		double ry = rand_range(-10,11)*TANK_W * 0.03;
+			
+		double rnd_ang = rand_range(-100,100)*M_PI/100;
+		double rnd = rand_range(0,11)*0.002;
+
+		double vx = -spd * cos(ang) + rnd * cos(rnd_ang);
+		double vy = -spd * sin(ang) + rnd * sin(rnd_ang);
+		
+		rotate_add(ang, rx, ry, x, y);
+		
+		FadeOut* fo = new FadeOut(	circ,
+									(x+WALL_THK)*BLOCK_SIZE, (y+WALL_THK)*BLOCK_SIZE,
+									vx * BLOCK_SIZE, vy * BLOCK_SIZE,
+									20, 20,
+									0.0,
+									SDL_FLIP_NONE,
+									15, 0.5);
+		fo->set_color(150,150,150);
+		fo->set_damp(0.2);
+		
+		back_fx.add_effect(fo);
+	}
+	
+	x = tank->get_x(); y = tank->get_y();
+	
+	if(rand_range(0,9)<1){
+		double ry = rand_range(-10,11)*TANK_W * 0.03;
+		
+		double rnd_ang = rand_range(-100,100)*M_PI/100;
+		double rnd = rand_range(0,11)*0.0005;
+
+		double vx = -spd * 1.5 * cos(ang) + rnd * cos(rnd_ang);
+		double vy = -spd * 1.5 * sin(ang) + rnd * sin(rnd_ang);
+
+		rotate_add(ang, rx, ry, x, y);
+		
+		FadeOut* fo = new FadeOut(	circ,
+									(x+WALL_THK)*BLOCK_SIZE, (y+WALL_THK)*BLOCK_SIZE,
+									vx * BLOCK_SIZE, vy * BLOCK_SIZE,
+									4,4,
+									0.0,
+									SDL_FLIP_NONE,
+									10);
+		fo->set_color(0,0,0);
+		fo->set_damp(0.1);
+		
+		back_fx.add_effect(fo);
+	}
+}
 
 GameDrawer::GameDrawer(GameQ* q, SDL_Renderer* r, std::vector<int> img_inds){
 	game = q;
@@ -577,6 +635,9 @@ void GameDrawer::draw(){
 			break;
 		case GameQEvent::TYPE_MIN_CRT:
 			board->place_mine((GameQEventCreateMine*)event);
+			break;
+		case GameQEvent::TYPE_TANK_STUCK:
+			board->tank_stuck((GameQEventTankStuck*)event);
 			break;
 		}
 	}

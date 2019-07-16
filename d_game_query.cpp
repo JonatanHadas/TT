@@ -36,6 +36,11 @@ double GameDQEventCreateMine::get_y(){ return e->get_mine()->get_y(); }
 double GameDQEventCreateMine::get_ang(){ return e->get_mine()->get_ang(); }
 int GameDQEventCreateMine::get_ind() { return e->get_mine()->get_tank()->get_ind(); }
 
+GameDQEventTankStuck::GameDQEventTankStuck(GameEventTankStuck* event){ e = event; }
+GameDQEventTankStuck::~GameDQEventTankStuck(){ delete e; }
+int GameDQEventTankStuck::get_ind(){ return e->get_tank()->get_ind(); }
+double GameDQEventTankStuck::get_spd(){ return e->get_spd(); }
+
 GameDQ::GameDQ(Game* g){
 	game = g;
 	round = new RoundDQ(game->get_round());
@@ -82,6 +87,8 @@ GameQEvent* GameDQ::get_event(){
 			return new GameDQEventRemoveShot((GameEventRemoveShot*)e);
 		case GameEvent::TYPE_MIN_CRT:
 			return new GameDQEventCreateMine((GameEventCreateMine*)e);
+		case GameEvent::TYPE_TANK_STUCK:
+			return new GameDQEventTankStuck((GameEventTankStuck*)e);
 		}
 	}
 	return NULL;

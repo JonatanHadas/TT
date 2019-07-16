@@ -48,6 +48,8 @@ public:
 	void tank_death(int ind);
 	
 	void place_mine(GameQEventCreateMine* e);
+	
+	void tank_stuck(GameQEventTankStuck* e);
 };
 
 class GameDrawer{
