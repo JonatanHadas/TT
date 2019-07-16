@@ -28,6 +28,11 @@
 #define DR_SPD 10
 #define DR_LOOP 100
 
+#define HOM_TIMER_MIN 20
+#define HOM_TIMER_MAX 60
+#define HOM_TIMER_STEP 3
+
+
 #define LASER_T 10
 
 #define SHARD_D_W DRC(TANK_W * 0.35)
@@ -365,6 +370,23 @@ void BoardDrawer::draw(){
 			break;
 		}
 		switch((*it)->get_type()){
+		case GenShot::TYPE_MISSILE:
+			mis = (MissileQ*)(*it);
+			
+			int ind = mis->get_tar_ind();
+			int timer = mis->get_time();
+			int tt = HOM_TIMER_MAX;
+			if(ind>=0 && timer>HOMING_TIME){
+				TankQ* t = game->get_tank(ind);
+				
+				int dx,dy,xt = t->get_x(), yt = t->get_y(), xm = mis->get_x(), ym = mis->get_y();
+				
+				int tt = HOM_TIMER_MIN + HOM_TIMER_STEP * game->get_round()->get_maze()->dist(xt,yt,xm,ym,dx,dy);
+				tt = tt > HOM_TIMER_MAX ? HOM_TIMER_MAX : tt;
+				
+			}
+			if(timer % tt == 0) play(SND_BEEP);
+			break;
 		case GenShot::TYPE_WIFI:
 			mis = (MissileQ*)(*it);
 			
@@ -383,6 +405,7 @@ void BoardDrawer::draw(){
 												SDL_FLIP_NONE,
 												BRDCST_T));		
 			}
+			break;
 		}
 		delete (*it);
 	}

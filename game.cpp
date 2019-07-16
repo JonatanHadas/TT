@@ -1087,6 +1087,7 @@ DeathRay::DeathRay(Game* game, Tank* tank) : GenShot(game, tank){
 DeathRay::~DeathRay(){
 	get_tank()->ctbl = NULL;
 	get_tank()->state = Tank::REG;
+	get_tank()->ctbl = NULL;
 }
 bool DeathRay::check_tank(Tank* tank, bool ignore_me){
 	if(tank == get_tank()) return false;
