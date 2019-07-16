@@ -28,6 +28,88 @@
 
 #define LASER_T 10
 
+#define SHARD_D_W DRC(TANK_W * 0.35)
+#define SHARD_D_H DRC(TANK_H * 0.5)
+
+#define SHARD_W 7
+#define SHARD_H 15
+
+#define SHARD_DAMP 0.1
+
+#define SHARD_W_DMP 0.02
+
+Shard::Shard(TankImg* tank_img, double xx, double yy, EffectManager* smkm, SDL_Texture* smk_tex){
+	smk = smkm;
+	tex = smk_tex;
+
+	img = tank_img;
+	x=xx;y=yy;
+	
+	cx = rand_range(0,2);
+	cy = rand_range(0,1);
+	
+	flip = rand_range(0,1)==0;
+	
+	ang = rand_range(-M_PI, M_PI);
+	double v = rand_range(0, 11) * 0.02; 
+	vx = v * cos(ang);
+	vy = v * sin(ang);
+	
+	ang = rand_range(-M_PI, M_PI);
+	
+	w = rand_range(-10,11)*0.01;
+	
+	timer = time = rand_range(20,30);
+}
+void Shard::step(){
+	SDL_Rect dst,src;
+	
+	dst.x = (int)((x + WALL_THK)*BLOCK_SIZE - SHARD_D_W/2.0);
+	dst.y = (int)((y + WALL_THK)*BLOCK_SIZE - SHARD_D_H/2.0);
+	dst.w = SHARD_D_W;
+	dst.h = SHARD_D_H;
+	
+	src.w = SHARD_W; src.h = SHARD_H;
+	src.x = cx*SHARD_W; src.y = cy*SHARD_H;
+		
+	double a = sqrt((timer)/(float)time);
+	
+	SDL_SetTextureAlphaMod(img->shards, (int)(a*255));
+	SDL_RenderCopyEx(get_manager()->get_renderer(), img->shards, &src, &dst, RAD2DEG(ang), NULL, flip ? SDL_FLIP_HORIZONTAL : SDL_FLIP_NONE);
+	
+	if(rand_range(0,100) / 10.0< (timer/(float)time)*4){
+		int size = 8 - (int)(4 * (timer)/(float)time);
+		
+	
+		double v = rand_range(0,11) * 0.003 * (timer)/(float)time;
+		double ang = rand_range(-100,101)*M_PI/100;
+	
+		double svx = v*cos(ang);
+		double svy = v*sin(ang);
+		FadeOut* fo = new FadeOut(	tex,
+									(x+WALL_THK)*BLOCK_SIZE, (y+WALL_THK)*BLOCK_SIZE,
+									(vx+svx)*BLOCK_SIZE, (vy+svy)*BLOCK_SIZE,
+									size, size,
+									0.0,
+									SDL_FLIP_NONE,
+									rand_range(20,30),0.5);
+		
+		fo->set_color(0,0,0);
+		fo->set_damp(0.4);
+									
+		smk->add_effect(fo);
+	}
+
+	x += vx; y += vy; ang += w;
+	
+	vx *= (1-SHARD_DAMP);
+	vy *= (1-SHARD_DAMP);
+	w *= (1-SHARD_W_DMP);
+	
+	timer--;
+	if(timer == 0) get_manager()->remove_effect(this);
+}
+
 
 std::pair<Upgrade::Type, Img> upg2img_a[UPG_NUM] = {
 	{Upgrade::GATLING, IMG_GATLING_SYM},
@@ -59,7 +141,6 @@ BoardDrawer::~BoardDrawer(){
 	SDL_DestroyTexture(rect);
 }
 void BoardDrawer::draw(){
-	
 	SDL_SetRenderDrawColor(renderer, 240,240,240,255);
 	SDL_RenderClear(renderer);
 	
@@ -280,7 +361,6 @@ void BoardDrawer::draw(){
 		delete (*it);
 	}
 	
-	mid_fx.step();
 
 	for(int i = 0; i < game->get_tank_num(); i++){
 		TankQ* t = game->get_tank(i);
@@ -372,11 +452,51 @@ void BoardDrawer::draw(){
 
 		}
 	}
+	mid_fx.step();
 	front_fx.step();
 }
 TankImg* BoardDrawer::get_tank_img(int i){
 	return tank_images+i;
 }
+
+void BoardDrawer::start_round(){
+	back_fx.clear();
+	front_fx.clear();
+	mid_fx.clear();
+}
+
+void BoardDrawer::tank_death(int ind){
+	double x = game->get_tank(ind)->get_x();
+	double y = game->get_tank(ind)->get_y();
+	
+	int num = rand_range(15,20);
+	
+	for(int i = 0; i<num; i++){
+		front_fx.add_effect(new Shard(get_tank_img(ind), x, y, &mid_fx, circ));
+	}
+	
+	num = rand_range(20,30);
+	
+	for(int i = 0; i<num; i++){
+		
+		double ang = rand_range(-M_PI, M_PI);
+		double v = rand_range(0,11) * 0.006;
+		double vx = v*cos(ang);
+		double vy = v*sin(ang);
+	
+		FadeOut* fo = new FadeOut(	circ,
+									(x+WALL_THK)*BLOCK_SIZE, (y+WALL_THK)*BLOCK_SIZE,
+									vx*BLOCK_SIZE, vy*BLOCK_SIZE,
+									30,30,
+									0.0,
+									SDL_FLIP_NONE,
+									30,0.75);
+		fo->set_color(0,0,0);
+		fo->set_damp(0.3);
+		mid_fx.add_effect(fo);
+	}
+}
+
 
 
 GameDrawer::GameDrawer(GameQ* q, SDL_Renderer* r, std::vector<int> img_inds){
@@ -428,9 +548,13 @@ void GameDrawer::draw(){
 			w = WALL_D_T*2 + BLOCK_SIZE*maze->get_w();
 			h = WALL_D_T*2 + BLOCK_SIZE*maze->get_h();
 			board_t = SDL_CreateTexture(renderer,SDL_PIXELFORMAT_UNKNOWN,SDL_TEXTUREACCESS_TARGET, w,h);
+			board->start_round();
 			break;
 		case GameQEvent::TYPE_SCORE:
 			update_score(((GameQEventScore*)event)->get_ind());
+			break;
+		case GameQEvent::TYPE_TANK_DEAD:
+			board->tank_death(((GameQEventTankDeath*)event)->get_ind());
 			break;
 		}
 	}

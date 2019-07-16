@@ -11,6 +11,20 @@
 #define GSCR_W 1280
 #define GSCR_H 960
 
+// shard effect
+class Shard : public Effect{
+	double x, y, vx, vy, ang, w;
+	int cx,cy;
+	bool flip;
+	int timer, time;
+	TankImg* img;
+	EffectManager* smk;
+	SDL_Texture* tex;
+public:
+	Shard(TankImg* img, double x, double y, EffectManager* smk, SDL_Texture* smk_tex);
+	void step();
+};
+
 // draw game board
 class BoardDrawer{
 	GameQ* game;
@@ -28,6 +42,10 @@ public:
 	~BoardDrawer();
 	void draw();
 	TankImg* get_tank_img(int i);
+	
+	void start_round();
+	
+	void tank_death(int ind);
 };
 
 class GameDrawer{
