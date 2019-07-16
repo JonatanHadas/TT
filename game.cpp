@@ -138,6 +138,8 @@ double GameEventTankStuck::get_spd(){
 }
 
 
+
+
 Team::Team(int i){
 	ind = i;
 	num_tot = num_alive = score = 0;
@@ -455,6 +457,7 @@ std::map<std::pair<int,int>,Upgrade::Type>::iterator Round::end_upgs(){
 }
 
 void Round::explode(double x, double y){
+	game->events.push(new GameEventEtc(GameEvent::TYPE_EXPL));
 	for(int i = 0; i<EXPLOSION_NUM; i++){
 		add_shot(new Fragment(game, x,y));
 	}
@@ -503,6 +506,7 @@ Tank::State Tank::get_state(){
 
 void Tank::step(){
 	if(!is_dead()){
+		State os = state;
 		double nx,ny,dp,px,py;
 		
 		switch(state){
@@ -573,6 +577,7 @@ void Tank::step(){
 			if(ctrl.front().sht && !p_ctrl.sht){
 				state = Tank::DEATH_RAY_WAIT1;
 				timer = DR_TIME;
+				game->events.push(new GameEventEtc(GameEvent::TYPE_LOAD));
 			}
 			break;
 		case Tank::WIFI:
@@ -620,7 +625,7 @@ void Tank::step(){
 				break;
 			}
 		}
-		
+				
 		if(ctbl) ctbl->set_ctrl(ctrl.front());
 	}
 	
@@ -815,6 +820,13 @@ void Shot::reflect(){
 		x = col_x - col_t*vx;
 		y = col_y - col_t*vy;
 		out_of_tank = true;
+		
+		switch(get_type()){
+		case GenShot::TYPE_REG:
+		case GenShot::TYPE_GATLING:
+		case GenShot::TYPE_BOMB:
+			get_game()->events.push(new GameEventEtc(GameEvent::TYPE_COLL));
+		}
 	}
 	
 	found = false;

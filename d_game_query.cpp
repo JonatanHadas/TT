@@ -92,8 +92,16 @@ GameQEvent* GameDQ::get_event(){
 			return new GameDQEventRemoveShot((GameEventRemoveShot*)e);
 		case GameEvent::TYPE_MIN_CRT:
 			return new GameDQEventCreateMine((GameEventCreateMine*)e);
+		case GameEvent::TYPE_MIN_ACT:
+			return new GameQEventEtc(GameQEvent::TYPE_MIN_ACT);
 		case GameEvent::TYPE_TANK_STUCK:
 			return new GameDQEventTankStuck((GameEventTankStuck*)e);
+		case GameEvent::TYPE_COLL:
+			return new GameQEventEtc(GameQEvent::TYPE_COLL);
+		case GameEvent::TYPE_EXPL:
+			return new GameQEventEtc(GameQEvent::TYPE_EXPL);
+		case GameEvent::TYPE_LOAD:
+			return new GameQEventEtc(GameQEvent::TYPE_LOAD);
 		}
 	}
 	return NULL;

@@ -25,8 +25,9 @@ public:
 		TYPE_END_GAME,
 		TYPE_SHT_CRT, TYPE_SHT_RMV,
 		TYPE_UPG_CRT, TYPE_UPG_RMV,
-		TYPE_MIN_CRT, 
+		TYPE_MIN_CRT, TYPE_MIN_ACT,
 		TYPE_TANK_STUCK,
+		TYPE_COLL, TYPE_EXPL, TYPE_LOAD,
 	};
 	virtual Type get_type()=0;
 };
@@ -116,7 +117,12 @@ public:
 	TankExtrap* get_tank();
 	double get_spd();
 };
-
+class ExEventEtc : public ExEvent{
+	Type tp;
+public:
+	ExEventEtc(Type t){tp = t;}
+	Type get_type(){return tp;}
+};
 
 
 
@@ -140,6 +146,9 @@ class GameExtrap{
 	std::queue<ExEvent*> events;
 	
 	friend TankExtrap;
+	friend ShotExtrap;
+	friend RoundExtrap;
+	friend MissileExtrap;
 	
 	int round_num;
 	long long int time;

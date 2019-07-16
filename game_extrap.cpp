@@ -368,7 +368,10 @@ void RoundExtrap::del_mine(int id){
 	if(mines.count(id)>0) mines.erase(id);
 }
 void RoundExtrap::activate_mine(int id){
-	if(mines.count(id)>0) mines[id]->active = true;
+	if(mines.count(id)>0){
+		mines[id]->active = true;
+		game->events.push(new ExEventEtc(ExEvent::TYPE_MIN_ACT));
+	}
 }
 void RoundExtrap::start_mine(int id){
 	if(mines.count(id)>0) mines[id]->started = true;
@@ -418,7 +421,10 @@ void TankExtrap::update(ExInEventTankUpdate* e){
 		x = e->get_x();
 		y = e->get_y();
 		ang = e->get_ang();
+		if(state == Tank::DEATH_RAY && e->get_state() == Tank::DEATH_RAY_WAIT1)
+			game->events.push(new ExEventEtc(ExEvent::TYPE_LOAD));
 		state = e->get_state();
+		
 		
 		if(e->get_state() == Tank::WIFI_SHOOT || e->get_state() == Tank::MISSILE_SHOOT){
 			if(missile && missile->get_id() != e->get_missile_id()){
@@ -656,6 +662,14 @@ void ShotExtrap::reflect(){
 		
 		x = col_x - col_t*vx;
 		y = col_y - col_t*vy;
+		
+		switch(get_type()){
+		case GenShot::TYPE_REG:
+		case GenShot::TYPE_GATLING:
+		case GenShot::TYPE_BOMB:
+			get_game()->events.push(new ExEventEtc(ExEvent::TYPE_COLL));
+			break;
+		}
 	}
 	
 	found = false;
@@ -819,6 +833,7 @@ void MissileExtrap::step(){
 		if(nx*vx<0) vx = -vx;
 		if(ny*vy<0) vy = -vy;
 		
+		get_game()->events.push(new ExEventEtc(ExEvent::TYPE_COLL));
 	}
 	
 }

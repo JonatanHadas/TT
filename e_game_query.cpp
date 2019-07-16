@@ -100,6 +100,14 @@ GameQEvent* GameEQ::get_event(){
 			return new GameEQEventRemoveUpgrade((ExEventRemoveUpgrade*)e);
 		case ExEvent::TYPE_TANK_STUCK:
 			return new GameEQEventTankStuck((ExEventTankStuck*)e);
+		case ExEvent::TYPE_MIN_ACT:
+			return new GameQEventEtc(GameQEvent::TYPE_MIN_ACT);
+		case ExEvent::TYPE_COLL:
+			return new GameQEventEtc(GameQEvent::TYPE_COLL);
+		case ExEvent::TYPE_EXPL:
+			return new GameQEventEtc(GameQEvent::TYPE_EXPL);
+		case ExEvent::TYPE_LOAD:
+			return new GameQEventEtc(GameQEvent::TYPE_LOAD);
 		}
 	}
 	return NULL;

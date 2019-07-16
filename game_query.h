@@ -33,8 +33,9 @@ public:
 		TYPE_END_GAME,
 		TYPE_SHOT_CRT, TYPE_SHOT_RMV, 
 		TYPE_UPG_CRT, TYPE_UPG_RMV,
-		TYPE_MIN_CRT,
+		TYPE_MIN_CRT,TYPE_MIN_ACT,
 		TYPE_TANK_STUCK,
+		TYPE_COLL, TYPE_EXPL, TYPE_LOAD,
 	};
 	virtual Type get_type() = 0;
 };
@@ -103,6 +104,12 @@ public:
 	Type get_type(){return GameQEvent::TYPE_TANK_STUCK;}
 	virtual get_ind() = 0;
 	virtual double get_spd() = 0;
+};
+class GameQEventEtc : public GameQEvent{
+	Type tp;
+public:
+	GameQEventEtc(Type t){tp = t;}
+	Type get_type(){return tp;}
 };
 
 class GameQ{

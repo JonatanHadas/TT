@@ -4,6 +4,8 @@
 #include "gui_util.h"
 #include "utils.h"
 
+#include "sounds.h"
+
 #include "geom.h"
 #include <vector>
 
@@ -625,15 +627,53 @@ void GameDrawer::draw(){
 			h = WALL_D_T*2 + BLOCK_SIZE*maze->get_h();
 			board_t = SDL_CreateTexture(renderer,SDL_PIXELFORMAT_UNKNOWN,SDL_TEXTUREACCESS_TARGET, w,h);
 			board->start_round();
+			silence();
 			break;
 		case GameQEvent::TYPE_SCORE:
 			update_score(((GameQEventScore*)event)->get_ind());
 			break;
 		case GameQEvent::TYPE_TANK_DEAD:
 			board->tank_death(((GameQEventTankDeath*)event)->get_ind());
+			play(SND_EXPLOSION);
+			break;
+		case GameQEvent::TYPE_SHOT_CRT:
+			switch(((GameQEventCreateShot*)event)->get_stype()){
+			case GenShot::TYPE_REG:
+			case GenShot::TYPE_GATLING:
+			case GenShot::TYPE_BOMB:
+				//play(SND_);
+				break;
+			case GenShot::TYPE_LASER:
+				play(SND_LASER);
+				break;
+			case GenShot::TYPE_DEATH_RAY:
+				play(SND_RAYGUN);
+				break;
+			}
+			break;
+		case GameQEvent::TYPE_SHOT_RMV:
+			break;
+		case GameQEvent::TYPE_UPG_CRT:
+			play(SND_POPUP);
+			break;
+		case GameQEvent::TYPE_UPG_RMV:
+			play(SND_TAKE);
 			break;
 		case GameQEvent::TYPE_MIN_CRT:
 			board->place_mine((GameQEventCreateMine*)event);
+			play(SND_OFF);
+			break;
+		case GameQEvent::TYPE_MIN_ACT:
+			play(SND_ON);
+			break;
+		case GameQEvent::TYPE_COLL:
+			play(SND_COLLISION);
+			break;
+		case GameQEvent::TYPE_EXPL:
+			play(SND_EXPLOSION_SMALL);
+			break;
+		case GameQEvent::TYPE_LOAD:
+			play(SND_RAYLOAD);
 			break;
 		case GameQEvent::TYPE_TANK_STUCK:
 			board->tank_stuck((GameQEventTankStuck*)event);

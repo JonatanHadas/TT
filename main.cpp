@@ -10,6 +10,7 @@
 #include "gui.h"
 #include "texts.h"
 #include "keys.h"
+#include "sounds.h"
 #include "images.h"
 
 SDL_Window*  screen;
@@ -42,15 +43,15 @@ int main(int argc, char* argv[]){
 	}
 	atexit(TTF_Quit);
 	
-	/*if(Mix_OpenAudio( 44100, MIX_DEFAULT_FORMAT, CHANNELS, 2048 ) < 0){
+	if(Mix_OpenAudio( 44100, MIX_DEFAULT_FORMAT, CHANNELS, 2048 ) < 0){
 		fprintf(stderr, "Error initializing SDL_mixer:\n%s\n", Mix_GetError());
 	}
-	atexit(Mix_Quit);*/
+	atexit(Mix_Quit);
 	
-	/*if(! load_sounds()){
+	if(! load_sounds()){
 		fprintf(stderr, "Error loading sounds:\n%s\n", Mix_GetError());
 		return 0;
-	}*/
+	}
 	
 	if(enet_initialize()<0){
 		fprintf(stderr, "Error initializing ENet\n");

@@ -47,6 +47,7 @@ class GameEventRemoveShot;
 
 
 
+
 class Team{
 	int score;
 	int num_alive;
@@ -72,6 +73,7 @@ class Game{
 	std::queue<GameEvent*> events;
 	friend Round;
 	friend Tank;
+	friend Shot;
 	friend Mine;
 	
 	long long int time;
@@ -485,6 +487,7 @@ public:
 		TYPE_MIN_CRT, TYPE_MIN_RMV,
 		TYPE_MIN_ACT, TYPE_MIN_STR,
 		TYPE_TANK_STUCK,
+		TYPE_COLL, TYPE_EXPL, TYPE_LOAD, 
 	};
 	virtual Type get_type()=0;
 };
@@ -592,5 +595,11 @@ public:
 	double get_spd();
 };
 
+class GameEventEtc : public GameEvent{
+	Type tp;
+public:
+	GameEventEtc(Type t){tp = t;}
+	Type get_type(){return tp;}
+};
 
 #endif
