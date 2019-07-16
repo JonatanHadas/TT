@@ -561,13 +561,14 @@ void TankExtrap::advance(){
 };
 
 GenShotExtrap::GenShotExtrap(GameExtrap* g, TankExtrap* tk, int i, GenShot::Type tp){
-	game = g; tank = tk; id = i; type = tp;
+	game = g; tank = tk; id = i; type = tp; time = g->get_time();
 }
 
 GameExtrap* GenShotExtrap::get_game(){ return game; }
 TankExtrap* GenShotExtrap::get_tank(){ return tank; }
 int GenShotExtrap::get_id(){ return id; }
 GenShot::Type GenShotExtrap::get_type(){ return type; }
+int GenShotExtrap::get_time(){ return game->get_time() - time; }
 
 ShotExtrap::ShotExtrap(GameExtrap* game, ExInEventCreateShot* e) : GenShotExtrap(game, game->get_tank(e->get_tank_ind()), e->get_id(), e->get_stype()){
 	x = e->get_x();

@@ -203,6 +203,8 @@ public:
 	double get_ang();
 	
 	GenShot::Type get_type();
+	
+	int get_time();
 };
 
 class MineEQ : public MineQ{

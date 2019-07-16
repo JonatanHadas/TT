@@ -263,6 +263,7 @@ class GenShotExtrap{
 	TankExtrap* tank;
 	int id;
 	GenShot::Type type;
+	int time;
 protected:
 	GameExtrap* get_game();
 public:
@@ -276,6 +277,8 @@ public:
 	virtual double get_y() = 0;
 	virtual double get_ang() = 0;
 	virtual void advance() = 0;
+
+	int get_time();
 };
 
 class ShotExtrap : public GenShotExtrap{
@@ -341,6 +344,7 @@ class MissileExtrap : public GenShotExtrap{
 	friend TankExtrap;
 	void step();
 	bool check_wall(double& nx, double& ny);
+	
 public:
 	MissileExtrap(GameExtrap* g, TankExtrap* t, GenShot::Type tp, int id);
 	

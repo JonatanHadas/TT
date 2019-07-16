@@ -369,19 +369,20 @@ void BoardDrawer::draw(){
 						
 			break;
 		}
+		int tt,timer,ind;
 		switch((*it)->get_type()){
 		case GenShot::TYPE_MISSILE:
 			mis = (MissileQ*)(*it);
 			
-			int ind = mis->get_tar_ind();
-			int timer = mis->get_time();
-			int tt = HOM_TIMER_MAX;
+			ind = mis->get_tar_ind();
+			timer = mis->get_time();
+			tt = HOM_TIMER_MAX;
 			if(ind>=0 && timer>HOMING_TIME){
 				TankQ* t = game->get_tank(ind);
 				
 				int dx,dy,xt = t->get_x(), yt = t->get_y(), xm = mis->get_x(), ym = mis->get_y();
 				
-				int tt = HOM_TIMER_MIN + HOM_TIMER_STEP * game->get_round()->get_maze()->dist(xt,yt,xm,ym,dx,dy);
+				tt = HOM_TIMER_MIN + HOM_TIMER_STEP * game->get_round()->get_maze()->dist(xt,yt,xm,ym,dx,dy);
 				tt = tt > HOM_TIMER_MAX ? HOM_TIMER_MAX : tt;
 				
 			}

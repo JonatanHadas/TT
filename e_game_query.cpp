@@ -313,6 +313,9 @@ double MissileEQ::get_y(){
 double MissileEQ::get_ang(){
 	return mis->get_ang();
 }
+int MissileEQ::get_time(){
+	return mis->get_time();
+}
 	
 GenShot::Type MissileEQ::get_type(){
 	return mis->get_type();
