@@ -22,6 +22,11 @@
 #define TANKC_D_W TANK_D_W
 #define TANKC_D_H DRC(TANK_H * 1.2)
 
+#define HOM_TIMER_MIN 20
+#define HOM_TIMER_MAX 60
+#define HOM_TIMER_STEP 3
+
+
 std::pair<Upgrade::Type, Img> upg2img_a[UPG_NUM] = {
 	{Upgrade::GATLING, IMG_GATLING_SYM},
 	{Upgrade::LASER, IMG_LASER_SYM},
@@ -185,6 +190,24 @@ void BoardDrawer::draw(){
 			SDL_RenderCopyEx(renderer, tank_images[mis->get_tank_ind()].missile, NULL, &r, RAD2DEG(mis->get_ang())+90, &p, SDL_FLIP_NONE);
 			
 			break;
+		}
+		switch((*it)->get_type()){
+		case GenShot::TYPE_MISSILE:
+			mis = (MissileQ*)(*it);
+			
+			int ind = mis->get_tar_ind();
+			int timer = mis->get_time();
+			int tt = HOM_TIMER_MAX;
+			if(ind>=0 && timer>HOMING_TIME){
+				TankQ* t = game->get_tank(ind);
+				
+				int dx,dy,xt = t->get_x(), yt = t->get_y(), xm = mis->get_x(), ym = mis->get_y();
+				
+				int tt = HOM_TIMER_MIN + HOM_TIMER_STEP * game->get_round()->get_maze()->dist(xt,yt,xm,ym,dx,dy);
+				tt = tt > HOM_TIMER_MAX ? HOM_TIMER_MAX : tt;
+				
+			}
+			if(timer % tt == 0) play(SND_BEEP);
 		}
 		
 		delete (*it);

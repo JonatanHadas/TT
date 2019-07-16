@@ -272,7 +272,8 @@ int MissileDQ::get_tank_ind(){
 	return mis->get_tank()->get_ind();
 }
 int MissileDQ::get_tar_ind(){
-	return mis->get_target()->get_ind();
+	Tank* tar = mis->get_target();
+	return tar ? tar->get_ind() : -1;
 }
 double MissileDQ::get_x(){
 	return mis->get_x();
