@@ -6,6 +6,8 @@
 #include "images.h"
 #include "texts.h"
 
+#include "vfx.h"
+
 #define GSCR_W 1280
 #define GSCR_H 960
 
@@ -15,6 +17,10 @@ class BoardDrawer{
 	SDL_Renderer* renderer;
 	TankImg* tank_images;
 	SDL_Texture* circ;
+	
+	EffectManager* back_fx;
+	EffectManager* front_fx;
+	EffectManager* mid_fx;
 public:
 	BoardDrawer(GameQ* q, SDL_Renderer* rend, std::vector<int> img_inds);
 	~BoardDrawer();
