@@ -305,9 +305,9 @@ int Game::get_new_id(){
 int Game::get_round_num(){
 	return round_num;
 }
-// for tests TODO: change to better value
-#define UPG_MAX_TIME 61
-#define UPG_MIN_TIME 60
+
+#define UPG_MAX_TIME 1200
+#define UPG_MIN_TIME 600
 
 Round::Round(Game* g){
 	game=g;
