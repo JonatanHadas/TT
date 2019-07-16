@@ -120,6 +120,7 @@ TankDQ::TankDQ(Tank* t, GameDQ* game){
 	tank = t;
 	team = (TeamDQ*)game->get_team(tank->get_team()->get_ind());
 	team->tanks.push_back(this);
+	this->game = game->game;
 }
 double TankDQ::get_x(){
 	return tank->get_x();
@@ -145,6 +146,24 @@ int TankDQ::get_ind(){
 }
 TeamQ* TankDQ::get_team(){
 	return team;
+}
+
+class ShotPred : public Shot{
+	double r;
+public:
+	ShotPred(Game* game, Tank* tank, double len, double rr) : Shot(game, tank, 0, len){
+		r = rr;
+	}
+	double get_r(){ return r; }
+	int get_ttl(){ return 1; }
+	Type get_type(){ return TYPE_REG; }
+};
+
+std::vector<std::pair<double, double>> TankDQ::predict_colls(double len, double r){
+	ShotPred sht = ShotPred(game, tank, len, r);
+	sht.advance();
+	auto ret = sht.get_colls();
+	return ret;
 }
 
 RoundDQ::RoundDQ(Round* r){

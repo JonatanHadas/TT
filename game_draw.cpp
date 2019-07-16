@@ -43,6 +43,10 @@
 #define BRDCST_SF 150
 #define BRDCST_T 30
 
+#define AIM_LEN STEP_LASER*LASER_TTL/2
+#define AIM_DENS 20.0
+#define AIM_TIME 2
+
 Shard::Shard(TankImg* tank_img, double xx, double yy, EffectManager* smkm, SDL_Texture* smk_tex){
 	smk = smkm;
 	tex = smk_tex;
@@ -423,6 +427,9 @@ void BoardDrawer::draw(){
 			r.w = TANKC_D_W; r.h = TANKC_D_H;
 			
 			SDL_Texture* cannon;
+			int count;
+			SDL_Color col;
+			auto ps = t->predict_colls(AIM_LEN, LASER_R);
 			switch(t->get_state()){
 			case Tank::REG:
 				cannon = tank_images[i].cannon;
@@ -435,6 +442,37 @@ void BoardDrawer::draw(){
 				cannon = tank_images[i].gatling[game->get_time()%3];
 				break;
 			case Tank::LASER:
+				count = ps.size();
+				col = get_tank_col(i);
+				//ps = new SDL_Point[count];
+				
+				for(int j = 1; j<count; j++){
+					double x1 = ps[j].first;
+					double y1 = ps[j].second;
+					double x2 = ps[j-1].first;
+					double y2 = ps[j-1].second;
+					
+					double dx = x2-x1, dy=y2-y1;
+					double am = sqrt(dx*dx + dy*dy)*AIM_DENS;
+					int num = (int)am;
+					
+					for(int k = 0; k<=num; k++){
+						if(k < num || rand_range(0,1000)/1000.0 < am-num){
+							double t = rand_range(0,1000)/1000.0;
+						
+							FadeOut* fo = new FadeOut(	circ,
+														(WALL_THK + x1 + t*dx)*BLOCK_SIZE, (WALL_THK + y1 + t*dy)*BLOCK_SIZE,
+														0.0,0.0,
+														DRC(LASER_R),DRC(LASER_R),
+														0.0,
+														SDL_FLIP_NONE,
+														AIM_TIME);
+														
+							fo->set_color(col.r,col.g,col.b);
+							mid_fx.add_effect(fo);
+						}
+					}
+				}
 			case Tank::LASER_SHOOT:
 				cannon = tank_images[i].laser;
 				break;
