@@ -43,6 +43,11 @@ GameEQEventRemoveUpgrade::~GameEQEventRemoveUpgrade(){ delete e; }
 int GameEQEventRemoveUpgrade::get_x(){ return e->get_x(); }
 int GameEQEventRemoveUpgrade::get_y(){ return e->get_y(); }
 
+GameEQEventTankStuck::GameEQEventTankStuck(ExEventTankStuck* event){ e = event; }
+GameEQEventTankStuck::~GameEQEventTankStuck(){ delete e; }
+int GameEQEventTankStuck::get_ind(){ return e->get_tank()->get_ind(); }
+double GameEQEventTankStuck::get_spd(){ return e->get_spd(); }
+
 
 GameEQ::GameEQ(GameExtrap* g){
 	game = g;
@@ -93,6 +98,8 @@ GameQEvent* GameEQ::get_event(){
 			return new GameEQEventCreateUpgrade((ExEventCreateUpgrade*)e);
 		case ExEvent::TYPE_UPG_RMV:
 			return new GameEQEventRemoveUpgrade((ExEventRemoveUpgrade*)e);
+		case ExEvent::TYPE_TANK_STUCK:
+			return new GameEQEventTankStuck((ExEventTankStuck*)e);
 		}
 	}
 	return NULL;
@@ -221,6 +228,9 @@ double ShotEQ::get_ang(){
 GenShot::Type ShotEQ::get_type(){
 	return shot->get_type();
 }
+int ShotEQ::get_tank_ind(){
+	return shot->get_tank()->get_ind();
+}
 
 FragmentEQ::FragmentEQ(FragmentExtrap* f){
 	frag = f;
@@ -242,6 +252,9 @@ double FragmentEQ::get_t(){
 }
 GenShot::Type FragmentEQ::get_type(){
 	return frag->get_type();
+}
+int FragmentEQ::get_tank_ind(){
+	return -1;
 }
 
 DeathRayEQ::DeathRayEQ(DeathRayExtrap* d){
@@ -280,7 +293,8 @@ int MissileEQ::get_tank_ind(){
 	return mis->get_tank()->get_ind();
 }
 int MissileEQ::get_tar_ind(){
-	return mis->get_target()->get_ind();
+	TankExtrap* tar = mis->get_target();
+	return tar ? tar->get_ind() : -1;
 }
 double MissileEQ::get_x(){
 	return mis->get_x();

@@ -2,6 +2,7 @@
 #include "game_consts.h"
 
 #include "gui_util.h"
+#include "utils.h"
 
 #include "geom.h"
 #include <vector>
@@ -20,6 +21,96 @@
 #define TANKC_D_W TANK_D_W
 #define TANKC_D_H DRC(TANK_H * 1.2)
 
+#define DR_I_W 20
+#define DR_I_H 5
+#define DR_SPD 10
+#define DR_LOOP 100
+
+#define LASER_T 10
+
+#define SHARD_D_W DRC(TANK_W * 0.35)
+#define SHARD_D_H DRC(TANK_H * 0.5)
+
+#define SHARD_W 7
+#define SHARD_H 15
+
+#define SHARD_DAMP 0.1
+
+#define SHARD_W_DMP 0.02
+
+Shard::Shard(TankImg* tank_img, double xx, double yy, EffectManager* smkm, SDL_Texture* smk_tex){
+	smk = smkm;
+	tex = smk_tex;
+
+	img = tank_img;
+	x=xx;y=yy;
+	
+	cx = rand_range(0,2);
+	cy = rand_range(0,1);
+	
+	flip = rand_range(0,1)==0;
+	
+	ang = rand_range(-M_PI, M_PI);
+	double v = rand_range(0, 11) * 0.02; 
+	vx = v * cos(ang);
+	vy = v * sin(ang);
+	
+	ang = rand_range(-M_PI, M_PI);
+	
+	w = rand_range(-10,11)*0.01;
+	
+	timer = time = rand_range(20,30);
+}
+void Shard::step(){
+	SDL_Rect dst,src;
+	
+	dst.x = (int)((x + WALL_THK)*BLOCK_SIZE - SHARD_D_W/2.0);
+	dst.y = (int)((y + WALL_THK)*BLOCK_SIZE - SHARD_D_H/2.0);
+	dst.w = SHARD_D_W;
+	dst.h = SHARD_D_H;
+	
+	src.w = SHARD_W; src.h = SHARD_H;
+	src.x = cx*SHARD_W; src.y = cy*SHARD_H;
+		
+	double a = sqrt((timer)/(float)time);
+	
+	SDL_SetTextureAlphaMod(img->shards, (int)(a*255));
+	SDL_RenderCopyEx(get_manager()->get_renderer(), img->shards, &src, &dst, RAD2DEG(ang), NULL, flip ? SDL_FLIP_HORIZONTAL : SDL_FLIP_NONE);
+	
+	if(rand_range(0,100) / 10.0< (timer/(float)time)*4){
+		int size = 8 - (int)(4 * (timer)/(float)time);
+		
+	
+		double v = rand_range(0,11) * 0.003 * (timer)/(float)time;
+		double ang = rand_range(-100,101)*M_PI/100;
+	
+		double svx = v*cos(ang);
+		double svy = v*sin(ang);
+		FadeOut* fo = new FadeOut(	tex,
+									(x+WALL_THK)*BLOCK_SIZE, (y+WALL_THK)*BLOCK_SIZE,
+									(vx+svx)*BLOCK_SIZE, (vy+svy)*BLOCK_SIZE,
+									size, size,
+									0.0,
+									SDL_FLIP_NONE,
+									rand_range(20,30),0.5);
+		
+		fo->set_color(0,0,0);
+		fo->set_damp(0.4);
+									
+		smk->add_effect(fo);
+	}
+
+	x += vx; y += vy; ang += w;
+	
+	vx *= (1-SHARD_DAMP);
+	vy *= (1-SHARD_DAMP);
+	w *= (1-SHARD_W_DMP);
+	
+	timer--;
+	if(timer == 0) get_manager()->remove_effect(this);
+}
+
+
 std::pair<Upgrade::Type, Img> upg2img_a[UPG_NUM] = {
 	{Upgrade::GATLING, IMG_GATLING_SYM},
 	{Upgrade::LASER, IMG_LASER_SYM},
@@ -31,7 +122,7 @@ std::pair<Upgrade::Type, Img> upg2img_a[UPG_NUM] = {
 	};
 std::map<Upgrade::Type, Img> upg2img(upg2img_a,upg2img_a+UPG_NUM);
 
-BoardDrawer::BoardDrawer(GameQ* q, SDL_Renderer* r, GameConfig& cf){
+BoardDrawer::BoardDrawer(GameQ* q, SDL_Renderer* r, GameConfig& cf) : back_fx(r), mid_fx(r), front_fx(r){
 	renderer = r;
 	game = q;
 	tank_images = new TankImg[q->get_tank_num()];
@@ -40,10 +131,14 @@ BoardDrawer::BoardDrawer(GameQ* q, SDL_Renderer* r, GameConfig& cf){
 	}
 	SDL_SetRenderDrawColor(r, 255,255,255,255);
 	circ = gen_circle(r,20.0);
+	rect = gen_uniform(r,20,20, {255,255,255,255});
+	
 }
 BoardDrawer::~BoardDrawer(){
 	delete[] tank_images;
+	
 	SDL_DestroyTexture(circ);
+	SDL_DestroyTexture(rect);
 }
 void BoardDrawer::draw(){
 	SDL_SetRenderDrawColor(renderer, 240,240,240,255);
@@ -69,6 +164,7 @@ void BoardDrawer::draw(){
 		}
 	}
 	
+	
 	auto mines = game->get_round()->get_mines();
 	for(auto it = mines.begin(); it!=mines.end(); it++){
 		if((*it)->get_started()){
@@ -91,6 +187,8 @@ void BoardDrawer::draw(){
 		}
 	}
 	
+	back_fx.step();
+
 	auto upgs = game->get_round()->get_upgs();
 	for(auto it = upgs.begin(); it!=upgs.end(); it++){
 		SDL_Rect r;
@@ -111,6 +209,8 @@ void BoardDrawer::draw(){
 		DeathRayQ* dtr;
 		MissileQ* mis;
 		
+		int sy;
+		
 		double ang;
 		SDL_Point* ps;
 		SDL_Point p;
@@ -128,20 +228,54 @@ void BoardDrawer::draw(){
 			break;
 		case GenShot::TYPE_LASER:
 			sht = (ShotQ*)(*it);
-			SDL_SetRenderDrawColor(renderer, 255,0,0,255);
-			ps = new SDL_Point[sht->get_colls().size()];
-			for(int i = 0; i<sht->get_colls().size(); i++){
-				ps[i].x = DRC(sht->get_colls()[i].first);
-				ps[i].y = DRC(sht->get_colls()[i].second);
+
+			ctk = get_tank_col(sht->get_tank_ind());
+			
+			for(int i = 1; i<sht->get_colls().size(); i++){
+				double x1 = sht->get_colls()[i-1].first;
+				double y1 = sht->get_colls()[i-1].second;
+				double x2 = sht->get_colls()[i].first;
+				double y2 = sht->get_colls()[i].second;
+
+				double x = (x1+x2)/2, y = (y1+y2)/2, dx=x2-x1, dy=y2-y1;
+				double ang = RAD2DEG(atan2(y2-y1,x2-x1)) + 90.0;	
+				
+				int len = DRC(sqrt(dx*dx+dy*dy));
+				
+				FadeOut* fo;
+				
+				fo = new FadeOut(	circ,
+									(x2+WALL_THK)*BLOCK_SIZE, (y2+WALL_THK)*BLOCK_SIZE,
+									0.0,0.0,
+									DRC(LASER_R), DRC(LASER_R),
+									0.0,
+									SDL_FLIP_NONE,
+									LASER_T);
+				fo->set_color(ctk.r,ctk.g,ctk.b);
+				
+				mid_fx.add_effect(fo);
+
+				fo = new FadeOut(	rect,
+									(x+WALL_THK)*BLOCK_SIZE, (y+WALL_THK)*BLOCK_SIZE,
+									0.0,0.0,
+									DRC(LASER_R), len,
+									ang,
+									SDL_FLIP_NONE,
+									LASER_T);
+									
+				fo->set_color(ctk.r,ctk.g,ctk.b);
+				
+				mid_fx.add_effect(fo);
+
 			}
-			SDL_RenderDrawLines(renderer, ps, sht->get_colls().size());
-			delete ps;
+				
+			
 			break;
 		case GenShot::TYPE_FRAGMENT:
 			frg = (FragmentQ*)(*it);
 			ang = 180.0 * frg->get_dst() + RAD2DEG(RAD2DEG(frg->get_ang()));
-			r.x = DRC(frg->get_x());
-			r.y = DRC(frg->get_y());
+			r.x = WALL_D_T + DRC(frg->get_x());
+			r.y = WALL_D_T + DRC(frg->get_y());
 			r.w = r.h = 8;
 			r.x -= r.w/2; r.y -= r.h/2;
 			
@@ -152,19 +286,32 @@ void BoardDrawer::draw(){
 		case GenShot::TYPE_DEATH_RAY:
 			dtr = (DeathRayQ*)(*it);
 			
-			ps = new SDL_Point[dtr->get_point_num()];
-			
-			for(int i = 0; i<dtr->get_point_num(); i++){
-				ps[i].x = DRC(dtr->get_x(i));
-				ps[i].y = DRC(dtr->get_y(i));
+			r.w = DRC(2*DR_W);
+			r.h = DRC(DR_STEP);
+			sy = (game->get_time() * DR_SPD) % DR_LOOP;
+			for(int i = 1; i<dtr->get_point_num(); i++, sy -= DR_I_H){
+				double x1 = dtr->get_x(i-1);
+				double y1 = dtr->get_y(i-1);
+				double x2 = dtr->get_x(i);
+				double y2 = dtr->get_y(i);
+				
+				r.x = WALL_D_T + DRC((x1+x2)/2) - r.w/2;
+				r.y = WALL_D_T + DRC((y1+y2)/2) - r.h/2;
+				
+				SDL_Rect s;
+				s.w = DR_I_W;
+				s.h = DR_I_H;
+				s.x = 0; s.y = sy+DR_LOOP;
+				
+				sy %= DR_LOOP;
+				if(sy<0) sy+=DR_LOOP;
+				
+				double ang = RAD2DEG(atan2(y2-y1,x2-x1)) + 90;
+				
+				SDL_RenderCopyEx(	renderer, tank_images[dtr->get_tank_ind()].deathray, 
+									&s, &r, ang, NULL, SDL_FLIP_VERTICAL);
+									
 			}
-			
-			ctk = get_tank_col(dtr->get_tank_ind());
-			
-			SDL_SetRenderDrawColor(renderer, ctk.r, ctk.g, ctk.b, 255);
-			SDL_RenderDrawLines( renderer, ps, dtr->get_point_num());
-			
-			delete ps;
 			
 			break;
 		case GenShot::TYPE_WIFI:
@@ -182,12 +329,39 @@ void BoardDrawer::draw(){
 			
 			SDL_RenderCopyEx(renderer, tank_images[mis->get_tank_ind()].missile, NULL, &r, RAD2DEG(mis->get_ang())+90, &p, SDL_FLIP_NONE);
 			
+			ctr.a = 255;
+			if(mis->get_tar_ind() >= 0) ctr = get_tank_col(mis->get_tar_ind());
+			else ctr.r = ctr.g = ctr.b = 128;
+			
+			double rnd_ang = rand_range(-10,11) * M_PI/10;
+			double rnd = rand_range(0,11)/1000.0;
+			
+			double x = mis->get_x();
+			double y = mis->get_y();
+			double ang = mis->get_ang();
+			double vx = STEP_MISSILE * cos(ang) + rnd * cos(rnd_ang);
+			double vy = STEP_MISSILE * sin(ang) + rnd * sin(rnd_ang);
+			
+			
+			FadeOut* fo = new FadeOut(	circ,
+										(x+WALL_THK)*BLOCK_SIZE, (y+WALL_THK)*BLOCK_SIZE,
+										vx*BLOCK_SIZE, vy*BLOCK_SIZE,
+										8,8,
+										0,
+										SDL_FLIP_NONE,
+										30);
+										
+			fo->set_color(ctr.r,ctr.g,ctr.b);
+			fo->set_damp(0.1);
+			back_fx.add_effect(fo);
+						
 			break;
 		}
 		
 		delete (*it);
 	}
 	
+
 	for(int i = 0; i < game->get_tank_num(); i++){
 		TankQ* t = game->get_tank(i);
 		SDL_Color col = get_tank_col(i);
@@ -278,11 +452,129 @@ void BoardDrawer::draw(){
 
 		}
 	}
+	mid_fx.step();
+	front_fx.step();
 }
 TankImg* BoardDrawer::get_tank_img(int i){
 	return tank_images+i;
 }
 
+void BoardDrawer::start_round(){
+	back_fx.clear();
+	front_fx.clear();
+	mid_fx.clear();
+}
+
+void BoardDrawer::tank_death(int ind){
+	double x = game->get_tank(ind)->get_x();
+	double y = game->get_tank(ind)->get_y();
+	
+	int num = rand_range(15,20);
+	
+	for(int i = 0; i<num; i++){
+		front_fx.add_effect(new Shard(get_tank_img(ind), x, y, &mid_fx, circ));
+	}
+	
+	num = rand_range(20,30);
+	
+	for(int i = 0; i<num; i++){
+		
+		double ang = rand_range(-M_PI, M_PI);
+		double v = rand_range(0,11) * 0.006;
+		double vx = v*cos(ang);
+		double vy = v*sin(ang);
+	
+		FadeOut* fo = new FadeOut(	circ,
+									(x+WALL_THK)*BLOCK_SIZE, (y+WALL_THK)*BLOCK_SIZE,
+									vx*BLOCK_SIZE, vy*BLOCK_SIZE,
+									30,30,
+									0.0,
+									SDL_FLIP_NONE,
+									30,0.75);
+		fo->set_color(0,0,0);
+		fo->set_damp(0.3);
+		mid_fx.add_effect(fo);
+	}
+}
+
+void BoardDrawer::place_mine(GameQEventCreateMine* e){
+	double dx = MINE_DST * cos((e->get_ang()));
+	double dy = MINE_DST * sin((e->get_ang()));
+	double d = 0.2;
+	double t = 30;
+	
+	double tdr = d/(1-pow(1-d,t));
+	
+	FadeOut* fo = new FadeOut(	get_tank_img(e->get_ind())->mine_off,
+								(e->get_x()+dx+WALL_THK)*BLOCK_SIZE, (e->get_y()+dy+WALL_THK)*BLOCK_SIZE,
+								-dx * tdr * BLOCK_SIZE, -dy * tdr * BLOCK_SIZE,
+								DRC(MINE_SIZE*2), DRC(MINE_SIZE*2),
+								RAD2DEG(e->get_ang()) + 90.0,
+								SDL_FLIP_NONE,
+								t);
+								
+	fo->set_damp(d);
+	back_fx.add_effect(fo);
+}
+
+void BoardDrawer::tank_stuck(GameQEventTankStuck* e){
+	TankQ* tank = game->get_tank(e->get_ind());
+	double spd = e->get_spd();
+	
+	double x = tank->get_x(), y = tank->get_y(), ang = tank->get_ang();
+	
+	double rx = -0.4*TANK_H * (spd > 0 ? 1 : -1);
+
+	if(rand_range(0,2)<1){
+		double ry = rand_range(-10,11)*TANK_W * 0.03;
+			
+		double rnd_ang = rand_range(-100,100)*M_PI/100;
+		double rnd = rand_range(0,11)*0.002;
+
+		double vx = -spd * cos(ang) + rnd * cos(rnd_ang);
+		double vy = -spd * sin(ang) + rnd * sin(rnd_ang);
+		
+		rotate_add(ang, rx, ry, x, y);
+		
+		FadeOut* fo = new FadeOut(	circ,
+									(x+WALL_THK)*BLOCK_SIZE, (y+WALL_THK)*BLOCK_SIZE,
+									vx * BLOCK_SIZE, vy * BLOCK_SIZE,
+									20, 20,
+									0.0,
+									SDL_FLIP_NONE,
+									15, 0.5);
+		fo->set_color(150,150,150);
+		fo->set_damp(0.2);
+		
+		back_fx.add_effect(fo);
+	}
+	
+	x = tank->get_x(); y = tank->get_y();
+	
+	if(rand_range(0,9)<1){
+		double ry = rand_range(-10,11)*TANK_W * 0.03;
+		
+		double rnd_ang = rand_range(-100,100)*M_PI/100;
+		double rnd = rand_range(0,11)*0.0005;
+
+		double vx = -spd * 1.5 * cos(ang) + rnd * cos(rnd_ang);
+		double vy = -spd * 1.5 * sin(ang) + rnd * sin(rnd_ang);
+
+		rotate_add(ang, rx, ry, x, y);
+		
+		FadeOut* fo = new FadeOut(	circ,
+									(x+WALL_THK)*BLOCK_SIZE, (y+WALL_THK)*BLOCK_SIZE,
+									vx * BLOCK_SIZE, vy * BLOCK_SIZE,
+									4,4,
+									0.0,
+									SDL_FLIP_NONE,
+									10);
+		fo->set_color(0,0,0);
+		fo->set_damp(0.1);
+		
+		back_fx.add_effect(fo);
+	}
+}
 
 GameDrawer::GameDrawer(GameQ* q, SDL_Renderer* r, GameConfig& cf){
 	game = q;
@@ -332,9 +624,19 @@ void GameDrawer::draw(){
 			w = WALL_D_T*2 + BLOCK_SIZE*maze->get_w();
 			h = WALL_D_T*2 + BLOCK_SIZE*maze->get_h();
 			board_t = SDL_CreateTexture(renderer,SDL_PIXELFORMAT_UNKNOWN,SDL_TEXTUREACCESS_TARGET, w,h);
+			board->start_round();
 			break;
 		case GameQEvent::TYPE_SCORE:
 			update_score(((GameQEventScore*)event)->get_ind());
+			break;
+		case GameQEvent::TYPE_TANK_DEAD:
+			board->tank_death(((GameQEventTankDeath*)event)->get_ind());
+			break;
+		case GameQEvent::TYPE_MIN_CRT:
+			board->place_mine((GameQEventCreateMine*)event);
+			break;
+		case GameQEvent::TYPE_TANK_STUCK:
+			board->tank_stuck((GameQEventTankStuck*)event);
 			break;
 		}
 		delete event;

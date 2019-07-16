@@ -126,6 +126,17 @@ int GameEventRemoveMine::get_id(){
 	return id;
 }
 
+GameEventTankStuck::GameEventTankStuck(Tank* tk, double s){
+	t = tk;
+	spd = s;
+}
+Tank* GameEventTankStuck::get_tank(){
+	return t;
+}
+double GameEventTankStuck::get_spd(){
+	return spd;
+}
+
 
 Team::Team(int i){
 	ind = i;
@@ -529,7 +540,7 @@ void Tank::step(){
 			double step = STEP_DST * ((ctrl.front().fd ? 1 : 0) - (ctrl.front().bk ? REV_RAT : 0));
 			rotate_add(ang, step, 0, x, y);
 
-			if(check_wall_coll(nx,ny,px,py,dp)) {x=prx; y=pry;}
+			if(check_wall_coll(nx,ny,px,py,dp)) {x=prx; y=pry; if(step) game->events.push(new GameEventTankStuck(this, step));}
 			break;
 		}
 		switch(state){

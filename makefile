@@ -33,6 +33,7 @@ gui_util.h \
 game_config.h \
 texts.h \
 game_extrap.h \
+vfx.h \
 direct_ex.h \
 encoding.h \
 game_setup.h \
@@ -133,6 +134,8 @@ $(DIR)texts.o: $$(patsubst $(DIR)%.o, %.cpp, $$@) texts.h
 $(DIR)network.o: $$(patsubst $(DIR)%.o, %.cpp, $$@) network.h
 	$(CC) $(CMP_FLG) -c $< -o $@
 $(DIR)images.o: $$(patsubst $(DIR)%.o, %.cpp, $$@) images.h
+	$(CC) $(CMP_FLG) -c $< -o $@
+$(DIR)vfx.o: $$(patsubst $(DIR)%.o, %.cpp, $$@) vfx.h
 	$(CC) $(CMP_FLG) -c $< -o $@
 $(DIR)maze.o: $$(patsubst $(DIR)%.o, %.cpp, $$@) maze.h
 	$(CC) $(CMP_FLG) -c $< -o $@

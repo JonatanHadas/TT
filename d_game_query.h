@@ -95,6 +95,15 @@ public:
 	double get_x();
 	double get_y();
 	double get_ang();
+	int get_ind();
+};
+class GameDQEventTankStuck : public GameQEventTankStuck{
+	GameEventTankStuck* e;
+public:
+	GameDQEventTankStuck(GameEventTankStuck* event);
+	~GameDQEventTankStuck();
+	int get_ind();
+	double get_spd();
 };
 
 class GameDQ : public GameQ{
@@ -164,6 +173,7 @@ public:
 	double get_y();
 	double get_ang();
 	GenShot::Type get_type();
+	int get_tank_ind();
 };
 
 class FragmentDQ : public FragmentQ{
@@ -176,6 +186,7 @@ public:
 	double get_dst();
 	double get_t();
 	GenShot::Type get_type();
+	int get_tank_ind();
 };
 
 class DeathRayDQ : public DeathRayQ{

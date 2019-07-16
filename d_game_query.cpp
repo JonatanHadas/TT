@@ -39,6 +39,12 @@ GameDQEventCreateMine::~GameDQEventCreateMine(){ delete e; }
 double GameDQEventCreateMine::get_x(){ return e->get_mine()->get_x(); }
 double GameDQEventCreateMine::get_y(){ return e->get_mine()->get_y(); }
 double GameDQEventCreateMine::get_ang(){ return e->get_mine()->get_ang(); }
+int GameDQEventCreateMine::get_ind() { return e->get_mine()->get_tank()->get_ind(); }
+
+GameDQEventTankStuck::GameDQEventTankStuck(GameEventTankStuck* event){ e = event; }
+GameDQEventTankStuck::~GameDQEventTankStuck(){ delete e; }
+int GameDQEventTankStuck::get_ind(){ return e->get_tank()->get_ind(); }
+double GameDQEventTankStuck::get_spd(){ return e->get_spd(); }
 
 GameDQ::GameDQ(Game* g){
 	game = g;
@@ -86,6 +92,8 @@ GameQEvent* GameDQ::get_event(){
 			return new GameDQEventRemoveShot((GameEventRemoveShot*)e);
 		case GameEvent::TYPE_MIN_CRT:
 			return new GameDQEventCreateMine((GameEventCreateMine*)e);
+		case GameEvent::TYPE_TANK_STUCK:
+			return new GameDQEventTankStuck((GameEventTankStuck*)e);
 		}
 	}
 	return NULL;
@@ -211,6 +219,9 @@ double ShotDQ::get_ang(){
 GenShot::Type ShotDQ::get_type(){
 	return shot->get_type();
 }
+int ShotDQ::get_tank_ind(){
+	return shot->get_tank()->get_ind();
+}
 
 FragmentDQ::FragmentDQ(Fragment* f){
 	frag = f;
@@ -232,6 +243,9 @@ double FragmentDQ::get_t(){
 }
 GenShot::Type FragmentDQ::get_type(){
 	return frag->get_type();
+}
+int FragmentDQ::get_tank_ind(){
+	return -1;
 }
 
 DeathRayDQ::DeathRayDQ(DeathRay* d){
@@ -269,7 +283,8 @@ int MissileDQ::get_tank_ind(){
 	return mis->get_tank()->get_ind();
 }
 int MissileDQ::get_tar_ind(){
-	return mis->get_target()->get_ind();
+	Tank* tar = mis->get_target();
+	return tar ? tar->get_ind() : -1;
 }
 double MissileDQ::get_x(){
 	return mis->get_x();

@@ -55,6 +55,16 @@ double ExEventCreateShot::get_ang(){
 int ExEventCreateShot::get_tank_ind(){
 	return tank->get_ind();
 }
+ExEventTankStuck::ExEventTankStuck(TankExtrap* tk, double s){
+	t = tk;
+	spd = s;
+}
+TankExtrap* ExEventTankStuck::get_tank(){
+	return t;
+}
+double ExEventTankStuck::get_spd(){
+	return spd;
+}
 
 ExEventRemoveShot::ExEventRemoveShot(GenShotExtrap* s){
 	id = s->get_id();
@@ -534,7 +544,7 @@ void TankExtrap::advance(){
 				double step = STEP_DST * ((cur.fd ? 1 : 0) - (cur.bk ? REV_RAT : 0));
 				rotate_add(ang, step, 0, x, y);
 
-				if(check_wall_coll(nx,ny,px,py,dp)) {x=prx; y=pry;}		
+				if(check_wall_coll(nx,ny,px,py,dp)) {x=prx; y=pry; if(step) game->events.push(new ExEventTankStuck(this, step));}		
 				break;
 			}
 		}
