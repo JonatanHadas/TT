@@ -40,6 +40,11 @@
 
 #define SHARD_W_DMP 0.02
 
+#define WIFI_TIME 120
+#define BRDCST_S0 10
+#define BRDCST_SF 150
+#define BRDCST_T 30
+
 Shard::Shard(TankImg* tank_img, double xx, double yy, EffectManager* smkm, SDL_Texture* smk_tex){
 	smk = smkm;
 	tex = smk_tex;
@@ -359,7 +364,26 @@ void BoardDrawer::draw(){
 						
 			break;
 		}
-		
+		switch((*it)->get_type()){
+		case GenShot::TYPE_WIFI:
+			mis = (MissileQ*)(*it);
+			
+			TankQ* t = game->get_tank(mis->get_tank_ind());
+			if(!t->is_dead() && mis->get_time() % WIFI_TIME == 1){
+				double x = t->get_x(), y = t->get_y();
+				double dx = mis->get_x() - t->get_x();
+				double dy = mis->get_y() - t->get_y();
+				double ang = RAD2DEG(atan2(dy,dx));
+				
+				back_fx.add_effect(new FadeSize(get_tank_img(t->get_ind())->broadcast,
+												(x+WALL_THK)*BLOCK_SIZE,(y+WALL_THK)*BLOCK_SIZE,
+												BRDCST_S0, BRDCST_S0,
+												BRDCST_SF, BRDCST_SF,
+												ang,
+												SDL_FLIP_NONE,
+												BRDCST_T));		
+			}
+		}
 		delete (*it);
 	}
 	

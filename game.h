@@ -254,6 +254,7 @@ private:
 	Game* game;
 	int id;
 	long long int ctime;
+	int time;
 	int cround;
 protected:
 	bool out_of_tank;
@@ -275,6 +276,8 @@ public:
 	int get_id();
 	long long int get_ctime();
 	int get_cround();
+	
+	int get_time();
 };
 class Shot : public GenShot{
 private:
