@@ -2,6 +2,7 @@
 #include "game_consts.h"
 
 #include "gui_util.h"
+#include "utils.h"
 
 #include "geom.h"
 #include <vector>
@@ -247,6 +248,32 @@ void BoardDrawer::draw(){
 			
 			SDL_RenderCopyEx(renderer, tank_images[mis->get_tank_ind()].missile, NULL, &r, RAD2DEG(mis->get_ang())+90, &p, SDL_FLIP_NONE);
 			
+			ctr.a = 255;
+			if(mis->get_tar_ind() >= 0) ctr = get_tank_col(mis->get_tar_ind());
+			else ctr.r = ctr.g = ctr.b = 128;
+			
+			double rnd_ang = rand_range(-10,11) * M_PI/10;
+			double rnd = rand_range(0,11)/1000.0;
+			
+			double x = mis->get_x();
+			double y = mis->get_y();
+			double ang = mis->get_ang();
+			double vx = STEP_MISSILE * cos(ang) + rnd * cos(rnd_ang);
+			double vy = STEP_MISSILE * sin(ang) + rnd * sin(rnd_ang);
+			
+			
+			FadeOut* fo = new FadeOut(	circ,
+										(x+WALL_THK)*BLOCK_SIZE, (y+WALL_THK)*BLOCK_SIZE,
+										vx*BLOCK_SIZE, vy*BLOCK_SIZE,
+										8,8,
+										0,
+										SDL_FLIP_NONE,
+										30);
+										
+			fo->set_color(ctr.r,ctr.g,ctr.b);
+			fo->set_damp(0.1);
+			back_fx.add_effect(fo);
+						
 			break;
 		}
 		
