@@ -158,6 +158,7 @@ public:
 	double get_y();
 	double get_ang();
 	GenShot::Type get_type();
+	int get_tank_ind();
 };
 
 class FragmentDQ : public FragmentQ{
@@ -170,6 +171,7 @@ public:
 	double get_dst();
 	double get_t();
 	GenShot::Type get_type();
+	int get_tank_ind();
 };
 
 class DeathRayDQ : public DeathRayQ{

@@ -6,4 +6,7 @@
 void fill_circle(SDL_Renderer* rend, double x, double y, double r);
 SDL_Texture* gen_circle(SDL_Renderer* rend, double rad);
 
+SDL_Texture* gen_uniform(SDL_Renderer* rend, int w, int h);
+
+
 #endif

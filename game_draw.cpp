@@ -25,6 +25,8 @@
 #define DR_SPD 10
 #define DR_LOOP 100
 
+#define LASER_T 10
+
 
 std::pair<Upgrade::Type, Img> upg2img_a[UPG_NUM] = {
 	{Upgrade::GATLING, IMG_GATLING_SYM},
@@ -37,7 +39,7 @@ std::pair<Upgrade::Type, Img> upg2img_a[UPG_NUM] = {
 	};
 std::map<Upgrade::Type, Img> upg2img(upg2img_a,upg2img_a+UPG_NUM);
 
-BoardDrawer::BoardDrawer(GameQ* q, SDL_Renderer* r, std::vector<int> img_inds){
+BoardDrawer::BoardDrawer(GameQ* q, SDL_Renderer* r, std::vector<int> img_inds) : back_fx(r), mid_fx(r), front_fx(r){
 	renderer = r;
 	game = q;
 	tank_images = new TankImg[q->get_tank_num()];
@@ -46,15 +48,14 @@ BoardDrawer::BoardDrawer(GameQ* q, SDL_Renderer* r, std::vector<int> img_inds){
 	}
 	SDL_SetRenderDrawColor(r, 255,255,255,255);
 	circ = gen_circle(r,20.0);
+	rect = gen_uniform(r,20,20);
 	
-	back_fx = new EffectManager(r);
-	front_fx = new EffectManager(r);
-	mid_fx = new EffectManager(r);
 }
 BoardDrawer::~BoardDrawer(){
 	delete[] tank_images;
-	delete back_fx, front_fx, mid_fx;
+	
 	SDL_DestroyTexture(circ);
+	SDL_DestroyTexture(rect);
 }
 void BoardDrawer::draw(){
 	
@@ -104,7 +105,7 @@ void BoardDrawer::draw(){
 		}
 	}
 	
-	back_fx->step();
+	back_fx.step();
 
 	auto upgs = game->get_round()->get_upgs();
 	for(auto it = upgs.begin(); it!=upgs.end(); it++){
@@ -145,14 +146,48 @@ void BoardDrawer::draw(){
 			break;
 		case GenShot::TYPE_LASER:
 			sht = (ShotQ*)(*it);
-			SDL_SetRenderDrawColor(renderer, 255,0,0,255);
-			ps = new SDL_Point[sht->get_colls().size()];
-			for(int i = 0; i<sht->get_colls().size(); i++){
-				ps[i].x = WALL_D_T + DRC(sht->get_colls()[i].first);
-				ps[i].y = WALL_D_T + DRC(sht->get_colls()[i].second);
+
+			ctk = get_tank_col(sht->get_tank_ind());
+			
+			for(int i = 1; i<sht->get_colls().size(); i++){
+				double x1 = sht->get_colls()[i-1].first;
+				double y1 = sht->get_colls()[i-1].second;
+				double x2 = sht->get_colls()[i].first;
+				double y2 = sht->get_colls()[i].second;
+
+				double x = (x1+x2)/2, y = (y1+y2)/2, dx=x2-x1, dy=y2-y1;
+				double ang = RAD2DEG(atan2(y2-y1,x2-x1)) + 90.0;	
+				
+				int len = DRC(sqrt(dx*dx+dy*dy));
+				
+				FadeOut* fo;
+				
+				fo = new FadeOut(	circ,
+									(x2+WALL_THK)*BLOCK_SIZE, (y2+WALL_THK)*BLOCK_SIZE,
+									0.0,0.0,
+									DRC(LASER_R), DRC(LASER_R),
+									0.0,
+									SDL_FLIP_NONE,
+									LASER_T);
+				fo->set_color(ctk.r,ctk.g,ctk.b);
+				
+				mid_fx.add_effect(fo);
+
+				fo = new FadeOut(	rect,
+									(x+WALL_THK)*BLOCK_SIZE, (y+WALL_THK)*BLOCK_SIZE,
+									0.0,0.0,
+									DRC(LASER_R), len,
+									ang,
+									SDL_FLIP_NONE,
+									LASER_T);
+									
+				fo->set_color(ctk.r,ctk.g,ctk.b);
+				
+				mid_fx.add_effect(fo);
+
 			}
-			SDL_RenderDrawLines(renderer, ps, sht->get_colls().size());
-			delete ps;
+				
+			
 			break;
 		case GenShot::TYPE_FRAGMENT:
 			frg = (FragmentQ*)(*it);
@@ -169,19 +204,6 @@ void BoardDrawer::draw(){
 		case GenShot::TYPE_DEATH_RAY:
 			dtr = (DeathRayQ*)(*it);
 			
-			/*ps = new SDL_Point[dtr->get_point_num()];
-			
-			for(int i = 0; i<dtr->get_point_num(); i++){
-				ps[i].x = DRC(dtr->get_x(i));
-				ps[i].y = DRC(dtr->get_y(i));
-			}
-			
-			ctk = get_tank_col(dtr->get_tank_ind());
-			
-			SDL_SetRenderDrawColor(renderer, ctk.r, ctk.g, ctk.b, 255);
-			SDL_RenderDrawLines( renderer, ps, dtr->get_point_num());
-			
-			delete ps;*/
 			r.w = DRC(2*DR_W);
 			r.h = DRC(DR_STEP);
 			sy = (game->get_time() * DR_SPD) % DR_LOOP;
@@ -206,6 +228,7 @@ void BoardDrawer::draw(){
 				
 				SDL_RenderCopyEx(	renderer, tank_images[dtr->get_tank_ind()].deathray, 
 									&s, &r, ang, NULL, SDL_FLIP_VERTICAL);
+									
 			}
 			
 			break;
@@ -230,7 +253,7 @@ void BoardDrawer::draw(){
 		delete (*it);
 	}
 	
-	mid_fx->step();
+	mid_fx.step();
 
 	for(int i = 0; i < game->get_tank_num(); i++){
 		TankQ* t = game->get_tank(i);
@@ -322,7 +345,7 @@ void BoardDrawer::draw(){
 
 		}
 	}
-	front_fx->step();
+	front_fx.step();
 }
 TankImg* BoardDrawer::get_tank_img(int i){
 	return tank_images+i;

@@ -206,6 +206,9 @@ double ShotDQ::get_ang(){
 GenShot::Type ShotDQ::get_type(){
 	return shot->get_type();
 }
+int ShotDQ::get_tank_ind(){
+	return shot->get_tank()->get_ind();
+}
 
 FragmentDQ::FragmentDQ(Fragment* f){
 	frag = f;
@@ -227,6 +230,9 @@ double FragmentDQ::get_t(){
 }
 GenShot::Type FragmentDQ::get_type(){
 	return frag->get_type();
+}
+int FragmentDQ::get_tank_ind(){
+	return -1;
 }
 
 DeathRayDQ::DeathRayDQ(DeathRay* d){

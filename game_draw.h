@@ -17,10 +17,12 @@ class BoardDrawer{
 	SDL_Renderer* renderer;
 	TankImg* tank_images;
 	SDL_Texture* circ;
+	SDL_Texture* rect;
 	
-	EffectManager* back_fx;
-	EffectManager* front_fx;
-	EffectManager* mid_fx;
+	EffectManager back_fx;
+	EffectManager front_fx;
+	EffectManager mid_fx;
+	
 public:
 	BoardDrawer(GameQ* q, SDL_Renderer* rend, std::vector<int> img_inds);
 	~BoardDrawer();

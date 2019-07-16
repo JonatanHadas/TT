@@ -139,6 +139,7 @@ public:
 	virtual double get_y() = 0;
 	virtual double get_ang() = 0;
 	virtual GenShot::Type get_type() = 0;
+	virtual int get_tank_ind() = 0;
 };
 
 class ShotQ : public GenShotQ{
@@ -155,7 +156,6 @@ public:
 
 class DeathRayQ : public GenShotQ{
 public:
-	virtual int get_tank_ind() = 0;
 	virtual int get_point_num() = 0;
 	virtual double get_x(int i) = 0;
 	virtual double get_y(int i) = 0;
@@ -163,7 +163,6 @@ public:
 
 class MissileQ : public GenShotQ{
 public:
-	virtual int get_tank_ind() = 0;
 	virtual int get_tar_ind() = 0;
 };
 
