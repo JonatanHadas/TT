@@ -102,6 +102,8 @@ int GameEventRemoveMine::get_id(){
 }
 
 
+
+
 Team::Team(int i){
 	ind = i;
 	num_tot = num_alive = score = 0;
@@ -534,6 +536,7 @@ void Tank::step(){
 			if(ctrl.front().sht && !p_ctrl.sht){
 				state = Tank::DEATH_RAY_WAIT1;
 				timer = DR_TIME;
+				game->events.push(new GameEventEtc(GameEvent::TYPE_LOAD));
 			}
 			break;
 		case Tank::WIFI:
@@ -581,9 +584,7 @@ void Tank::step(){
 				break;
 			}
 		}
-		
-		if(state != os) game->events.push(new GameEventEtc(GameEvent::TYPE_STT));
-		
+				
 		if(ctbl) ctbl->set_ctrl(ctrl.front());
 	}
 	

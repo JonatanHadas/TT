@@ -344,6 +344,19 @@ void GameDrawer::draw(){
 			play(SND_EXPLOSION);
 			break;
 		case GameQEvent::TYPE_SHOT_CRT:
+			switch(((GameQEventCreateShot*)event)->get_stype()){
+			case GenShot::TYPE_REG:
+			case GenShot::TYPE_GATLING:
+			case GenShot::TYPE_BOMB:
+				//play(SND_);
+				break;
+			case GenShot::TYPE_LASER:
+				play(SND_LASER);
+				break;
+			case GenShot::TYPE_DEATH_RAY:
+				play(SND_RAYGUN);
+				break;
+			}
 			break;
 		case GameQEvent::TYPE_SHOT_RMV:
 			break;
@@ -364,6 +377,9 @@ void GameDrawer::draw(){
 			break;
 		case GameQEvent::TYPE_EXPL:
 			play(SND_EXPLOSION_SMALL);
+			break;
+		case GameQEvent::TYPE_LOAD:
+			play(SND_RAYLOAD);
 			break;
 		}
 	}

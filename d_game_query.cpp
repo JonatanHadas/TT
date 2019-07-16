@@ -87,6 +87,8 @@ GameQEvent* GameDQ::get_event(){
 			return new GameQEventEtc(GameQEvent::TYPE_COLL);
 		case GameEvent::TYPE_EXPL:
 			return new GameQEventEtc(GameQEvent::TYPE_EXPL);
+		case GameEvent::TYPE_LOAD:
+			return new GameQEventEtc(GameQEvent::TYPE_LOAD);
 		}
 	}
 	return NULL;

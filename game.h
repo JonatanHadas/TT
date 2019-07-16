@@ -47,7 +47,7 @@ public:
 		TYPE_UPG_CRT, TYPE_UPG_RMV,
 		TYPE_MIN_CRT, TYPE_MIN_RMV,
 		TYPE_MIN_ACT, TYPE_MIN_STR,
-		TYPE_COLL, TYPE_EXPL, TYPE_STT, 
+		TYPE_COLL, TYPE_EXPL, TYPE_LOAD, 
 	};
 	virtual Type get_type()=0;
 };
