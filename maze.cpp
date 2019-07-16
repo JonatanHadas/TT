@@ -31,8 +31,62 @@ void wall_rem(int w, int h, bool** hw, bool** vw, std::vector<std::pair<int,int>
 		}
 	}
 }
+#include <stdio.h>
 void exp_tree(int w, int h, bool** hw, bool** vw, int avg){
+	bool** vis = new bool*[w];
+	for(int i = 0; i<w; i++){
+		vis[i] = new bool[h];
+		for(int j = 0; j<h; j++){
+			vis[i][j] = false;
+			if(i<w-1) vw[i][j] = true;
+			if(j<h-1) hw[i][j] = true;
+		}
+	}
+
+	int x = rand_range(0,w), y = rand_range(0,h);
+	vis[x][y] = true;
+	int cnt = 1;
+	while(cnt < w*h){
+		int dx = 0, dy = 0;
+		switch(rand_range(0,4)){
+		case 0:
+			dx=1;
+			break;
+		case 1:
+			dx=-1;
+			break;
+		case 2:
+			dy=1;
+			break;
+		case 3:
+			dy=-1;
+			break;
+		}
+		int nx = x+dx;
+		int ny = y+dy;
+		if(nx >= 0 && nx < w && ny >= 0 && ny < h){
+			if(!vis[nx][ny]){
+				cnt++;
+				if(dx) vw[nx<x ? nx : x][y] = false;
+				if(dy) hw[x][ny<y ? ny : y] = false;
+			}
+			vis[nx][ny] = true;
+			x = nx; y = ny;
+		}
+	}
+	avg = rand_range(avg/2, avg*3/2);
+	for(int i = 0; i<avg; i++){
+		if(rand_range(0,2)<1){
+			hw[rand_range(0,w)][rand_range(0,h-1)] = false;
+		}
+		else{
+			vw[rand_range(0,w-1)][rand_range(0,h)] = false;
+		}
+	}
 	
+	
+	for(int i = 0; i<w; i++) delete[] vis[i];
+	delete[] vis;
 }
 
 
@@ -79,7 +133,7 @@ void Maze::generate(std::vector<std::pair<int,int>> c_points, GenMethod m){
 	case GEN_NONE:
 		break;
 	case GEN_EXP_TREE:
-		exp_tree(w,h,hwalls,vwalls,(w+h)*10);
+		exp_tree(w,h,hwalls,vwalls,(w+h)*2);
 		break;
 	case GEN_WALL_REM:
 		wall_rem(w,h,hwalls,vwalls,c_points);

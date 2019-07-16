@@ -74,7 +74,7 @@ Round::Round(Game* g){
 		game->get_tank(i)->ang = rand_range(0,TANK_TURN_N-1) * TANK_TURN;
 	}
 	
-	maze->generate(tnks, Maze::GEN_WALL_REM);
+	maze->generate(tnks, Maze::GEN_EXP_TREE);
 }
 Round::~Round(){
 	delete maze;
