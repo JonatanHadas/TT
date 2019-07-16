@@ -90,6 +90,7 @@ public:
 	virtual double get_x() = 0;
 	virtual double get_y() = 0;
 	virtual double get_ang() = 0;
+	virtual int get_ind() = 0;
 };
 
 class GameQ{

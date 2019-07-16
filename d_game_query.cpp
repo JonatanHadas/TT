@@ -34,6 +34,7 @@ GameDQEventCreateMine::~GameDQEventCreateMine(){ delete e; }
 double GameDQEventCreateMine::get_x(){ return e->get_mine()->get_x(); }
 double GameDQEventCreateMine::get_y(){ return e->get_mine()->get_y(); }
 double GameDQEventCreateMine::get_ang(){ return e->get_mine()->get_ang(); }
+int GameDQEventCreateMine::get_ind() { return e->get_mine()->get_tank()->get_ind(); }
 
 GameDQ::GameDQ(Game* g){
 	game = g;

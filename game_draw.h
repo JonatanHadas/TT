@@ -46,6 +46,8 @@ public:
 	void start_round();
 	
 	void tank_death(int ind);
+	
+	void place_mine(GameQEventCreateMine* e);
 };
 
 class GameDrawer{

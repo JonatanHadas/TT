@@ -497,6 +497,25 @@ void BoardDrawer::tank_death(int ind){
 	}
 }
 
+void BoardDrawer::place_mine(GameQEventCreateMine* e){
+	double dx = MINE_DST * cos((e->get_ang()));
+	double dy = MINE_DST * sin((e->get_ang()));
+	double d = 0.2;
+	double t = 30;
+	
+	double tdr = d/(1-pow(1-d,t));
+	
+	FadeOut* fo = new FadeOut(	get_tank_img(e->get_ind())->mine_off,
+								(e->get_x()+dx+WALL_THK)*BLOCK_SIZE, (e->get_y()+dy+WALL_THK)*BLOCK_SIZE,
+								-dx * tdr * BLOCK_SIZE, -dy * tdr * BLOCK_SIZE,
+								DRC(MINE_SIZE*2), DRC(MINE_SIZE*2),
+								RAD2DEG(e->get_ang()) + 90.0,
+								SDL_FLIP_NONE,
+								t);
+								
+	fo->set_damp(d);
+	back_fx.add_effect(fo);
+}
 
 
 GameDrawer::GameDrawer(GameQ* q, SDL_Renderer* r, std::vector<int> img_inds){
@@ -555,6 +574,9 @@ void GameDrawer::draw(){
 			break;
 		case GameQEvent::TYPE_TANK_DEAD:
 			board->tank_death(((GameQEventTankDeath*)event)->get_ind());
+			break;
+		case GameQEvent::TYPE_MIN_CRT:
+			board->place_mine((GameQEventCreateMine*)event);
 			break;
 		}
 	}

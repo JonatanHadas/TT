@@ -89,6 +89,7 @@ public:
 	double get_x();
 	double get_y();
 	double get_ang();
+	int get_ind();
 };
 
 class GameDQ : public GameQ{
