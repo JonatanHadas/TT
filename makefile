@@ -19,7 +19,8 @@ maze.h \
 images.h \
 gui_util.h \
 game_config.h \
-texts.h
+texts.h \
+sounds.h \
 
 OBJ_NAMES = $(patsubst %.h,%.o, $(HEADS1))
 OBJ_NAMES += main.o
@@ -90,6 +91,8 @@ $(DIR)clock.o: $$(patsubst $(DIR)%.o, %.cpp, $$@) clock.h
 $(DIR)texts.o: $$(patsubst $(DIR)%.o, %.cpp, $$@) images.h
 	$(CC) $(CMP_FLG) -c $< -o $@
 $(DIR)images.o: $$(patsubst $(DIR)%.o, %.cpp, $$@) images.h
+	$(CC) $(CMP_FLG) -c $< -o $@
+$(DIR)sounds.o: $$(patsubst $(DIR)%.o, %.cpp, $$@) sounds.h
 	$(CC) $(CMP_FLG) -c $< -o $@
 $(DIR)maze.o: $$(patsubst $(DIR)%.o, %.cpp, $$@) maze.h
 	$(CC) $(CMP_FLG) -c $< -o $@

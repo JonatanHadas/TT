@@ -3,6 +3,8 @@
 
 #include "gui_util.h"
 
+#include "sounds.h"
+
 #include "geom.h"
 #include <vector>
 
@@ -333,9 +335,35 @@ void GameDrawer::draw(){
 			w = WALL_D_T*2 + BLOCK_SIZE*maze->get_w();
 			h = WALL_D_T*2 + BLOCK_SIZE*maze->get_h();
 			board_t = SDL_CreateTexture(renderer,SDL_PIXELFORMAT_UNKNOWN,SDL_TEXTUREACCESS_TARGET, w,h);
+			silence();
 			break;
 		case GameQEvent::TYPE_SCORE:
 			update_score(((GameQEventScore*)event)->get_ind());
+			break;
+		case GameQEvent::TYPE_TANK_DEAD:
+			play(SND_EXPLOSION);
+			break;
+		case GameQEvent::TYPE_SHOT_CRT:
+			break;
+		case GameQEvent::TYPE_SHOT_RMV:
+			break;
+		case GameQEvent::TYPE_UPG_CRT:
+			play(SND_POPUP);
+			break;
+		case GameQEvent::TYPE_UPG_RMV:
+			play(SND_TAKE);
+			break;
+		case GameQEvent::TYPE_MIN_CRT:
+			play(SND_OFF);
+			break;
+		case GameQEvent::TYPE_MIN_ACT:
+			play(SND_ON);
+			break;
+		case GameQEvent::TYPE_COLL:
+			play(SND_COLLISION);
+			break;
+		case GameQEvent::TYPE_EXPL:
+			play(SND_EXPLOSION_SMALL);
 			break;
 		}
 	}
