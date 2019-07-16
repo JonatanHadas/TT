@@ -7,6 +7,11 @@
 #include <SDL2/SDL_mixer.h>
 #include <enet/enet.h>
 
+#include "gui.h"
+#include "texts.h"
+#include "keys.h"
+#include "images.h"
+
 SDL_Window*  screen;
 SDL_Renderer* rend;
 
@@ -53,10 +58,14 @@ int main(int argc, char* argv[]){
 	}
 	atexit(enet_deinitialize);
 	
-	/*if(!load_fonts()){
+	if(!load_fonts()){
 		fprintf(stderr, "Error while loading fonts\n%s%s\n",SDL_GetError(), TTF_GetError());
 		return 0;
-	}*/
+	}
+	if(!load_keys()){
+		fprintf(stderr, "Error while loading keysets\n");
+		return 0;
+	}
 	
 	screen = SDL_CreateWindow(
 										"Tank Trouble",
@@ -79,17 +88,17 @@ int main(int argc, char* argv[]){
 	}
 	atexit(close_rend);
 	
-	/*if(!load_images(rend)){
+	if(!load_images(rend)){
 		fprintf(stderr, "Error while loading images\n%s%s\n",SDL_GetError(), IMG_GetError());
 		return 0;
-	}*/
+	}
 	
 	SDL_SetHint(SDL_HINT_RENDER_SCALE_QUALITY, "best");
 	//SDL_RenderSetLogicalSize(rend, 1280, 960);
-	
-	/*Main* m = new Main(rend);
+
+	Main* m = new Main(rend);
 	m->mainloop();
-	delete m;*/
+	delete m;
 	
 	return 0;
 }
