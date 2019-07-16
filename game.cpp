@@ -333,7 +333,7 @@ Round::Round(Game* g){
 		
 	}
 	
-	maze->generate(tnks, Maze::GEN_WALL_REM);
+	maze->generate(tnks, Maze::GEN_EXP_TREE);
 	maze->calc_dists();
 }
 Round::~Round(){
