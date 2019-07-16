@@ -111,6 +111,8 @@ class GameDQ : public GameQ{
 	RoundDQ* round;
 	std::vector<TankDQ*> tanks;
 	std::vector<TeamDQ*> teams;
+	
+	friend TankDQ;
 public:
 	GameDQ(Game* game);
 	~GameDQ();
@@ -139,6 +141,7 @@ public:
 class TankDQ : public TankQ{
 	Tank* tank;
 	TeamDQ* team;
+	Game* game;
 public:
 	TankDQ(Tank* tank, GameDQ* game);
 	double get_x();
@@ -152,6 +155,8 @@ public:
 	void push_ctrl(ControlState ctrl);
 	
 	Tank::State get_state();
+	
+	std::vector<std::pair<double, double>> predict_colls(double len, double r);
 };
 class RoundDQ : public RoundQ{
 	Round* round;

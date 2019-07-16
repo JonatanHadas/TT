@@ -147,6 +147,8 @@ public:
 	virtual TeamQ* get_team() = 0;
 	
 	virtual void push_ctrl(ControlState ctrl) = 0;
+	
+	virtual std::vector<std::pair<double, double>> predict_colls(double len, double r) = 0;
 };
 class RoundQ{
 public:

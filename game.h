@@ -289,6 +289,7 @@ private:
 	bool found;
 	double nx,ny;
 	
+	
 	int tm;
 	double col_t;
 	void reflect();
