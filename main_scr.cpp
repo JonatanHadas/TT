@@ -957,9 +957,11 @@ void PlayerSetting::set_id(int i){
 #define TEAM_MH 40
 
 #define UPG_X 250
-#define UPG_Y 234
+#define UPG_Y 214
 #define UPG_SZ 32
 #define UPG_SP 8
+#define UPG_LNS 2
+#define UPG_PL ((UPG_NUM-1)/UPG_LNS + 1)
 
 SettingMenu::SettingMenu(SDL_Renderer* ren, MainScr* m) : SubMenu(ren, m), tie_lim(ren,{TIE_X,TIE_Y,TIE_W, TIE_H},0,0,2), game_lim(ren,{LIM_X, LIM_Y, LIM_W, LIM_H},10,0,true), team_num(ren, {TEAM_X, TEAM_Y, TEAM_W, TEAM_H},2,2,true){
 	players_t = SDL_CreateTexture(	rend, SDL_PIXELFORMAT_UNKNOWN, SDL_TEXTUREACCESS_TARGET, 
@@ -1108,8 +1110,9 @@ SDL_Rect SettingMenu::use_rect(bool use){
 SDL_Rect SettingMenu::upg_rect(int ind){
 	SDL_Rect r;
 	r.h = r.w = UPG_SZ;
-	r.x = UPG_X + ind*(r.w + UPG_SP);
-	r.y = UPG_Y;
+	int ri = ind/UPG_PL, ci = ind%UPG_PL;
+	r.x = UPG_X + ci*(r.w + UPG_SP);
+	r.y = UPG_Y + ri*(r.h + UPG_SP);;
 	return r;
 }
 
