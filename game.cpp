@@ -1216,8 +1216,8 @@ void Missile::advance(){
 	
 	double nx,ny;
 	if(check_wall(nx,ny)){
-		if(nx*vx<0) vx = -vx;
-		if(ny*vy<0) vy = -vy;
+		if(nx*vx>0) vx = -vx;
+		if(ny*vy>0) vy = -vy;
 		
 		out_of_tank = true;
 	}
@@ -1315,6 +1315,8 @@ void HomingMissile::home_target(){
 	Maze* maze = get_game()->get_round()->get_maze();
 	for(int i = 0; i<get_game()->get_tank_num(); i++){
 		Tank* t = get_game()->get_tank(i);
+		
+		if(t->is_dead()) continue;
 		
 		int ddx,ddy, ddist = maze->dist(x, y, t->get_x(), t->get_y(), ddx,ddy);
 		if(ddist >= 0 && (target == NULL || ddist<dist)){
