@@ -283,8 +283,7 @@ TankImg* BoardDrawer::get_tank_img(int i){
 	return tank_images+i;
 }
 
-
-GameDrawer::GameDrawer(GameQ* q, SDL_Renderer* r, GameConfig& cf){
+GameDrawer::GameDrawer(GameQ* q, SDL_Renderer* r, GameConfig& cf, end_func on_end, void* on_end_param){
 	game = q;
 	renderer = r;
 	board = new BoardDrawer(q,r,cf);
@@ -293,6 +292,7 @@ GameDrawer::GameDrawer(GameQ* q, SDL_Renderer* r, GameConfig& cf){
 		scores.push_back(NULL);
 		update_score(i);
 	}
+	oe = on_end; oep = on_end_param;
 }
 GameDrawer::~GameDrawer(){
 	if(board) delete board;
@@ -335,6 +335,9 @@ void GameDrawer::draw(){
 			break;
 		case GameQEvent::TYPE_SCORE:
 			update_score(((GameQEventScore*)event)->get_ind());
+			break;
+		case GameQEvent::TYPE_END_GAME:
+			oe(oep);
 			break;
 		}
 		delete event;

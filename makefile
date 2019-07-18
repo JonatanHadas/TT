@@ -33,6 +33,7 @@ gui_util.h \
 game_config.h \
 texts.h \
 game_extrap.h \
+endgame.h \
 direct_ex.h \
 encoding.h \
 game_setup.h \
@@ -151,6 +152,8 @@ $(DIR)game_draw.o: $$(patsubst $(DIR)%.o, %.cpp, $$@) $(HEADS)
 $(DIR)game_gui.o: $$(patsubst $(DIR)%.o, %.cpp, $$@) $(HEADS)
 	$(CC) $(CMP_FLG) -c $< -o $@
 $(DIR)game_extrap.o: $$(patsubst $(DIR)%.o, %.cpp, $$@) $(HEADS)
+	$(CC) $(CMP_FLG) -c $< -o $@
+$(DIR)endgame.o: $$(patsubst $(DIR)%.o, %.cpp, $$@) $(HEADS)
 	$(CC) $(CMP_FLG) -c $< -o $@
 $(DIR)direct_ex.o: $$(patsubst $(DIR)%.o, %.cpp, $$@) $(HEADS)
 	$(CC) $(CMP_FLG) -c $< -o $@

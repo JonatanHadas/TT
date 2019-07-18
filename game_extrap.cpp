@@ -186,6 +186,7 @@ void GameExtrap::step(){
 			add_score(((ExInEventScore*)e)->get_ind(), ((ExInEventScore*)e)->get_diff());
 			break;
 		case ExInEvent::TYPE_END_GAME:
+			events.push(new ExEventEndGame(this));
 			break;
 		case ExInEvent::TYPE_SHT_CRT:
 			create_shot((ExInEventCreateShot*)e);
