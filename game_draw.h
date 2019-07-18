@@ -22,6 +22,8 @@ public:
 	TankImg* get_tank_img(int i);
 };
 
+typedef void (*end_func)(void*);
+
 class GameDrawer{
 	GameQ* game;
 	BoardDrawer* board;
@@ -30,8 +32,10 @@ class GameDrawer{
 	
 	std::vector<Msg*> scores;
 	int w,h;
+	end_func oe;
+	void* oep;
 public:
-	GameDrawer(GameQ* q, SDL_Renderer* rend, std::vector<int> img_inds);
+	GameDrawer(GameQ* q, SDL_Renderer* rend, std::vector<int> img_inds, end_func on_end, void* on_end_param);
 	~GameDrawer();
 	void draw();
 	void update_score(int ind);

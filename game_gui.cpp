@@ -1,9 +1,16 @@
 #include "game_gui.h"
 #include <SDL2/SDL.h>
 
+#include "endgame.h"
+
+void endf(void* p){
+	((GameGui*)p)->end();
+}
+
 GameGui::GameGui(GameQ* q, Main* upper, std::vector<int> img_inds) : State(upper){
+	img_is = img_inds;
 	game = q;
-	drawer = new GameDrawer(q, upper->get_renderer(), img_inds);
+	drawer = new GameDrawer(q, upper->get_renderer(), img_inds, endf, this);
 	upper->set_screen_size(GSCR_W, GSCR_H);
 }
 GameGui::~GameGui(){
@@ -42,4 +49,10 @@ bool GameGui::step(){
 	game->advance();
 	drawer->draw();
 	return false;
+}
+
+void GameGui::end(){
+	std::vector<std::string> names;
+	for(int i = 0; i<game->get_tank_num(); i++) names.push_back(std::string());
+	upper->set_state(new EndGame(upper, game, img_is, names));
 }
