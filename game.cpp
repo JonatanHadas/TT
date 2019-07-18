@@ -324,7 +324,8 @@ int Game::get_round_num(){
 
 Round::Round(Game* g){
 	game=g;
-	int min=10,max=20;
+	double stn = sqrt(g->get_tank_num());
+	int min=stn*4,max=stn*8; 
 	maze = new Maze(rand_range(min,max), rand_range(min,max));
 	
 	upg_timer = rand_range(UPG_MIN_TIME, UPG_MAX_TIME);
