@@ -66,14 +66,14 @@ Shard::Shard(TankImg* tank_img, double xx, double yy, EffectManager* smkm, SDL_T
 	
 	flip = rand_range(0,1)==0;
 	
-	ang = rand_range(-M_PI, M_PI);
-	double v = rand_range(0, 11) * 0.02; 
+	ang = rand_range(-100,100)*M_PI/100;
+	double v = rand_range(0, 101) * 0.002; 
 	vx = v * cos(ang);
 	vy = v * sin(ang);
 	
-	ang = rand_range(-M_PI, M_PI);
+	ang = rand_range(-100,100)*M_PI/100;
 	
-	w = rand_range(-10,11)*0.01;
+	w = rand_range(-100,101)*0.001;
 	
 	timer = time = rand_range(20,30);
 }
@@ -93,12 +93,12 @@ void Shard::step(){
 	SDL_SetTextureAlphaMod(img->shards, (int)(a*255));
 	SDL_RenderCopyEx(get_manager()->get_renderer(), img->shards, &src, &dst, RAD2DEG(ang), NULL, flip ? SDL_FLIP_HORIZONTAL : SDL_FLIP_NONE);
 	
-	if(rand_range(0,100) / 10.0< (timer/(float)time)*4){
+	if(rand_range(0,1000) / 100.0< (timer/(float)time)*4){
 		int size = 8 - (int)(4 * (timer)/(float)time);
 		
 	
-		double v = rand_range(0,11) * 0.003 * (timer)/(float)time;
-		double ang = rand_range(-100,101)*M_PI/100;
+		double v = rand_range(0,101) * 0.0003 * (timer)/(float)time;
+		double ang = rand_range(-100,100)*M_PI/100;
 	
 		double svx = v*cos(ang);
 		double svy = v*sin(ang);
@@ -349,8 +349,8 @@ void BoardDrawer::draw(){
 			if(mis->get_tar_ind() >= 0) ctr = get_tank_col(mis->get_tar_ind());
 			else ctr.r = ctr.g = ctr.b = 128;
 			
-			double rnd_ang = rand_range(-10,11) * M_PI/10;
-			double rnd = rand_range(0,11)/1000.0;
+			double rnd_ang = rand_range(-100,101) * M_PI/100;
+			double rnd = rand_range(0,101)/10000.0;
 			
 			double x = mis->get_x();
 			double y = mis->get_y();
@@ -569,7 +569,7 @@ void BoardDrawer::tank_death(int ind){
 	
 	for(int i = 0; i<num; i++){
 		
-		double ang = rand_range(-M_PI, M_PI);
+		double ang = rand_range(-100,100)*M_PI/100;
 		double v = rand_range(0,11) * 0.006;
 		double vx = v*cos(ang);
 		double vy = v*sin(ang);
@@ -616,10 +616,10 @@ void BoardDrawer::tank_stuck(GameQEventTankStuck* e){
 	double rx = -0.4*TANK_H * (spd > 0 ? 1 : -1);
 
 	if(rand_range(0,2)<1){
-		double ry = rand_range(-10,11)*TANK_W * 0.03;
+		double ry = rand_range(-100,101)*TANK_W * 0.003;
 			
 		double rnd_ang = rand_range(-100,100)*M_PI/100;
-		double rnd = rand_range(0,11)*0.002;
+		double rnd = rand_range(0,101)*0.0002;
 
 		double vx = -spd * cos(ang) + rnd * cos(rnd_ang);
 		double vy = -spd * sin(ang) + rnd * sin(rnd_ang);
@@ -642,10 +642,10 @@ void BoardDrawer::tank_stuck(GameQEventTankStuck* e){
 	x = tank->get_x(); y = tank->get_y();
 	
 	if(rand_range(0,9)<1){
-		double ry = rand_range(-10,11)*TANK_W * 0.03;
+		double ry = rand_range(-100,101)*TANK_W * 0.003;
 		
 		double rnd_ang = rand_range(-100,100)*M_PI/100;
-		double rnd = rand_range(0,11)*0.0005;
+		double rnd = rand_range(0,101)*0.00005;
 
 		double vx = -spd * 1.5 * cos(ang) + rnd * cos(rnd_ang);
 		double vy = -spd * 1.5 * sin(ang) + rnd * sin(rnd_ang);
