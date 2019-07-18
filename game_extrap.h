@@ -168,6 +168,8 @@ public:
 	
 	long long int get_time();
 	void leave();
+	
+	int get_round_num();
 
 private:
 	void start_round(ExInEventStartRound* e);
@@ -290,7 +292,7 @@ class ShotExtrap : public GenShotExtrap{
 	void reflect();
 public:
 	ShotExtrap(GameExtrap* game, ExInEventCreateShot* e);
-	double get_r();
+	virtual double get_r();
 	double get_x();
 	double get_y();
 	double get_ang();

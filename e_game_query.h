@@ -94,12 +94,12 @@ public:
 	double get_spd();
 };
 
-
 class GameEQ : public GameQ{
 	GameExtrap* game;
 	RoundEQ* round;
 	std::vector<TankEQ*> tanks;
 	std::vector<TeamEQ*> teams;
+	friend TankEQ;
 public:
 	GameEQ(GameExtrap* game);
 	~GameEQ();
@@ -129,6 +129,7 @@ public:
 class TankEQ : public TankQ{
 	TankExtrap* tank;
 	TeamEQ* team;
+	GameExtrap* game;
 public:
 	TankEQ(TankExtrap* tank, GameEQ* game);
 	double get_x();
@@ -141,6 +142,8 @@ public:
 	TeamQ* get_team();
 	
 	void push_ctrl(ControlState ctrl);
+	
+	std::vector<std::pair<double, double>> predict_colls(double len, double r);
 };
 class RoundEQ : public RoundQ{
 	RoundExtrap* round;

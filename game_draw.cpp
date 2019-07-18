@@ -455,7 +455,7 @@ void BoardDrawer::draw(){
 			SDL_Texture* cannon;
 			int count;
 			SDL_Color col;
-			auto ps = t->predict_colls(AIM_LEN, LASER_R);
+			std::vector<std::pair<double,double>> ps;
 			switch(t->get_state()){
 			case Tank::REG:
 				cannon = tank_images[i].cannon;
@@ -468,9 +468,11 @@ void BoardDrawer::draw(){
 				cannon = tank_images[i].gatling[game->get_time()%3];
 				break;
 			case Tank::LASER:
+				ps = t->predict_colls(AIM_LEN, LASER_R);
 				count = ps.size();
 				col = get_tank_col(i);
-				//ps = new SDL_Point[count];
+				
+				
 				
 				for(int j = 1; j<count; j++){
 					double x1 = ps[j].first;

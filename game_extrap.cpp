@@ -277,6 +277,9 @@ void GameExtrap::remove_shot(int id){
 void GameExtrap::leave(){
 	in->leave();
 }
+int GameExtrap::get_round_num(){
+	return round_num;
+}
 void GameExtrap::create_frag(ExInEventCreateFragment* e){
 	if(e->get_round() == round_num){
 		FragmentExtrap* frag = new FragmentExtrap(this,e);
@@ -613,14 +616,13 @@ double ShotExtrap::check_wall(){
 	int ix = xx;
 	int iy = yy;
 	int ixx = vx>0 ? 1 : 0;
-	int iyy = vy<0 ? 1 : 0;
+	int iyy = vy>0 ? 1 : 0;
 	int idx = vx>0 ? 1 : -1;
-	int idy = vy<0 ? 1 : -1;
-	int vsg = -idx*idy;
+	int idy = vy>0 ? 1 : -1;
+	int vsg = idx*idy;
 	double wxs[4],wys[4],nnx,nny;
 	double t = -1;
-	while(abs(ix - (int)xx)+abs(iy - (int)yy) <= sqrt(vx*vx+vy*vy)*(get_game()->get_time()-ctime-col_t+1)){
-		
+	while(abs(ix - (int)xx)+abs(iy - (int)yy) <= 2*sqrt(vx*vx+vy*vy)*(get_game()->get_time()-ctime-col_t+1)){
 		double tt;
 		for(int i = -1; i<=1; i++){
 			for(int j = -1; j<1; j++){
@@ -687,7 +689,7 @@ void ShotExtrap::reflect(){
 }
 void ShotExtrap::advance(){
 	colls.clear();
-	colls.push_back({get_x(), get_y()});
+	//colls.push_back({get_x(), get_y()});
 	while(col_t < get_game()->get_time()-ctime) {
 		reflect();
 	}

@@ -1,5 +1,7 @@
 #include "e_game_query.h"
 
+#include "geom.h"
+
 GameEQEventStartRnd::GameEQEventStartRnd(ExEventStartRnd* event){ e = event; }
 GameEQEventStartRnd::~GameEQEventStartRnd(){ delete e; }
 
@@ -143,6 +145,7 @@ TankEQ::TankEQ(TankExtrap* t, GameEQ* game){
 	tank = t;
 	team = (TeamEQ*)game->get_team(tank->get_team()->get_ind());
 	team->tanks.push_back(this);
+	this->game = game->game;
 }
 double TankEQ::get_x(){
 	return tank->get_x();
@@ -167,6 +170,49 @@ int TankEQ::get_ind(){
 }
 TeamQ* TankEQ::get_team(){
 	return team;
+}
+
+class ExInEventCreatePred : public ExInEventCreateShot{
+	double x,y,vx,vy;
+	int ind;
+	long long int time;
+	int round;
+public:
+	ExInEventCreatePred(TankExtrap* t, GameExtrap* g, double len){
+		ind = t->get_ind();
+		time = g->get_time()-1;
+		round = g->get_round_num();
+		x = t->get_x();
+		y = t->get_y();
+		double ang = t->get_ang();
+		vx = 0; vy = 0;
+		rotate_add(ang, CANNON_L, 0, x, y);
+		rotate_add(ang, len, 0, vx, vy);
+	}
+	int get_id(){ return -1; }
+	GenShot::Type get_stype(){ return GenShot::TYPE_LASER; }
+	double get_x(){ return x; }
+	double get_y(){ return y; }
+	double get_vx(){ return vx; }
+	double get_vy(){ return vy; }
+	int get_tank_ind(){ return ind; }
+	long long int get_time(){ return time; }
+	int get_round(){ return round; }
+};
+class ExShotPred : public ShotExtrap{
+	double r;
+public:
+	ExShotPred(GameExtrap* game, ExInEventCreatePred* e, double rr) : ShotExtrap(game, e){
+		r = rr;
+	}
+	double get_r(){ return r; }
+};
+
+std::vector<std::pair<double, double>> TankEQ::predict_colls(double len, double r){
+	ExInEventCreatePred e(tank, game, len);
+	ExShotPred sht(game, &e, r);
+	auto ret = sht.get_colls();
+	return ret;
 }
 
 RoundEQ::RoundEQ(RoundExtrap* r){
