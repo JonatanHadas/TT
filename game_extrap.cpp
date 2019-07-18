@@ -797,8 +797,8 @@ void MissileExtrap::step(){
 	
 	double nx,ny;
 	if(check_wall(nx,ny)){
-		if(nx*vx<0) vx = -vx;
-		if(ny*vy<0) vy = -vy;
+		if(nx*vx>0) vx = -vx;
+		if(ny*vy>0) vy = -vy;
 		
 	}
 	
