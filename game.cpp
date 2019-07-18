@@ -1230,6 +1230,8 @@ void HomingMissile::home_target(){
 	for(int i = 0; i<get_game()->get_tank_num(); i++){
 		Tank* t = get_game()->get_tank(i);
 		
+		if(t->is_dead()) continue;
+		
 		int ddx,ddy, ddist = maze->dist(x, y, t->get_x(), t->get_y(), ddx,ddy);
 		if(ddist >= 0 && (target == NULL || ddist<dist)){
 			target = t;
