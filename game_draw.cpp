@@ -338,7 +338,7 @@ void GameDrawer::draw(){
 			break;
 		case GameQEvent::TYPE_END_GAME:
 			oe(oep);
-			break;
+			return;
 		}
 		delete event;
 	}

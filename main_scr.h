@@ -2,6 +2,7 @@
 #define _MAIN_SCR_H
 
 #include "gui.h"
+#include "utils.h"
 #include "texts.h"
 #include "keys.h"
 #include "images.h"
@@ -17,6 +18,25 @@ class MainScr;
 class SettingMenu;
 class PlayerMenu;
 class ConnectionMenu;
+
+struct PlayerMData{
+	int ind;
+	int col;
+	std::string name;
+};
+
+class MainData : public Data{
+	Client* clnt;
+	char* serv_name;
+	friend MainScr;
+	friend SettingMenu;
+	
+	std::vector<PlayerMData> players;
+public:
+	MainData(MainScr* scr);
+	~MainData();
+};
+
 
 class NumberField{
 	SDL_Renderer* rend;
@@ -101,7 +121,7 @@ class ConnectionMenu : public SubMenu{
 	SDL_Rect r_start();
 	SDL_Rect r_leave();
 public:
-	ConnectionMenu(SDL_Renderer* r, MainScr* main);
+	ConnectionMenu(SDL_Renderer* r, MainScr* main, const char* addr);
 	~ConnectionMenu();
 		
 	void draw();
@@ -116,7 +136,7 @@ public:
 	void set_cnt(int n);
 };
 
-class CPlayerData{
+class CPlayerMData{
 	Msg* name_m;
 	TankImg* img;
 	int col;
@@ -130,8 +150,8 @@ class CPlayerData{
 	Msg* up;
 	Msg* dn;
 public:
-	CPlayerData(int c, int t, SDL_Renderer* r);
-	~CPlayerData();
+	CPlayerMData(int c, int t, SDL_Renderer* r);
+	~CPlayerMData();
 	void set_col(int i);
 	int get_col();
 	void set_team(int t);
@@ -147,7 +167,7 @@ public:
 };
 
 class PlayerMenu : public SubMenu{
-	std::map<int, CPlayerData*> players;
+	std::map<int, CPlayerMData*> players;
 	std::map<int, double> ys;
 	std::vector<double> tys;
 	bool use_teams;
@@ -171,8 +191,8 @@ public:
 	void set_use_teams(bool use);
 	void set_team(int id, int t);
 	
-	std::map<int, CPlayerData*>::iterator get_players();
-	std::map<int, CPlayerData*>::iterator end_players();
+	std::map<int, CPlayerMData*>::iterator get_players();
+	std::map<int, CPlayerMData*>::iterator end_players();
 	int get_player_num();
 	int get_team_num();
 	int get_use_teams();
@@ -219,8 +239,11 @@ class PlayerSetting{
 	std::vector<SDL_Texture*> cols;
 	
 	SettingMenu* up;
+	
+	friend MainData;
 public:
 	PlayerSetting(SDL_Renderer* rend, int i, SettingMenu* up);
+	PlayerSetting(SDL_Renderer* rend, SettingMenu* up, PlayerMData data);
 	~PlayerSetting();
 	
 	bool event(SDL_Event& e); //true if destroyed
@@ -234,6 +257,8 @@ public:
 	
 	bool get_msg_upd();
 	void update_col(int col);
+	
+	int get_col();
 	
 	int get_ind();
 	
@@ -288,8 +313,10 @@ class SettingMenu : public SubMenu{
 	int upg_prs_ind;
 	SDL_Rect upg_rect(int ind);
 	
+	friend MainData;
+	
 public:
-	SettingMenu(SDL_Renderer* r, MainScr* main);
+	SettingMenu(SDL_Renderer* r, MainScr* main, MainData* data);
 	~SettingMenu();
 	
 	void draw();	
@@ -298,9 +325,11 @@ public:
 	void lose_kfocus();
 	
 	void add_player();
+	void add_player(PlayerMData d);
 	
 	int get_player_num();
 	const char* get_name(int i);
+	int get_col(int i);
 	
 	void update_col(int i, int col);
 
@@ -354,8 +383,9 @@ class MainScr : public State{
 	void m_correct(int& x, int& y);
 	
 	void send_players();
+	friend MainData;
 public:
-	MainScr(Main* up, Client* c);
+	MainScr(Main* up, MainData* d);
 	~MainScr();
 	
 	void connect();
@@ -368,7 +398,7 @@ public:
 	bool step();
 	
 	
-	void add_player();
+	void add_player(int pref_color=-1);
 	void remove_player(int ind);
 	void update_name(int i);
 	void update_col(int i, int col);

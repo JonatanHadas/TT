@@ -48,6 +48,8 @@ class NetGame{
 	Game* game;
 	std::vector<int> ids;
 	
+	bool ended;
+	
 	void push_ctrl(int peer_id,char* data);
 	
 	void advance();

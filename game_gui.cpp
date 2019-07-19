@@ -8,7 +8,7 @@ void endf(void* p){
 	((GameGui*)p)->end();
 }
 
-GameGui::GameGui(GameQ* q, Main* upper, GameConfig& cf, void* d) : State(upper){
+GameGui::GameGui(GameQ* q, Main* upper, GameConfig& cf, Data* d) : State(upper){
 	data = d;
 	img_is = std::vector<int>(cf.colors, cf.colors + q->get_tank_num());
 	game = q;
@@ -28,6 +28,7 @@ bool GameGui::step(){
 		switch(e.type){
 		case SDL_QUIT:
 			game->leave();
+			delete data;
 			return true;
 		case SDL_KEYDOWN:
 			switch(e.key.keysym.sym){
@@ -59,5 +60,5 @@ bool GameGui::step(){
 void GameGui::end(){
 	std::vector<std::string> names;
 	for(int i = 0; i<game->get_tank_num(); i++) names.push_back(std::string());
-	upper->set_state(new EndGame(upper, game, img_is, names));
+	upper->set_state(new EndGame(upper, game, img_is, names, data));
 }

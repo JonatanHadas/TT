@@ -9,6 +9,8 @@ NetGame::NetGame(GameConfig& cf, GameSetup* s){
 	for(int i = 0; i<cf.tank_num; i++){
 		ids.push_back(cf.keys[i]);
 	}
+	
+	ended = false;
 }
 NetGame::~NetGame(){
 	delete game;
@@ -310,6 +312,7 @@ void NetGame::advance(){
 			break;
 		case GameEvent::TYPE_END_GAME:
 			end_game((GameEventEndGame*)e);
+			ended = true;
 			break;
 		case GameEvent::TYPE_SHOT_CRT:
 			create_shot((GameEventCreateShot*)e);
@@ -386,7 +389,7 @@ void NetGame::send_update(){
 	
 void NetGame::mainloop(){
 	advance();
-	while(true){
+	while(!ended){
 		char h,hh;
 		char* cur;
 		
@@ -401,6 +404,7 @@ void NetGame::mainloop(){
 			while(set->peers[e.peer_id]->size()>0) set->remove_player(e.peer_id, set->peers[e.peer_id]->size()-1);
 			delete set->peers[e.peer_id];
 			set->peers.erase(e.peer_id);
+			if(set->peers.size()==0) return; // if no one is connected anymore, then exit
 			break;
 		case NetEvent::TYPE_RECV:
 			cur = decode_char(e.data, h);
