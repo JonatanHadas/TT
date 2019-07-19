@@ -12,13 +12,13 @@ struct Comp{
 #define SCR_W 1280
 #define SCR_H 960
 
-#define SCORE_TITLE_Y 40 
-#define SCORE_TITLE_H 80
+#define SCORE_TITLE_Y 60 
+#define SCORE_TITLE_H 120
 
-#define SCORE_S 150
-#define SCORE_NAME_Y 80
-#define SCORE_TANK_Y 10
-#define SCORE_SCR_Y 110
+#define SCORE_S 200
+#define SCORE_NAME_Y 120
+#define SCORE_TANK_Y 40
+#define SCORE_SCR_Y 160
 #define SCORE_LN_M 30
 
 #define TANK_IW 100
@@ -26,7 +26,10 @@ struct Comp{
 
 #include "stdio.h"
 
-EndGame::EndGame(Main* u, GameQ* q, std::vector<int> img_inds, std::vector<std::string> nms) : State(u){
+#include "main_scr.h"
+
+EndGame::EndGame(Main* u, GameQ* q, std::vector<int> img_inds, std::vector<std::string> nms, Data* d) : State(u){
+	data = d;
 	
 	u->set_screen_size(SCR_W, SCR_H);
 	timer  = 60;
@@ -49,6 +52,8 @@ EndGame::EndGame(Main* u, GameQ* q, std::vector<int> img_inds, std::vector<std::
 	std::sort<int*, Comp>(&inds[0], &inds[q->get_team_num()], {&scores[0]});
 	
 	title = new Msg("Game Over", {0,0,0,255}, FONT_BIG, upper->get_renderer());
+	
+	delete q;
 }
 
 EndGame::~EndGame(){
@@ -63,11 +68,13 @@ bool EndGame::step(){
 	while(SDL_PollEvent(&e)){
 		switch(e.type){
 		case SDL_QUIT:
+			delete data;
 			return true;
 		case SDL_KEYDOWN:
 		case SDL_MOUSEBUTTONDOWN:
-			if(timer>0);
-			return true;
+			if(timer==0){
+				upper->set_state(new MainScr(upper, (MainData*)data));
+			}
 			break;
 		}
 	}
@@ -88,15 +95,15 @@ bool EndGame::step(){
 		SDL_SetRenderDrawColor(upper->get_renderer(), 0,0,0,255);
 		int y = i*SCORE_S + SCORE_TITLE_H;
 		if(i != 0) SDL_RenderDrawLine(upper->get_renderer(), SCORE_LN_M, y, SCR_W-SCORE_LN_M, y);
-		scores_m[i]->render_centered(SCR_W/2, y + SCORE_SCR_Y, AL_CENTER);
+		scores_m[inds[i]]->render_centered(SCR_W/2, y + SCORE_SCR_Y, AL_CENTER);
 		
-		for(int j = 0; j<tinds[i].size(); j++){
+		for(int j = 0; j<tinds[inds[i]].size(); j++){
 			SDL_Rect r;
-			int ti = tinds[i][j];
+			int ti = tinds[inds[i]][j];
 			r.w = TANK_IW;
 			r.h = TANK_IH;
 			r.y = y;
-			r.x = (2*j+1)*SCR_W / (tinds[i].size()*2);
+			r.x = (2*j+1)*SCR_W / (tinds[inds[i]].size()*2);
 			names_m[ti]->render_centered(r.x, r.y + SCORE_NAME_Y, AL_CENTER);
 			r.x -= r.w/2;
 			r.y += SCORE_TANK_Y;

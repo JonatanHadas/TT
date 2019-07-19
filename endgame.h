@@ -9,6 +9,8 @@
 #include "texts.h"
 #include "images.h"
 
+#include "utils.h"
+
 class EndGame : public State{
 	int timer;
 	std::vector<int> inds;
@@ -19,8 +21,9 @@ class EndGame : public State{
 	std::vector<Msg*> names_m;
 	TankImg* tank_images;
 	Msg* title;
+	Data* data;
 public:
-	EndGame(Main* u, GameQ* query, std::vector<int> img_inds, std::vector<std::string> names);
+	EndGame(Main* u, GameQ* query, std::vector<int> img_inds, std::vector<std::string> names, Data* data);
 	~EndGame();
 	bool step();
 };
