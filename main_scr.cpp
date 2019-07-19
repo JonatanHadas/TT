@@ -892,6 +892,7 @@ void PlayerSetting::lose_mfocus(){
 	m_x = m_y = -1;
 }
 void PlayerSetting::lose_kfocus(){
+	if(focus == FOCUS_NAME) 
 	focus = FOCUS_NONE;
 	msg_upd = true;
 }
@@ -1156,7 +1157,7 @@ void SettingMenu::set_mfocus(){
 }
 	
 void SettingMenu::set_kfocus(){
-	if(kfocus && kfocus->get_msg_upd()) main->update_name(get_ind(kfocus));
+	if(kfocus && (mfocus!=kfocus || kfocus->get_msg_upd())) main->update_name(get_ind(kfocus));
 	
 	
 	if(kfocus && kfocus!=mfocus) kfocus->lose_kfocus();
@@ -1412,6 +1413,7 @@ void SettingMenu::lose_mfocus(){
 }
 void SettingMenu::lose_kfocus(){
 	if(kfocus) kfocus->lose_kfocus();
+	if(kfocus) main->update_name(get_ind(kfocus));
 	kfocus = NULL;
 }
 int SettingMenu::get_ind(PlayerSetting* pl){
