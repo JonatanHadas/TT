@@ -71,9 +71,9 @@ int main(int argc, char* argv[]){
 	screen = SDL_CreateWindow(
 										"Tank Trouble",
 										SDL_WINDOWPOS_UNDEFINED, SDL_WINDOWPOS_UNDEFINED, 
-										1024,768,0);
-										//0,0,
-										//SDL_WINDOW_FULLSCREEN_DESKTOP);
+										//1024,768,0);
+										0,0,
+										SDL_WINDOW_FULLSCREEN_DESKTOP);
 	
 	if(screen == NULL){
 		fprintf(stderr,"Error while opening window:\n%s\n", SDL_GetError());
