@@ -27,6 +27,7 @@
 #include "game_gui.h"
 #include "net_ex.h"
 
+
 bool in_rect(SDL_Rect r, int x, int y){
 	return x>=r.x && y>=r.y && x < r.x+r.w && y < r.y+r.h;
 }
@@ -192,7 +193,7 @@ void SubMenu::lose_mfocus(){
 
 #define LOAD_T 32
 
-ConnectionMenu::ConnectionMenu(SDL_Renderer* r, MainScr* m) : SubMenu(r, m){
+ConnectionMenu::ConnectionMenu(SDL_Renderer* r, MainScr* m, const char* ad) : SubMenu(r, m), addr(ad ? ad : ""){
 	focus_addr = false;
 	addr_m = NULL;
 	reset_msg();
@@ -376,7 +377,7 @@ void ConnectionMenu::set_cnt(int n){
 #define UD_W 20
 #define UD_H 20
 	
-CPlayerData::CPlayerData(int c, int t, SDL_Renderer* r){
+CPlayerMData::CPlayerMData(int c, int t, SDL_Renderer* r){
 	rend = r;
 	img = NULL; name_m = NULL;
 	set_name("");
@@ -387,36 +388,36 @@ CPlayerData::CPlayerData(int c, int t, SDL_Renderer* r){
 	up = new Msg(UP, {0,0,0,255}, FONT_NRM, rend);
 	dn= new Msg(DOWN, {0,0,0,255}, FONT_NRM, rend);
 }
-CPlayerData::~CPlayerData(){
+CPlayerMData::~CPlayerMData(){
 	if(img) delete img;
 	if(name_m) delete name_m;
 	delete hst;
 	delete up,dn;
 }
-void CPlayerData::set_col(int i){
+void CPlayerMData::set_col(int i){
 	col = i;
 	if(img) delete img;
 	img = new TankImg();
 	generate_tank(col, rend, img);
 }
-int CPlayerData::get_col(){
+int CPlayerMData::get_col(){
 	return col;
 }
-void CPlayerData::set_team(int t){
+void CPlayerMData::set_team(int t){
 	team = t;
 }
-int CPlayerData::get_team(){
+int CPlayerMData::get_team(){
 	return team;
 }
-void CPlayerData::set_name(const char* n){
+void CPlayerMData::set_name(const char* n){
 	name = n;
 	if(name_m) delete name_m;
 	name_m = new Msg(name.size()>0 ? name.c_str() : "---", {0,0,0,255}, FONT_NRM, rend);
 }
-std::string CPlayerData::get_name(){
+std::string CPlayerMData::get_name(){
 	return name;
 }
-void CPlayerData::draw(int y, bool use_teams){
+void CPlayerMData::draw(int y, bool use_teams){
 	SDL_Rect r;
 	r.w = PLR_TKW; r.h = PLR_TKH;
 	r.x = PLR_X;
@@ -432,13 +433,13 @@ void CPlayerData::draw(int y, bool use_teams){
 		dn->render_centered(UD_X, y + UD_DY, AL_CENTER);
 	}
 }
-void CPlayerData::set_host(){
+void CPlayerMData::set_host(){
 	host = true;
 }
-void CPlayerData::set_our(){
+void CPlayerMData::set_our(){
 	our = true;
 }
-bool CPlayerData::get_our(){
+bool CPlayerMData::get_our(){
 	return our;
 }
 
@@ -517,7 +518,7 @@ void PlayerMenu::lose_kfocus(){
 	
 }
 void PlayerMenu::add_player(int id, int c, int t){
-	players.insert({id, new CPlayerData(c,t,rend)});
+	players.insert({id, new CPlayerMData(c,t,rend)});
 	ys.insert({id, PLR_SY});
 }
 void PlayerMenu::remove_player(int id){
@@ -547,10 +548,10 @@ void PlayerMenu::set_use_teams(bool use){
 void PlayerMenu::set_team(int id, int t){
 	players[id]->set_team(t);
 }
-std::map<int, CPlayerData*>::iterator PlayerMenu::get_players(){
+std::map<int, CPlayerMData*>::iterator PlayerMenu::get_players(){
 	return players.begin();
 }
-std::map<int, CPlayerData*>::iterator PlayerMenu::end_players(){
+std::map<int, CPlayerMData*>::iterator PlayerMenu::end_players(){
 	return players.end();
 }
 int PlayerMenu::get_player_num(){
@@ -631,6 +632,12 @@ PlayerSetting::PlayerSetting(SDL_Renderer* rn, int i, SettingMenu* upp){
 	}
 	
 	focus = FOCUS_NONE;
+}
+
+PlayerSetting::PlayerSetting(SDL_Renderer* rend, SettingMenu* up, PlayerMData d) : PlayerSetting(rend, d.ind, up){
+	name = d.name;
+	update_msg();
+	update_col(d.col);
 }
 PlayerSetting::~PlayerSetting(){
 	SDL_DestroyTexture(cross[0]);
@@ -885,6 +892,7 @@ void PlayerSetting::lose_mfocus(){
 	m_x = m_y = -1;
 }
 void PlayerSetting::lose_kfocus(){
+	if(focus == FOCUS_NAME) 
 	focus = FOCUS_NONE;
 	msg_upd = true;
 }
@@ -896,6 +904,9 @@ KeySet PlayerSetting::get_keys(){
 int PlayerSetting::get_ind(){
 	return ind;
 }
+int PlayerSetting::get_col(){
+	return col;
+}
 const char* PlayerSetting::get_name(){
 	return name.c_str();
 }
@@ -904,6 +915,9 @@ int SettingMenu::get_player_num(){
 }
 const char* SettingMenu::get_name(int i){
 	return players[i]->get_name();
+}
+int SettingMenu::get_col(int i){
+	return players[i]->get_col();
 }
 
 void PlayerSetting::update_col(int c){
@@ -963,7 +977,7 @@ void PlayerSetting::set_id(int i){
 #define UPG_LNS 2
 #define UPG_PL ((UPG_NUM-1)/UPG_LNS + 1)
 
-SettingMenu::SettingMenu(SDL_Renderer* ren, MainScr* m) : SubMenu(ren, m), tie_lim(ren,{TIE_X,TIE_Y,TIE_W, TIE_H},0,0,2), game_lim(ren,{LIM_X, LIM_Y, LIM_W, LIM_H},10,0,true), team_num(ren, {TEAM_X, TEAM_Y, TEAM_W, TEAM_H},2,2,true){
+SettingMenu::SettingMenu(SDL_Renderer* ren, MainScr* m, MainData* data) : SubMenu(ren, m), tie_lim(ren,{TIE_X,TIE_Y,TIE_W, TIE_H},0,0,2), game_lim(ren,{LIM_X, LIM_Y, LIM_W, LIM_H},10,0,true), team_num(ren, {TEAM_X, TEAM_Y, TEAM_W, TEAM_H},2,2,true){
 	players_t = SDL_CreateTexture(	rend, SDL_PIXELFORMAT_UNKNOWN, SDL_TEXTUREACCESS_TARGET, 
 									PLST_W + 2*PLST_MAR, SCR_H - 2*PLST_MAR);
 	game_t = SDL_CreateTexture(	rend, SDL_PIXELFORMAT_UNKNOWN, SDL_TEXTUREACCESS_TARGET, 
@@ -1032,7 +1046,12 @@ SettingMenu::SettingMenu(SDL_Renderer* ren, MainScr* m) : SubMenu(ren, m), tie_l
 	upg_mask = UPG_MASK_ALL;
 	upg_prs_ind = -1;
 
-	add_player();
+	if(data){
+		for(int i = 0; i<data->players.size(); i++){
+			add_player(data->players[i]);
+		}
+	}
+	else add_player();
 }
 SettingMenu::~SettingMenu(){
 	for(int i = 0; i<players.size(); i++) {
@@ -1138,7 +1157,7 @@ void SettingMenu::set_mfocus(){
 }
 	
 void SettingMenu::set_kfocus(){
-	if(kfocus && kfocus->get_msg_upd()) main->update_name(get_ind(kfocus));
+	if(kfocus && (mfocus!=kfocus || kfocus->get_msg_upd())) main->update_name(get_ind(kfocus));
 	
 	
 	if(kfocus && kfocus!=mfocus) kfocus->lose_kfocus();
@@ -1394,6 +1413,7 @@ void SettingMenu::lose_mfocus(){
 }
 void SettingMenu::lose_kfocus(){
 	if(kfocus) kfocus->lose_kfocus();
+	if(kfocus) main->update_name(get_ind(kfocus));
 	kfocus = NULL;
 }
 int SettingMenu::get_ind(PlayerSetting* pl){
@@ -1408,6 +1428,13 @@ void SettingMenu::add_player(){
 											PLST_W, PLST_H));
 	SDL_SetTextureBlendMode(player_ts.back(), SDL_BLENDMODE_BLEND);
 	if(non_used_inds.size()>0) non_used_inds.erase(non_used_inds.begin());
+	main->add_player();
+}
+void SettingMenu::add_player(PlayerMData d){
+	players.push_back(new PlayerSetting(rend, this, d));
+	player_ts.push_back(SDL_CreateTexture(	rend, SDL_PIXELFORMAT_UNKNOWN, SDL_TEXTUREACCESS_TARGET,
+											PLST_W, PLST_H));
+	SDL_SetTextureBlendMode(player_ts.back(), SDL_BLENDMODE_BLEND);
 	main->add_player();
 }
 void SettingMenu::update_col(int i,int col){
@@ -1465,9 +1492,23 @@ void SettingMenu::set_upg_mask(int mask){
 int SettingMenu::get_upg_mask(){
 	return upg_mask;
 }
+MainData::MainData(MainScr* scr){
+	clnt = scr->clnt;
+	const char* sn = scr->conn.get_address();
+	serv_name = new char[1+strlen(sn)];
+	strcpy(serv_name, sn);
+	
+	for(int i = 0; i<scr->sett.players.size(); i++){
+		PlayerSetting* pl = scr->sett.players[i];
+		players.push_back({pl->ind, pl->col, pl->name});
+	}
+}
+MainData::~MainData(){
+	delete[] serv_name;
+}
 
-MainScr::MainScr(Main* up, Client* c) : State(up), conn(up->get_renderer(),this), play(up->get_renderer(),this), sett(up->get_renderer(),this){
-	clnt = c;
+MainScr::MainScr(Main* up, MainData* data) : State(up), conn(up->get_renderer(),this, data ? data->serv_name : NULL), play(up->get_renderer(),this), sett(up->get_renderer(),this, data){
+	clnt = NULL;
 	conn_t = SDL_CreateTexture(	upper->get_renderer(), SDL_PIXELFORMAT_UNKNOWN,
 								SDL_TEXTUREACCESS_TARGET, SCR_W-SETT_W, SERV_H);
 	play_t = SDL_CreateTexture(	upper->get_renderer(), SDL_PIXELFORMAT_UNKNOWN,
@@ -1489,7 +1530,22 @@ MainScr::MainScr(Main* up, Client* c) : State(up), conn(up->get_renderer(),this)
 	
 	ihost = iconn = false;
 	
+	if(clnt) iconn = true;
+
 	conn_timer = -1;
+	
+	if(data){
+		clnt = data->clnt;
+		iconn = true;
+		
+		char msg[3] = "\x00\x00";
+		
+		clnt->send(msg,2,PROTO_REL); // request update
+		
+		send_players();
+	}
+	
+	delete data;
 	
 }
 MainScr::~MainScr(){
@@ -1555,14 +1611,14 @@ bool MainScr::step(){
 			m_y = e.motion.y;
 			set_mfocus();
 			m_correct(e.motion.x, e.motion.y);
-			mfocus->event(e);
+			if(mfocus) mfocus->event(e);
 			break;
 		case SDL_MOUSEBUTTONDOWN:
 			set_kfocus();
 		case SDL_MOUSEBUTTONUP:
 			m_correct(e.button.x, e.button.y);
 		case SDL_MOUSEWHEEL:
-			mfocus->event(e);
+			if(mfocus) mfocus->event(e);
 			break;
 		case SDL_KEYDOWN:
 			switch(e.key.keysym.sym){
@@ -1572,7 +1628,7 @@ bool MainScr::step(){
 			}
 		case SDL_KEYUP:
 		case SDL_TEXTINPUT:
-			kfocus->event(e);
+			if(kfocus) kfocus->event(e);
 		}
 	}
 	if(clnt){
@@ -1742,19 +1798,20 @@ bool MainScr::step(){
 
 void MainScr::send_players(){
 	for(int i = 0; i<sett.get_player_num(); i++){
-		add_player();
+		add_player(sett.get_col(i));
 		update_name(i);
 	}
 }
 
-void MainScr::add_player(){
+void MainScr::add_player(int pref_col){
 	if(!iconn) return;
 	char data[100];
 	char* end;
-	
+		
 	end = data;
 	end = encode_char(end, '\x00');
 	end = encode_char(end, '\x01');
+	end = encode_int(end, pref_col);
 	clnt->send(data, end-data, PROTO_REL);
 }
 void MainScr::remove_player(int ind){
@@ -1934,5 +1991,5 @@ void MainScr::start(){
 	ExInEvents* in = new NetEx(clnt, cf);
 	GameExtrap* ex = new GameExtrap(cf, in);
 	GameQ* q = new GameEQ(ex);
-	upper->set_state(new GameGui(q, upper, cf, clnt));
+	upper->set_state(new GameGui(q, upper, cf, new MainData(this)));
 }

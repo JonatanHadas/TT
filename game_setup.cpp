@@ -33,7 +33,14 @@ GameSetup::GameSetup(Server* s){
 	upg_mask = UPG_MASK_ALL;
 }
 GameSetup::~GameSetup(){
-	
+	reset();
+}
+void GameSetup::reset(){
+	for(auto it = peers.begin(); it!=peers.end(); it++){
+		delete it->second;
+	}
+	peers.clear();
+	players.clear();
 }
 
 void GameSetup::send_all(int peer_id){
@@ -45,6 +52,7 @@ void GameSetup::send_all(int peer_id){
 	end = encode_char(end, '\x00');
 	end = encode_gamesett(end, set);
 	serv->send(data, end-data, peer_id, PROTO_REL);
+	
 	
 	for(auto it = players.begin(); it!=players.end(); it++){
 		PlayerData pl = peers[it->second.first]->at(it->second.second);
@@ -78,9 +86,20 @@ void GameSetup::send_all(int peer_id){
 	update_use_teams();
 	
 	update_upg_mask(0,true);// no change
+
+	if(peers.begin()->first == peer_id){ // tell him he is host
+		char data[100];
+		char* end;
+		
+		end = data;
+		end = encode_char(end, '\x00');
+		end = encode_char(end, '\x06');
+		serv->send(data, end-data, peer_id, PROTO_REL);
+	}
 }
 
 void GameSetup::add_player(int peer_id){
+	
 	PlayerData pl;
 	pl.color = get_free_col();
 	pl.team = players.size() == 0 ? 0 : team_num-1;
@@ -348,10 +367,13 @@ void GameSetup::count(){
 		net_game->mainloop();
 		delete net_game;
 		
-		for(auto it = peers.begin(); it != peers.end(); it++){
-			send_all(it->first);
+		for(auto it = peers.begin(); it!=peers.end(); it++){
+			it->second->clear();
 		}
+		players.clear(); // clear all players
+		
 		assign_host();
+		
 	}
 }
 void GameSetup::stop_count(){
@@ -372,6 +394,7 @@ void GameSetup::mainloop(){
 			fprintf(stderr, "Error: %s", serv->get_error());
 			return;
 		}
+		
 		
 		NetEvent e=serv->get_event(cnt >= 0 ? (last_tick - clock() + CLOCKS_PER_SEC)*1000/CLOCKS_PER_SEC : 1000);
 		char* cur;
@@ -394,12 +417,18 @@ void GameSetup::mainloop(){
 			
 			break;
 		case NetEvent::TYPE_RECV:
+
 			cur = e.data;
 			cur = decode_char(cur, h);
 			switch(h){
 			case '\x00':
 				cur = decode_char(cur, hh);
 				switch(hh){
+				case '\x00':
+					stop_count();
+					send_all(e.peer_id);
+
+					break;
 				case '\x01':
 					stop_count();
 					add_player(e.peer_id);

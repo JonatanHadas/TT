@@ -14,4 +14,9 @@ public:
 	bool same(int i, int j);
 };
 
+class Data{
+public:
+	virtual ~Data(){}
+};
+
 #endif

@@ -36,7 +36,8 @@ stage0:
 type |   | meaning        | data
 -----+---+----------------+--------
 00   | > | game settings  | game settings
-01   | < | add player     | ---
+00   | < | rejoin         | --- // request all data (as if you just joined)
+01   | < | add player     | -1/pref_col
 01   | > | add player     | id, team, color
 02   | < | remove player  | index
 02   | > | remove player  | id
@@ -118,6 +119,8 @@ class GameSetup{
 	void count();
 	void stop_count();
 	friend NetGame;
+	
+	void reset();
 public:
 	GameSetup(Server* s);
 	~GameSetup();
