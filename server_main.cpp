@@ -5,6 +5,8 @@
 #define NAME_SIZE 4096
 
 int main(int argc, char* argv[]){
+	srand(clock());	
+	
 	if(enet_initialize()<0){
 		fprintf(stderr, "Error initializing ENet\n");
 		return 0;
