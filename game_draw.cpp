@@ -32,6 +32,7 @@
 #define HOM_TIMER_MAX 60
 #define HOM_TIMER_STEP 3
 
+#define WIFI_TIME 120
 
 #define LASER_T 10
 
@@ -400,6 +401,7 @@ void BoardDrawer::draw(){
 			
 			TankQ* t = game->get_tank(mis->get_tank_ind());
 			if(!t->is_dead() && mis->get_time() % WIFI_TIME == 1){
+				play(SND_BROADCAST);
 				double x = t->get_x(), y = t->get_y();
 				double dx = mis->get_x() - t->get_x();
 				double dy = mis->get_y() - t->get_y();
@@ -729,6 +731,9 @@ void GameDrawer::draw(){
 			board->tank_death(((GameQEventTankDeath*)event)->get_ind());
 			play(SND_EXPLOSION);
 			break;
+		case GameQEvent::TYPE_END_GAME:
+			oe(oep);
+			break;
 		case GameQEvent::TYPE_SHOT_CRT:
 			switch(((GameQEventCreateShot*)event)->get_stype()){
 			case GenShot::TYPE_REG:
@@ -751,9 +756,6 @@ void GameDrawer::draw(){
 			break;
 		case GameQEvent::TYPE_UPG_RMV:
 			play(SND_TAKE);
-			break;
-		case GameQEvent::TYPE_END_GAME:
-			oe(oep);
 			break;
 		case GameQEvent::TYPE_MIN_CRT:
 			board->place_mine((GameQEventCreateMine*)event);
