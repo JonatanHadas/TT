@@ -309,7 +309,7 @@ TankImg* BoardDrawer::get_tank_img(int i){
 }
 
 
-GameDrawer::GameDrawer(GameQ* q, SDL_Renderer* r, std::vector<int> img_inds){
+GameDrawer::GameDrawer(GameQ* q, SDL_Renderer* r, std::vector<int> img_inds, end_func on_end, void* on_end_param){
 	game = q;
 	renderer = r;
 	board = new BoardDrawer(q,r,img_inds);
@@ -318,6 +318,7 @@ GameDrawer::GameDrawer(GameQ* q, SDL_Renderer* r, std::vector<int> img_inds){
 		scores.push_back(NULL);
 		update_score(i);
 	}
+	oe = on_end; oep = on_end_param;
 }
 GameDrawer::~GameDrawer(){
 	if(board) delete board;
@@ -365,6 +366,9 @@ void GameDrawer::draw(){
 			break;
 		case GameQEvent::TYPE_TANK_DEAD:
 			play(SND_EXPLOSION);
+			break;
+		case GameQEvent::TYPE_END_GAME:
+			oe(oep);
 			break;
 		case GameQEvent::TYPE_SHOT_CRT:
 			switch(((GameQEventCreateShot*)event)->get_stype()){
