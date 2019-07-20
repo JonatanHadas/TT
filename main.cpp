@@ -24,7 +24,7 @@ void close_window(){
 }
 
 int main(int argc, char* argv[]){
-	srand(clock());
+	srand(time(0));	
 
 	if(SDL_Init(SDL_INIT_EVERYTHING) < 0){
 		fprintf(stderr, "Error initializing SDL:\n%s\n", SDL_GetError());
