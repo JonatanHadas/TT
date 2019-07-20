@@ -15,7 +15,8 @@ enum Sound{
 	SND_RAYLOAD,
 	SND_ON, SND_OFF,
 	SND_POPUP,
-	SND_TAKE
+	SND_TAKE,
+	SND_BROADCAST,
 };
 
 void play(Sound snd);

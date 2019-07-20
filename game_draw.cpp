@@ -26,6 +26,7 @@
 #define HOM_TIMER_MAX 60
 #define HOM_TIMER_STEP 3
 
+#define WIFI_TIME 120
 
 std::pair<Upgrade::Type, Img> upg2img_a[UPG_NUM] = {
 	{Upgrade::GATLING, IMG_GATLING_SYM},
@@ -191,13 +192,14 @@ void BoardDrawer::draw(){
 			
 			break;
 		}
+		int ind,timer,tt;
 		switch((*it)->get_type()){
 		case GenShot::TYPE_MISSILE:
 			mis = (MissileQ*)(*it);
 			
-			int ind = mis->get_tar_ind();
-			int timer = mis->get_time();
-			int tt = HOM_TIMER_MAX;
+			ind = mis->get_tar_ind();
+			timer = mis->get_time();
+			tt = HOM_TIMER_MAX;
 			if(ind>=0 && timer>HOMING_TIME){
 				TankQ* t = game->get_tank(ind);
 				
@@ -208,6 +210,13 @@ void BoardDrawer::draw(){
 				
 			}
 			if(timer % tt == 0) play(SND_BEEP);
+		case GenShot::TYPE_WIFI:
+			mis = (MissileQ*)(*it);
+			
+			TankQ* t = game->get_tank(mis->get_tank_ind());
+			if(!t->is_dead() && mis->get_time() % WIFI_TIME == 1){
+				play(SND_BROADCAST);
+			}
 		}
 		
 		delete (*it);

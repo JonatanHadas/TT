@@ -9,7 +9,7 @@
 #define WAV ".wav"
 
 
-// coll, explosion, beep, laser, raygun, rayload, on, off, explosion_small, popup, take
+// coll, explosion, beep, laser, raygun, rayload, on, off, explosion_small, popup, take, broadcast
 std::vector<Mix_Chunk*> sounds;
 
 void free_sounds(){
@@ -78,6 +78,11 @@ bool load_sounds(){
 	Mix_VolumeChunk(chunk, MIX_MAX_VOLUME);
 	sounds.push_back(chunk);
 
+	chunk = Mix_LoadWAV(DIR "broadcast" WAV);
+	if(!chunk) return false;
+	Mix_VolumeChunk(chunk, MIX_MAX_VOLUME/8);
+	sounds.push_back(chunk);
+
 	return true;
 }
 
@@ -105,6 +110,8 @@ int get_ind(Sound snd){
 		return 9;
 	case SND_TAKE:
 		return 10;
+	case SND_BROADCAST:
+		return 11;
 	}
 	return -1;
 }
