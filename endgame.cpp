@@ -38,7 +38,7 @@ EndGame::EndGame(Main* u, GameQ* q, std::vector<int> img_inds, std::vector<std::
 	tank_images = new TankImg[q->get_tank_num()];
 	for(int i = 0; i<q->get_tank_num(); i++){
 		teams.push_back(q->get_tank(i)->get_team()->get_ind());
-		names_m.push_back(new Msg(nms[i].c_str(), {0,0,0,255}, FONT_MID, upper->get_renderer()));
+		names_m.push_back(new Msg(nms[i].c_str(), {0,0,0,255}, FONT_NRM, upper->get_renderer()));
 		generate_tank(img_inds[i], upper->get_renderer(), tank_images + i);
 	}
 	for(int i = 0; i<q->get_team_num(); i++){

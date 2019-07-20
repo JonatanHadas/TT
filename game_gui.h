@@ -13,6 +13,7 @@ class GameGui : public State{
 	GameDrawer* drawer;
 	Data* data;
 	std::vector<int> img_is;
+	std::vector<std::string> names;
 	std::vector<std::pair<int,int>> keys;
 public:
 	GameGui(GameQ* q, Main* upper, GameConfig& cf, Data* data);

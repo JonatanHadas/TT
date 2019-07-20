@@ -8,9 +8,10 @@ void endf(void* p){
 	((GameGui*)p)->end();
 }
 
-GameGui::GameGui(GameQ* q, Main* upper, GameConfig& cf, Data* d) : State(upper){
+GameGui::GameGui(GameQ* q, Main* upper, GameConfig& cf, Data* d) : State(upper),
+								img_is(cf.colors, cf.colors + q->get_tank_num()),
+								names(cf.names, cf.names + q->get_tank_num()){
 	data = d;
-	img_is = std::vector<int>(cf.colors, cf.colors + q->get_tank_num());
 	game = q;
 	drawer = new GameDrawer(q, upper->get_renderer(), cf, endf, this);
 	for(int i = 0; i<cf.tank_num; i++){
@@ -58,7 +59,5 @@ bool GameGui::step(){
 }
 
 void GameGui::end(){
-	std::vector<std::string> names;
-	for(int i = 0; i<game->get_tank_num(); i++) names.push_back(std::string());
 	upper->set_state(new EndGame(upper, game, img_is, names, data));
 }
