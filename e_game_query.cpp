@@ -45,6 +45,13 @@ GameEQEventRemoveUpgrade::~GameEQEventRemoveUpgrade(){ delete e; }
 int GameEQEventRemoveUpgrade::get_x(){ return e->get_x(); }
 int GameEQEventRemoveUpgrade::get_y(){ return e->get_y(); }
 
+GameEQEventCreateMine::GameEQEventCreateMine(ExEventCreateMine* event){ e = event; }
+GameEQEventCreateMine::~GameEQEventCreateMine(){ delete e; }
+double GameEQEventCreateMine::get_x(){ return e->get_mine()->get_x(); }
+double GameEQEventCreateMine::get_y(){ return e->get_mine()->get_y(); }
+double GameEQEventCreateMine::get_ang(){ return e->get_mine()->get_ang(); }
+int GameEQEventCreateMine::get_ind() { return e->get_mine()->get_tank()->get_ind(); }
+
 GameEQEventTankStuck::GameEQEventTankStuck(ExEventTankStuck* event){ e = event; }
 GameEQEventTankStuck::~GameEQEventTankStuck(){ delete e; }
 int GameEQEventTankStuck::get_ind(){ return e->get_tank()->get_ind(); }
@@ -102,6 +109,8 @@ GameQEvent* GameEQ::get_event(){
 			return new GameEQEventRemoveUpgrade((ExEventRemoveUpgrade*)e);
 		case ExEvent::TYPE_TANK_STUCK:
 			return new GameEQEventTankStuck((ExEventTankStuck*)e);
+		case ExEvent::TYPE_MIN_CRT:
+			return new GameEQEventCreateMine((ExEventCreateMine*)e);
 		case ExEvent::TYPE_MIN_ACT:
 			return new GameQEventEtc(GameQEvent::TYPE_MIN_ACT);
 		case ExEvent::TYPE_COLL:

@@ -85,6 +85,16 @@ public:
 	int get_x();
 	int get_y();
 };
+class GameEQEventCreateMine : public GameQEventCreateMine{
+	ExEventCreateMine* e;
+public:
+	GameEQEventCreateMine(ExEventCreateMine* event);
+	~GameEQEventCreateMine();
+	double get_x();
+	double get_y();
+	double get_ang();
+	int get_ind();
+};
 class GameEQEventTankStuck : public GameQEventTankStuck{
 	ExEventTankStuck* e;
 public:
