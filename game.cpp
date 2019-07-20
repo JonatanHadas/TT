@@ -775,6 +775,7 @@ void Shot::reflect(){
 		if(tn->is_dead()) continue;
 		gen_rot_rect(tn->get_x(), tn->get_y(), TANK_W, TANK_H, tn->get_ang(), txs, tys);
 		double ctt = circ_poly_coltime(col_x, col_y, vx,vy, get_r(), txs,tys,4, tx,ty);
+		
 		if(ctt >= 0 && (found ? (ctt<=ctm) : (ctt+col_t<=tm))){
 			hits.insert(std::pair<Tank*, double>({tn,col_t+ctt}));
 			double cx = col_x + vx*ctt, cy = col_y+vy*ctt;
@@ -798,8 +799,12 @@ void Shot::reflect(){
 	}
 }
 bool Shot::check_tank(Tank* t, bool igm){
-	if(t == get_tank() && !out_of_tank && !igm) return false;
-	return (hits.count(t)>0 && hits[t]<=tm);
+	if(t == get_tank() && !out_of_tank && igm) return false;
+	
+	double txs[4],tys[4];
+	gen_rot_rect(t->get_x(), t->get_y(), TANK_W, TANK_H, t->get_ang(), txs, tys);
+	bool col = circ_poly_colcheck(get_x(), get_y(), get_r(), txs, tys, 4);
+	return col || (hits.count(t)>0 && hits[t]<=tm);
 }
 void Shot::advance(){
 	colls.clear();
@@ -808,7 +813,7 @@ void Shot::advance(){
 	while(col_t < tm && hits.size()==0) {
 		reflect();
 	}
-	if(!check_tank(get_tank(),false)) out_of_tank = false;
+	if(check_tank(get_tank(),false)) out_of_tank = true;
 	if(tm > get_ttl()) get_game()->get_round()->delete_shot(this);
 }
 double Shot::get_ang(){
