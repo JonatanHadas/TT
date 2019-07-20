@@ -359,6 +359,8 @@ void BoardDrawer::draw(){
 			double vx = STEP_MISSILE * cos(ang) + rnd * cos(rnd_ang);
 			double vy = STEP_MISSILE * sin(ang) + rnd * sin(rnd_ang);
 			
+			rotate_add(ang, -MISSILE_L * 0.4, 0, x, y);
+			
 			
 			FadeOut* fo = new FadeOut(	circ,
 										(x+WALL_THK)*BLOCK_SIZE, (y+WALL_THK)*BLOCK_SIZE,
@@ -750,6 +752,9 @@ void GameDrawer::draw(){
 		case GameQEvent::TYPE_UPG_RMV:
 			play(SND_TAKE);
 			break;
+		case GameQEvent::TYPE_END_GAME:
+			oe(oep);
+			break;
 		case GameQEvent::TYPE_MIN_CRT:
 			board->place_mine((GameQEventCreateMine*)event);
 			play(SND_OFF);
@@ -769,9 +774,6 @@ void GameDrawer::draw(){
 		case GameQEvent::TYPE_TANK_STUCK:
 			board->tank_stuck((GameQEventTankStuck*)event);
 			break;
-		case GameQEvent::TYPE_END_GAME:
-			oe(oep);
-			return;
 		}
 		delete event;
 	}

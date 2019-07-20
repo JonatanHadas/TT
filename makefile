@@ -33,9 +33,9 @@ gui_util.h \
 game_config.h \
 texts.h \
 game_extrap.h \
+vfx.h \
 endgame.h \
 sounds.h \
-vfx.h \
 direct_ex.h \
 encoding.h \
 game_setup.h \
