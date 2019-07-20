@@ -351,6 +351,8 @@ void BoardDrawer::draw(){
 			double vx = STEP_MISSILE * cos(ang) + rnd * cos(rnd_ang);
 			double vy = STEP_MISSILE * sin(ang) + rnd * sin(rnd_ang);
 			
+			rotate_add(ang, -MISSILE_L * 0.4, 0, x, y);
+			
 			
 			FadeOut* fo = new FadeOut(	circ,
 										(x+WALL_THK)*BLOCK_SIZE, (y+WALL_THK)*BLOCK_SIZE,
