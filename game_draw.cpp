@@ -296,7 +296,7 @@ void BoardDrawer::draw(){
 			r.w = r.h = 8;
 			r.x -= r.w/2; r.y -= r.h/2;
 			
-			SDL_SetTextureAlphaMod(get_img(IMG_FRAGMENT), (int)(255*(1.0-frg->get_t())));
+			SDL_SetTextureAlphaMod(get_img(IMG_FRAGMENT), (int)(255*(frg->get_t())));
 			SDL_RenderCopyEx(renderer, get_img(IMG_FRAGMENT), NULL, &r, ang, NULL, SDL_FLIP_NONE);
 			
 			break;
@@ -605,6 +605,7 @@ void BoardDrawer::place_mine(GameQEventCreateMine* e){
 								t);
 								
 	fo->set_damp(d);
+	
 	back_fx.add_effect(fo);
 }
 
