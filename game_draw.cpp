@@ -733,7 +733,7 @@ void GameDrawer::draw(){
 			break;
 		case GameQEvent::TYPE_END_GAME:
 			oe(oep);
-			break;
+			return;
 		case GameQEvent::TYPE_SHOT_CRT:
 			switch(((GameQEventCreateShot*)event)->get_stype()){
 			case GenShot::TYPE_REG:
