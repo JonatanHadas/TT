@@ -123,6 +123,8 @@ class Round{
 	int upg_timer;
 	
 	void create_upgrade();
+	
+	bool deleting; // used to prevent creation of items during deconstruction.
 public:
 	Round(Game* game);
 	~Round();

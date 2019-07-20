@@ -323,6 +323,7 @@ int Game::get_round_num(){
 #define UPG_MIN_TIME 600
 
 Round::Round(Game* g){
+	deleting = false;
 	game=g;
 	double stn = sqrt(g->get_tank_num());
 	int min=stn*4,max=stn*8; 
@@ -351,8 +352,10 @@ Round::Round(Game* g){
 	maze->calc_dists();
 }
 Round::~Round(){
+	deleting = true;
 	delete maze;
 	for(auto it = get_shots(); it != end_shots(); it++) delete (*it);
+	for(auto it = get_mines(); it != end_mines(); it++) delete (*it);
 }
 void Round::step(){
 	
@@ -403,6 +406,7 @@ Maze* Round::get_maze(){
 		return maze;
 }
 void Round::add_shot(GenShot* shot){
+	if(deleting) return;
 	game->events.push(new GameEventCreateShot(shot));
 	shots.insert(shot);
 }
@@ -418,6 +422,7 @@ std::set<GenShot*>::iterator Round::end_shots(){
 }
 
 void Round::add_mine(Mine* mine){
+	if(deleting) return;
 	game->events.push(new GameEventCreateMine(mine));
 	mines.insert(mine);
 }
