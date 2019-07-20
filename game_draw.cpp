@@ -638,7 +638,7 @@ void BoardDrawer::tank_stuck(GameQEventTankStuck* e){
 	}
 }
 
-GameDrawer::GameDrawer(GameQ* q, SDL_Renderer* r, std::vector<int> img_inds){
+GameDrawer::GameDrawer(GameQ* q, SDL_Renderer* r, std::vector<int> img_inds, end_func on_end, void* on_end_param){
 	game = q;
 	renderer = r;
 	board = new BoardDrawer(q,r,img_inds);
@@ -647,6 +647,7 @@ GameDrawer::GameDrawer(GameQ* q, SDL_Renderer* r, std::vector<int> img_inds){
 		scores.push_back(NULL);
 		update_score(i);
 	}
+	oe = on_end; oep = on_end_param;
 }
 GameDrawer::~GameDrawer(){
 	if(board) delete board;
@@ -694,6 +695,9 @@ void GameDrawer::draw(){
 			break;
 		case GameQEvent::TYPE_TANK_DEAD:
 			board->tank_death(((GameQEventTankDeath*)event)->get_ind());
+			break;
+		case GameQEvent::TYPE_END_GAME:
+			oe(oep);
 			break;
 		case GameQEvent::TYPE_MIN_CRT:
 			board->place_mine((GameQEventCreateMine*)event);
