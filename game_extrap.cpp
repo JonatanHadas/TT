@@ -363,7 +363,7 @@ void RoundExtrap::add_shot(GenShotExtrap* shot){
 	shots.insert({shot->get_id(), shot});
 }
 void RoundExtrap::del_shot(int id){
-	if(shots[id]->get_type() == GenShot::TYPE_BOMB) game->events.push(new ExEventEtc(ExEvent::TYPE_EXPL));
+	if(shots[id] && shots[id]->get_type() == GenShot::TYPE_BOMB) game->events.push(new ExEventEtc(ExEvent::TYPE_EXPL));
 	shots.erase(id);
 }
 void RoundExtrap::add_mine(MineExtrap* mine){
