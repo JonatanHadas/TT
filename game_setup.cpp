@@ -98,10 +98,10 @@ void GameSetup::send_all(int peer_id){
 	}
 }
 
-void GameSetup::add_player(int peer_id){
+void GameSetup::add_player(int peer_id, int pref_col){
 	
 	PlayerData pl;
-	pl.color = get_free_col();
+	pl.color = (pref_col < 0 || color_taken(pref_col)) ? get_free_col() : pref_col;
 	pl.team = players.size() == 0 ? 0 : team_num-1;
 	pl.peer_id = peer_id;
 	pl.id = id++;
@@ -431,7 +431,8 @@ void GameSetup::mainloop(){
 					break;
 				case '\x01':
 					stop_count();
-					add_player(e.peer_id);
+					cur = decode_int(cur,i);
+					add_player(e.peer_id, i);
 					break;
 				case '\x02':
 					stop_count();

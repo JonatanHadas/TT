@@ -38,6 +38,8 @@ class BoardDrawer{
 	EffectManager front_fx;
 	EffectManager mid_fx;
 	
+	std::vector<int> colors;
+	
 public:
 	BoardDrawer(GameQ* q, SDL_Renderer* rend, GameConfig& cf);
 	~BoardDrawer();

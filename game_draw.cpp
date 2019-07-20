@@ -138,10 +138,11 @@ std::pair<Upgrade::Type, Img> upg2img_a[UPG_NUM] = {
 	};
 std::map<Upgrade::Type, Img> upg2img(upg2img_a,upg2img_a+UPG_NUM);
 
-BoardDrawer::BoardDrawer(GameQ* q, SDL_Renderer* r, GameConfig& cf) : back_fx(r), mid_fx(r), front_fx(r){
+BoardDrawer::BoardDrawer(GameQ* q, SDL_Renderer* r, GameConfig& cf) : back_fx(r), mid_fx(r), front_fx(r), colors(cf.colors, cf.colors+q->get_tank_num()){
 	renderer = r;
 	game = q;
 	tank_images = new TankImg[q->get_tank_num()];
+
 	for(int i = 0; i<q->get_tank_num(); i++) {
 		generate_tank(cf.colors[i], r, tank_images + i);
 	}
@@ -245,7 +246,7 @@ void BoardDrawer::draw(){
 		case GenShot::TYPE_LASER:
 			sht = (ShotQ*)(*it);
 
-			ctk = get_tank_col(sht->get_tank_ind());
+			ctk = get_tank_col(colors[sht->get_tank_ind()]);
 			
 			for(int i = 1; i<sht->get_colls().size(); i++){
 				double x1 = sht->get_colls()[i-1].first;
@@ -346,7 +347,7 @@ void BoardDrawer::draw(){
 			SDL_RenderCopyEx(renderer, tank_images[mis->get_tank_ind()].missile, NULL, &r, RAD2DEG(mis->get_ang())+90, &p, SDL_FLIP_NONE);
 			
 			ctr.a = 255;
-			if(mis->get_tar_ind() >= 0) ctr = get_tank_col(mis->get_tar_ind());
+			if(mis->get_tar_ind() >= 0) ctr = get_tank_col(colors[mis->get_tar_ind()]);
 			else ctr.r = ctr.g = ctr.b = 128;
 			
 			double rnd_ang = rand_range(-100,101) * M_PI/100;
@@ -418,7 +419,7 @@ void BoardDrawer::draw(){
 
 	for(int i = 0; i < game->get_tank_num(); i++){
 		TankQ* t = game->get_tank(i);
-		SDL_Color col = get_tank_col(i);
+		SDL_Color col = get_tank_col(colors[i]);
 		SDL_SetRenderDrawColor(renderer,col.r,col.g,col.b,255);
 		if(!t->is_dead()){
 			double x = t->get_x(), y = t->get_y(), ang = t->get_ang();
@@ -470,7 +471,7 @@ void BoardDrawer::draw(){
 			case Tank::LASER:
 				ps = t->predict_colls(AIM_LEN, LASER_R);
 				count = ps.size();
-				col = get_tank_col(i);
+				col = get_tank_col(colors[i]);
 				
 				
 				

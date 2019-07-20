@@ -100,7 +100,7 @@ class GameSetup{
 	
 	void send_all(int peer_id); // send all data to this peer
 	
-	void add_player(int peer_id); //add player for this peer
+	void add_player(int peer_id, int pref_col); //add player for this peer
 	void remove_player(int peer_id, int ind);
 	void update_name(int peer_id, int ind, const char* name);
 	void update_col(int peer_id, int ind, int col);
