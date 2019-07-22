@@ -274,6 +274,23 @@ double DeathRayDQ::get_x(int i){
 double DeathRayDQ::get_y(int i){
 	return dr->get_point(i).second;
 }
+int DeathRayDQ::get_coll_num(){
+	return dr->get_coll_num();
+}
+double DeathRayDQ::get_coll_x(int i){
+	return dr->get_coll(i).first;
+}
+double DeathRayDQ::get_coll_y(int i){
+	return dr->get_coll(i).second;
+}
+double DeathRayDQ::get_coll_nx(int i){
+	return dr->get_coll_norm(i).first;
+}
+double DeathRayDQ::get_coll_ny(int i){
+	return dr->get_coll_norm(i).second;
+}
+
+
 double DeathRayDQ::get_x(){
 	return dr->get_x();
 }

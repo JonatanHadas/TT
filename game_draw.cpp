@@ -322,6 +322,34 @@ void BoardDrawer::draw(){
 									
 			}
 			
+			for(int i = 0; i<dtr->get_coll_num(); i++){
+				if(rand_range(0,2)<1){
+					double x = dtr->get_coll_x(i);
+					double y = dtr->get_coll_y(i);
+					
+					int dx = dtr->get_coll_nx(i);
+					int dy = dtr->get_coll_ny(i);
+					
+					double v = rand_range(0,1001)/10000.;
+					double ang = rand_range(-499,500)*M_PI/1000;
+					double vx = 0, vy = 0;
+					
+					rotate_add(ang, dx*v, dy*v, vx, vy);
+					
+					FadeOut* fo = new FadeOut(	circ,
+												(x+WALL_THK)*BLOCK_SIZE, (y+WALL_THK)*BLOCK_SIZE,
+												vx*BLOCK_SIZE, vy*BLOCK_SIZE,
+												4,4,
+												0.0,
+												SDL_FLIP_NONE,
+												10);
+					fo->set_color(0,0,0);
+					fo->set_damp(0.2);
+										
+					back_fx.add_effect(fo);
+				}			
+			}
+			
 			break;
 		case GenShot::TYPE_WIFI:
 		case GenShot::TYPE_MISSILE:

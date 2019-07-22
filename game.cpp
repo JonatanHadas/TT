@@ -1031,7 +1031,7 @@ bool DeathRay::check_tank(Tank* tank, bool ignore_me){
 	
 	for(int i = 1; i<ps.size(); i++){
 		double x1 = ps[i-1].first, y1 = ps[i-1].second, x2 = ps[i].first, y2 = ps[i].second;
-		double nx,ny,t = circ_poly_coltime(x1,y1,x2-x1,y2-y1,0.0,txs,tys,4,nx,ny);
+		double nx,ny,t = circ_poly_coltime(x1,y1,x2-x1,y2-y1,DR_W,txs,tys,4,nx,ny);
 		if(t >= 0 && t <= 1) return true;
 	}
 	return false;
@@ -1063,6 +1063,55 @@ int DeathRay::get_point_num(){
 }
 std::pair<double, double> DeathRay::get_point(int i){
 	return ps[i];
+}
+
+int DeathRay::get_coll_num(){
+	return colls.size();
+}
+std::pair<double, double> DeathRay::get_coll(int i){
+	return colls[i].first;
+}
+std::pair<double, double> DeathRay::get_coll_norm(int i){
+	return colls[i].second;
+}
+
+
+void get_dr_coll(double x, double y, double vx, double vy, Maze* maze, std::vector<std::pair<std::pair<double,double>,std::pair<double,double>>>& colls){
+	int ix = x;
+	int iy = y;
+	int ixx = vx>0 ? 1 : 0;
+	int iyy = vy>0 ? 1 : 0;
+	int idx = vx>0 ? 1 : -1;
+	int idy = vy>0 ? 1 : -1;
+	int vsg = idx*idy;
+	double wxs[4],wys[4];
+	
+	while(abs(ix - (int)x)<= DR_STEP && abs(iy - (int)y) <= DR_STEP){
+		double tt;
+		for(int i = -1; i<=1; i++){
+			for(int j = -1; j<1; j++){
+				gen_rect(ix+i-WALL_THK, iy+j-WALL_THK + 1, 2*WALL_THK + 1, 2*WALL_THK,wxs,wys);
+				if(maze->hwall(ix+i, iy+j)){
+					double nx,ny;
+					double d = circ_poly_coltime(x,y,vx,vy,DR_W,wxs,wys,4,nx,ny);
+					if(d >= 0 && d <= 1){
+						colls.push_back({{x+vx*d-nx*DR_W,y+vy*d-ny*DR_W},{nx,ny}});
+					}
+				}
+				gen_rect(ix+j-WALL_THK + 1, iy+i-WALL_THK, 2*WALL_THK, 2*WALL_THK + 1,wxs,wys);
+				if(maze->vwall(ix+j, iy+i)){
+					double nx,ny;
+					double d = circ_poly_coltime(x,y,vx,vy,DR_W,wxs,wys,4,nx,ny);
+					if(d >= 0 && d <= 1){
+						colls.push_back({{x+vx*d-nx*DR_W,y+vy*d-ny*DR_W},{nx,ny}});
+					}
+				}
+			}
+		}
+		if( vsg * leftness(ix+ixx,iy+iyy,x,y,x+vx,y+vy) > 0) iy += idy;
+		else ix += idx;
+	}
+
 }
 
 void DeathRay::find_path(){
@@ -1100,6 +1149,16 @@ void DeathRay::find_path(){
 		if(da < DR_TURN) da = -DR_TURN;
 		
 		ang += da;
+	}
+	
+	for(int i = 1; i<ps.size(); i++){
+		double x = ps[i-1].first, y = ps[i-1].second;
+		double vx = ps[i].first-x, vy = ps[i].second-y;
+		
+		Maze* m = get_game()->get_round()->get_maze();
+		
+		get_dr_coll(x,y,vx,vy,m,colls);
+		get_dr_coll(x+vx,y+vy,-vx,-vy,m,colls);
 	}
 }
 

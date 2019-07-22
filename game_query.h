@@ -169,6 +169,12 @@ public:
 	virtual int get_point_num() = 0;
 	virtual double get_x(int i) = 0;
 	virtual double get_y(int i) = 0;
+	
+	virtual int get_coll_num() = 0;
+	virtual double get_coll_x(int i) = 0;
+	virtual double get_coll_y(int i) = 0;
+	virtual double get_coll_nx(int i) = 0;
+	virtual double get_coll_ny(int i) = 0;
 };
 
 class MissileQ : public GenShotQ{

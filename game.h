@@ -462,6 +462,7 @@ public:
 
 class DeathRay : public GenShot, public Controlable{
 	std::vector<std::pair<double,double>> ps;
+	std::vector<std::pair<std::pair<double, double>, std::pair<double, double>>> colls;
 	int timer;
 	void find_path();
 public:
@@ -479,6 +480,10 @@ public:
 	
 	int get_point_num();
 	std::pair<double, double> get_point(int i);
+	
+	int get_coll_num();
+	std::pair<double, double> get_coll(int i);
+	std::pair<double, double> get_coll_norm(int i);
 	
 	void die();
 };
