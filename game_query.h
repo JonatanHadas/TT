@@ -102,7 +102,7 @@ public:
 class GameQEventTankStuck : public GameQEvent{
 public:
 	Type get_type(){return GameQEvent::TYPE_TANK_STUCK;}
-	virtual get_ind() = 0;
+	virtual int get_ind() = 0;
 	virtual double get_spd() = 0;
 };
 class GameQEventEtc : public GameQEvent{

@@ -1,5 +1,7 @@
 #include "network.h"
 
+#include "string.h"
+
 #define PORT 54321
 
 Server::Server(){
