@@ -332,6 +332,21 @@ double DeathRayEQ::get_x(int i){
 double DeathRayEQ::get_y(int i){
 	return dr->get_y(i);
 }
+int DeathRayEQ::get_coll_num(){
+	return dr->get_coll_num();
+}
+double DeathRayEQ::get_coll_x(int i){
+	return dr->get_coll(i).first;
+}
+double DeathRayEQ::get_coll_y(int i){
+	return dr->get_coll(i).second;
+}
+double DeathRayEQ::get_coll_nx(int i){
+	return dr->get_coll_norm(i).first;
+}
+double DeathRayEQ::get_coll_ny(int i){
+	return dr->get_coll_norm(i).second;
+}
 double DeathRayEQ::get_x(){
 	return dr->get_x();
 }

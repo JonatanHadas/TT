@@ -327,11 +327,16 @@ public:
 
 class DeathRayExtrap : public GenShotExtrap{
 	std::vector<std::pair<double,double>> ps;
+	std::vector<std::pair<std::pair<double,double>, std::pair<double,double>>> colls;
 public:
 	DeathRayExtrap(GameExtrap* game, ExInEventCreateDeathRay* e);
 	int get_point_num();
 	double get_x(int i);
 	double get_y(int i);
+
+	int get_coll_num();
+	std::pair<double, double> get_coll(int i);
+	std::pair<double, double> get_coll_norm(int i);
 	
 	double get_x();
 	double get_y();

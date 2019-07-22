@@ -198,6 +198,11 @@ public:
 	int get_point_num();
 	double get_x(int i);
 	double get_y(int i);
+	int get_coll_num();
+	double get_coll_x(int i);
+	double get_coll_y(int i);
+	double get_coll_nx(int i);
+	double get_coll_ny(int i);
 	double get_x();
 	double get_y();
 	double get_ang();
