@@ -206,6 +206,12 @@ public:
 	double get_ang();
 	GenShot::Type get_type();
 	int get_tank_ind();
+
+	int get_coll_num();
+	double get_coll_x(int i);
+	double get_coll_y(int i);
+	double get_coll_nx(int i);
+	double get_coll_ny(int i);
 };
 
 class MissileDQ : public MissileQ{
