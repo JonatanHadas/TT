@@ -1,5 +1,5 @@
 #include "game_setup.h"
-#include "encoding.h"
+#include "../network/encoding.h"
 #include <stdio.h>
 #include <time.h>
 bool GameSetup::color_taken(int colnum){

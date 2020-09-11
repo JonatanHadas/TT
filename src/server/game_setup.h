@@ -3,9 +3,9 @@
 
 class GameSetup;
 
-#include "game_config.h"
+#include "../game/game_config.h"
 #include "netgame.h"
-#include "network.h"
+#include "../network/network.h"
 #include "time.h"
 #include <map>
 #include <vector>

@@ -10,11 +10,11 @@
 #define TRANS_SPD 0.1
 
 #include <math.h>
-#include "utf8.h"
+#include "utils/utf8.h"
 
-#include "encoding.h"
+#include "network/encoding.h"
 
-#include "gui_util.h"
+#include "gui_utils/gui_util.h"
 
 #include <stdio.h>
 
@@ -22,10 +22,10 @@
 #define UP "\xe2\x96\xb2"
 #define DOWN "\xe2\x96\xbc"
 
-#include "game_extrap.h"
-#include "e_game_query.h"
+#include "game/game_extrap.h"
+#include "game/e_game_query.h"
 #include "game_gui.h"
-#include "net_ex.h"
+#include "game/net_ex.h"
 
 
 bool in_rect(SDL_Rect r, int x, int y){

@@ -1,5 +1,5 @@
 #include "netgame.h"
-#include "encoding.h"
+#include "../network/encoding.h"
 #include <stdio.h>
 
 

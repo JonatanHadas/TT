@@ -1,7 +1,7 @@
 #include "maze.h"
 #include <stdlib.h>
 
-#include "utils.h"
+#include "../utils/utils.h"
 
 void wall_rem(int w, int h, bool** hw, bool** vw, std::vector<std::pair<int,int>> c_points){
 	UnionFind f(w*h);

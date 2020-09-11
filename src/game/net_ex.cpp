@@ -1,5 +1,5 @@
 #include "net_ex.h"
-#include "encoding.h"
+#include "../network/encoding.h"
 
 NetEx::NetEx(Client* c, GameConfig& cf){
 	clnt = c;

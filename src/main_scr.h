@@ -1,14 +1,14 @@
 #ifndef _MAIN_SCR_H
 #define _MAIN_SCR_H
 
-#include "gui.h"
-#include "utils.h"
-#include "texts.h"
+#include "gui_utils/gui.h"
+#include "utils/utils.h"
+#include "gui_utils/texts.h"
 #include "keys.h"
-#include "images.h"
-#include "game_config.h"
+#include "game_gui/images.h"
+#include "game/game_config.h"
 #include <SDL2/SDL.h>
-#include "network.h"
+#include "network/network.h"
 #include <string>
 #include <vector>
 #include <set>

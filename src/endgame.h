@@ -1,15 +1,15 @@
 #ifndef _ENDGAME_H
 #define _ENDGAME_H
 
-#include "game_query.h"
+#include "game/game_query.h"
 
 #include <vector>
 #include <string>
-#include "gui.h"
-#include "texts.h"
-#include "images.h"
+#include "gui_utils/gui.h"
+#include "gui_utils/texts.h"
+#include "game_gui/images.h"
 
-#include "utils.h"
+#include "utils/utils.h"
 
 class EndGame : public State{
 	int timer;
