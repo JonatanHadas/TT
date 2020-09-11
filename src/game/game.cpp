@@ -1,8 +1,8 @@
 #include "game.h"
-#include "geom.h"
+#include "../utils/geom.h"
 
 #include "game_consts.h"
-#include "utils.h"
+#include "../utils/utils.h"
 
 #include <stdio.h>
 #include <vector>

@@ -39,9 +39,9 @@ type |   | meaning     | data
 
 class NetGame;
 
-#include "network.h"
+#include "../network/network.h"
 #include "game_setup.h"
-#include "game.h"
+#include "../game/game.h"
 
 class NetGame{
 	GameSetup* set;

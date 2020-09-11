@@ -2,64 +2,63 @@ SYS = WINDOWS64
 DEBUG = NO
 
 ADDIR = 
-ACDDIR = 
 
 ifeq ($(DEBUG),YES)
 DEBUG_FLG = -g
 ADDIR = $(DDIR)
-ACDDIR = $(CDDIR)
 endif 
 
 DEF_CMP_FLG = $(DEBUG_FLG) $(INC_PTH)
 
 HEADS1 = \
-utils.h \
-geom.h \
-gui.h \
-clock.h \
+utils$(SEP)utils.h \
+utils$(SEP)geom.h \
+gui_utils$(SEP)gui.h \
+gui_utils$(SEP)clock.h \
 main_scr.h \
-texts.h \
-utf8.h \
+gui_utils$(SEP)texts.h \
+utils$(SEP)utf8.h \
 keys.h \
-network.h \
-game.h \
-game_draw.h \
-d_game_query.h \
+network$(SEP)network.h \
+game$(SEP)game.h \
+game_gui$(SEP)game_draw.h \
+game$(SEP)d_game_query.h \
 game_gui.h \
-maze.h \
-images.h \
-e_game_query.h \
-gui_util.h \
-game_config.h \
-texts.h \
-game_extrap.h \
-vfx.h \
+game$(SEP)maze.h \
+game_gui$(SEP)images.h \
+game$(SEP)e_game_query.h \
+gui_utils$(SEP)gui_util.h \
+game$(SEP)game_config.h \
+gui_utils$(SEP)texts.h \
+game$(SEP)game_extrap.h \
+gui_utils$(SEP)vfx.h \
 endgame.h \
-sounds.h \
-direct_ex.h \
-encoding.h \
-game_setup.h \
-netgame.h \
-net_ex.h \
+game_gui$(SEP)sounds.h \
+game$(SEP)direct_ex.h \
+network$(SEP)encoding.h \
+server$(SEP)game_setup.h \
+server$(SEP)netgame.h \
+game$(SEP)net_ex.h \
 
 GOBJ_NAMES = $(patsubst %.h,%.o, $(HEADS1))
 COBJ_NAMES = $(GOBJ_NAMES) main.o
-SOBJ_NAMES = $(GOBJ_NAMES) server_main.o
-COBJS = $(patsubst %.o, $(DIR)%.o, $(COBJ_NAMES))
-SOBJS = $(patsubst %.o, $(DIR)%.o, $(SOBJ_NAMES))
+SOBJ_NAMES = $(GOBJ_NAMES) server$(SEP)server_main.o
+COBJS = $(patsubst %.o, $$(DIR)%.o, $(COBJ_NAMES))
+SOBJS = $(patsubst %.o, $$(DIR)%.o, $(SOBJ_NAMES))
+
+SOURCES_DIR = src
 
 HEADS = $(HEADS1) \
-game_query.h \
-game_consts.h \
-ex_in_events.h \
+game$(SEP)game_query.h \
+game$(SEP)game_consts.h \
+game$(SEP)ex_in_events.h \
 
 ifeq ($(SYS), WINDOWS64)
 #windows64
 CC = g++
-DIR = windows64/
-CDIR = windows64\\
-DDIR = debug/
-CDDIR = debug\\
+SEP = \\
+DIR = windows64$(SEP)
+DDIR = debug$(SEP)
 CEXEC = $(DIR)tanktrouble.exe
 SEXEC = $(DIR)tanktrouble_server.exe
 CLN = del
@@ -71,11 +70,10 @@ INC_PTH = -I"C:\MinGW\include" -I"enet\include"
 else
 ifeq ($(SYS), WINDOWS)
 #windows
+SEP = \\
 CC = g++
-DIR = windows/
-CDIR = windows\\
-DDIR = debug/
-CDDIR = debug\\
+DIR = windows$(SEP)
+DDIR = debug$(SEP)
 CEXEC = $(DIR)tanktrouble.exe
 SEXEC = $(DIR)tanktrouble_server.exe
 CLN = del
@@ -87,11 +85,10 @@ INC_PTH = -I"C:\Program Files\mingw-w64\i686-8.1.0-posix-dwarf-rt_v6-rev0\mingw3
 else
 ifeq ($(SYS), LINUX)
 #linux
+SEP = /
 CC = g++
-DIR = linux/
-CDIR = $(DIR)
-DDIR = debug/
-CDDIR = $(DDIR)
+DIR = linux$(SEP)
+DDIR = debug$(SEP)
 CEXEC = $(DIR)tanktrouble
 SEXEC = $(DIR)tanktrouble_server
 CLN = rm
@@ -105,79 +102,78 @@ endif
 endif
 
 DIR := $(DIR)$(ADDIR)
-CDIR := $(CDIR)$(ACDDIR)
+
+HEADS := $(patsubst %.h, $(SOURCES_DIR)$(SEP)%.h, $(HEADS))
 
 all: $(CEXEC) $(SEXEC)
 
+.SECONDEXPANSION:
 $(CEXEC): $(COBJS)
 	$(CC) $(CMP_FLG) $^ -o $@ $(LNK_FLG)
 $(SEXEC): $(SOBJS)
 	$(CC) $(CMP_FLG) $^ -o $@ $(LNK_FLG)
 
-.SECONDEXPANSION:
-$(DIR)main.o: $$(patsubst $(DIR)%.o, %.cpp, $$@) $(HEADS)
-	$(CC) $(CMP_FLG) -c $< -o $@
-$(DIR)server_main.o: $$(patsubst $(DIR)%.o, %.cpp, $$@) $(HEADS)
-	$(CC) $(CMP_FLG) -c $< -o $@
-$(DIR)keys.o: $$(patsubst $(DIR)%.o, %.cpp, $$@) keys.h
-	$(CC) $(CMP_FLG) -c $< -o $@
-$(DIR)utf8.o: $$(patsubst $(DIR)%.o, %.cpp, $$@) utf8.h
-	$(CC) $(CMP_FLG) -c $< -o $@
-$(DIR)utils.o: $$(patsubst $(DIR)%.o, %.cpp, $$@) utils.h
-	$(CC) $(CMP_FLG) -c $< -o $@
-$(DIR)gui_util.o: $$(patsubst $(DIR)%.o, %.cpp, $$@) utils.h
-	$(CC) $(CMP_FLG) -c $< -o $@
-$(DIR)geom.o: $$(patsubst $(DIR)%.o, %.cpp, $$@) geom.h
-	$(CC) $(CMP_FLG) -c $< -o $@
-$(DIR)clock.o: $$(patsubst $(DIR)%.o, %.cpp, $$@) clock.h
-	$(CC) $(CMP_FLG) -c $< -o $@
-$(DIR)texts.o: $$(patsubst $(DIR)%.o, %.cpp, $$@) texts.h
-	$(CC) $(CMP_FLG) -c $< -o $@
-$(DIR)network.o: $$(patsubst $(DIR)%.o, %.cpp, $$@) network.h
-	$(CC) $(CMP_FLG) -c $< -o $@
-$(DIR)images.o: $$(patsubst $(DIR)%.o, %.cpp, $$@) images.h
-	$(CC) $(CMP_FLG) -c $< -o $@
-$(DIR)sounds.o: $$(patsubst $(DIR)%.o, %.cpp, $$@) sounds.h
-	$(CC) $(CMP_FLG) -c $< -o $@
-$(DIR)vfx.o: $$(patsubst $(DIR)%.o, %.cpp, $$@) vfx.h
-	$(CC) $(CMP_FLG) -c $< -o $@
-$(DIR)maze.o: $$(patsubst $(DIR)%.o, %.cpp, $$@) maze.h
-	$(CC) $(CMP_FLG) -c $< -o $@
-$(DIR)game_config.o: $$(patsubst $(DIR)%.o, %.cpp, $$@) game_config.h
-	$(CC) $(CMP_FLG) -c $< -o $@
-$(DIR)gui.o: $$(patsubst $(DIR)%.o, %.cpp, $$@) $(HEADS)
-	$(CC) $(CMP_FLG) -c $< -o $@
-$(DIR)game.o: $$(patsubst $(DIR)%.o, %.cpp, $$@) $(HEADS)
-	$(CC) $(CMP_FLG) -c $< -o $@
-$(DIR)d_game_query.o: $$(patsubst $(DIR)%.o, %.cpp, $$@) $(HEADS)
-	$(CC) $(CMP_FLG) -c $< -o $@
-$(DIR)e_game_query.o: $$(patsubst $(DIR)%.o, %.cpp, $$@) $(HEADS)
-	$(CC) $(CMP_FLG) -c $< -o $@
-$(DIR)game_draw.o: $$(patsubst $(DIR)%.o, %.cpp, $$@) $(HEADS)
-	$(CC) $(CMP_FLG) -c $< -o $@
-$(DIR)game_gui.o: $$(patsubst $(DIR)%.o, %.cpp, $$@) $(HEADS)
-	$(CC) $(CMP_FLG) -c $< -o $@
-$(DIR)game_extrap.o: $$(patsubst $(DIR)%.o, %.cpp, $$@) $(HEADS)
-	$(CC) $(CMP_FLG) -c $< -o $@
-$(DIR)endgame.o: $$(patsubst $(DIR)%.o, %.cpp, $$@) $(HEADS)
-	$(CC) $(CMP_FLG) -c $< -o $@
-$(DIR)direct_ex.o: $$(patsubst $(DIR)%.o, %.cpp, $$@) $(HEADS)
-	$(CC) $(CMP_FLG) -c $< -o $@
-$(DIR)main_scr.o: $$(patsubst $(DIR)%.o, %.cpp, $$@) $(HEADS)
-	$(CC) $(CMP_FLG) -c $< -o $@
-$(DIR)encoding.o: $$(patsubst $(DIR)%.o, %.cpp, $$@) $(HEADS)
-	$(CC) $(CMP_FLG) -c $< -o $@
-$(DIR)game_setup.o: $$(patsubst $(DIR)%.o, %.cpp, $$@) $(HEADS)
-	$(CC) $(CMP_FLG) -c $< -o $@
-$(DIR)netgame.o: $$(patsubst $(DIR)%.o, %.cpp, $$@) $(HEADS)
-	$(CC) $(CMP_FLG) -c $< -o $@
-$(DIR)net_ex.o: $$(patsubst $(DIR)%.o, %.cpp, $$@) $(HEADS)
-	$(CC) $(CMP_FLG) -c $< -o $@
 
-CLEXEC = $(patsubst $(DIR)%,$(CDIR)%, $(CEXEC)) $(patsubst $(DIR)%,$(CDIR)%, $(SEXEC))
-CLOBJS = $(patsubst $(DIR)%,$(CDIR)%, $(COBJS)) $(patsubst $(DIR)%,$(CDIR)%, $(SOBJS))
+$(DIR)main.o: $$(patsubst $(DIR)%.o, $(SOURCES_DIR)%.cpp, $$@) $(HEADS)
+	$(CC) $(CMP_FLG) -c $< -o $@
+$(DIR)server$(SEP)server_main.o: $$(patsubst $(DIR)%.o, $(SOURCES_DIR)%.cpp, $$@) $(HEADS)
+	$(CC) $(CMP_FLG) -c $< -o $@
+$(DIR)keys.o: $$(patsubst $(DIR)%.o, $(SOURCES_DIR)%.cpp, $$@) $(SOURCES_DIR)$(SEP)keys.h
+	$(CC) $(CMP_FLG) -c $< -o $@
+$(DIR)utils$(SEP)utf8.o: $$(patsubst $(DIR)%.o, $(SOURCES_DIR)%.cpp, $$@) $(SOURCES_DIR)$(SEP)utils$(SEP)utf8.h
+	$(CC) $(CMP_FLG) -c $< -o $@
+$(DIR)utils$(SEP)utils.o: $$(patsubst $(DIR)%.o, $(SOURCES_DIR)%.cpp, $$@) $(SOURCES_DIR)$(SEP)utils$(SEP)utils.h
+	$(CC) $(CMP_FLG) -c $< -o $@
+$(DIR)gui_utils$(SEP)gui_util.o: $$(patsubst $(DIR)%.o, $(SOURCES_DIR)%.cpp, $$@) $(SOURCES_DIR)$(SEP)gui_utils$(SEP)gui_util.h
+	$(CC) $(CMP_FLG) -c $< -o $@
+$(DIR)utils$(SEP)geom.o: $$(patsubst $(DIR)%.o, $(SOURCES_DIR)%.cpp, $$@) $(SOURCES_DIR)$(SEP)utils$(SEP)geom.h
+	$(CC) $(CMP_FLG) -c $< -o $@
+$(DIR)gui_utils$(SEP)clock.o: $$(patsubst $(DIR)%.o, $(SOURCES_DIR)%.cpp, $$@) $(SOURCES_DIR)$(SEP)gui_utils$(SEP)clock.h
+	$(CC) $(CMP_FLG) -c $< -o $@
+$(DIR)gui_utils$(SEP)texts.o: $$(patsubst $(DIR)%.o, $(SOURCES_DIR)%.cpp, $$@) $(SOURCES_DIR)$(SEP)gui_utils$(SEP)texts.h
+	$(CC) $(CMP_FLG) -c $< -o $@
+$(DIR)network$(SEP)network.o: $$(patsubst $(DIR)%.o, $(SOURCES_DIR)%.cpp, $$@) $(SOURCES_DIR)$(SEP)network$(SEP)network.h
+	$(CC) $(CMP_FLG) -c $< -o $@
+$(DIR)game_gui$(SEP)images.o: $$(patsubst $(DIR)%.o, $(SOURCES_DIR)%.cpp, $$@) $(SOURCES_DIR)$(SEP)game_gui$(SEP)images.h
+	$(CC) $(CMP_FLG) -c $< -o $@
+$(DIR)game_gui$(SEP)sounds.o: $$(patsubst $(DIR)%.o, $(SOURCES_DIR)%.cpp, $$@) $(SOURCES_DIR)$(SEP)game_gui$(SEP)sounds.h
+	$(CC) $(CMP_FLG) -c $< -o $@
+$(DIR)gui_utils$(SEP)vfx.o: $$(patsubst $(DIR)%.o, $(SOURCES_DIR)%.cpp, $$@) $(SOURCES_DIR)$(SEP)gui_utils$(SEP)vfx.h
+	$(CC) $(CMP_FLG) -c $< -o $@
+$(DIR)game$(SEP)maze.o: $$(patsubst $(DIR)%.o, $(SOURCES_DIR)%.cpp, $$@) $(SOURCES_DIR)$(SEP)game$(SEP)maze.h
+	$(CC) $(CMP_FLG) -c $< -o $@
+$(DIR)game$(SEP)game_config.o: $$(patsubst $(DIR)%.o, $(SOURCES_DIR)%.cpp, $$@) $(SOURCES_DIR)$(SEP)game$(SEP)game_config.h
+	$(CC) $(CMP_FLG) -c $< -o $@
+$(DIR)gui_utils$(SEP)gui.o: $$(patsubst $(DIR)%.o, $(SOURCES_DIR)%.cpp, $$@) $(HEADS)
+	$(CC) $(CMP_FLG) -c $< -o $@
+$(DIR)game$(SEP)game.o: $$(patsubst $(DIR)%.o, $(SOURCES_DIR)%.cpp, $$@) $(HEADS)
+	$(CC) $(CMP_FLG) -c $< -o $@
+$(DIR)game$(SEP)d_game_query.o: $$(patsubst $(DIR)%.o, $(SOURCES_DIR)%.cpp, $$@) $(HEADS)
+	$(CC) $(CMP_FLG) -c $< -o $@
+$(DIR)game$(SEP)e_game_query.o: $$(patsubst $(DIR)%.o, $(SOURCES_DIR)%.cpp, $$@) $(HEADS)
+	$(CC) $(CMP_FLG) -c $< -o $@
+$(DIR)game_gui$(SEP)game_draw.o: $$(patsubst $(DIR)%.o, $(SOURCES_DIR)%.cpp, $$@) $(HEADS)
+	$(CC) $(CMP_FLG) -c $< -o $@
+$(DIR)game_gui.o: $$(patsubst $(DIR)%.o, $(SOURCES_DIR)%.cpp, $$@) $(HEADS)
+	$(CC) $(CMP_FLG) -c $< -o $@
+$(DIR)game$(SEP)game_extrap.o: $$(patsubst $(DIR)%.o, $(SOURCES_DIR)%.cpp, $$@) $(HEADS)
+	$(CC) $(CMP_FLG) -c $< -o $@
+$(DIR)endgame.o: $$(patsubst $(DIR)%.o, $(SOURCES_DIR)%.cpp, $$@) $(HEADS)
+	$(CC) $(CMP_FLG) -c $< -o $@
+$(DIR)game$(SEP)direct_ex.o: $$(patsubst $(DIR)%.o, $(SOURCES_DIR)%.cpp, $$@) $(HEADS)
+	$(CC) $(CMP_FLG) -c $< -o $@
+$(DIR)main_scr.o: $$(patsubst $(DIR)%.o, $(SOURCES_DIR)%.cpp, $$@) $(HEADS)
+	$(CC) $(CMP_FLG) -c $< -o $@
+$(DIR)network$(SEP)encoding.o: $$(patsubst $(DIR)%.o, $(SOURCES_DIR)%.cpp, $$@) $(HEADS)
+	$(CC) $(CMP_FLG) -c $< -o $@
+$(DIR)server$(SEP)game_setup.o: $$(patsubst $(DIR)%.o, $(SOURCES_DIR)%.cpp, $$@) $(HEADS)
+	$(CC) $(CMP_FLG) -c $< -o $@
+$(DIR)server$(SEP)netgame.o: $$(patsubst $(DIR)%.o, $(SOURCES_DIR)%.cpp, $$@) $(HEADS)
+	$(CC) $(CMP_FLG) -c $< -o $@
+$(DIR)game$(SEP)net_ex.o: $$(patsubst $(DIR)%.o, $(SOURCES_DIR)%.cpp, $$@) $(HEADS)
+	$(CC) $(CMP_FLG) -c $< -o $@
 
 clean_all:
-	$(CLN) $(CLEXEC) $(CLOBJS)
+	$(CLN) $(EXEC) $(COBJS) $(SOBJS)
 clean:
-	$(CLN) $(CLOBJS)
+	$(CLN) $(COBJS) $(SOBJS)

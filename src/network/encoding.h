@@ -21,7 +21,7 @@ char* decode_long(char* buf, long long int& i);
 char* encode_str(char* buf, const char* s);
 char* decode_str(char* buf, char* s);
 
-#include "game_config.h"
+#include "../game/game_config.h"
 
 char* encode_scr_mth(char* buf, GameSettings::ScoreMeth s);
 char* decode_scr_mth(char* buf, GameSettings::ScoreMeth& s);
@@ -32,7 +32,7 @@ char* decode_end_mth(char* buf, GameSettings::EndMeth& e);
 char* encode_gamesett(char* buf, GameSettings s);
 char* decode_gamesett(char* buf, GameSettings& s);
 
-#include "game.h"
+#include "../game/game.h"
 
 char* encode_shot_type(char* buf, GenShot::Type t);
 char* decode_shot_type(char* buf, GenShot::Type& t);

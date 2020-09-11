@@ -2,7 +2,7 @@
 
 #define FPS 60
 
-#include "main_scr.h"
+#include "../main_scr.h"
 #include <stdio.h>
 
 Main::Main(SDL_Renderer* renderer){

@@ -2,7 +2,7 @@
 #define _NET_EX
 
 #include "ex_in_events.h"
-#include "network.h"
+#include "../network/network.h"
 
 #include "game.h"
 #include "game_config.h"

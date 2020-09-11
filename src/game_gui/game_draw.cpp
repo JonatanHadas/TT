@@ -1,12 +1,12 @@
 #include "game_draw.h"
-#include "game_consts.h"
+#include "../game/game_consts.h"
 
-#include "gui_util.h"
-#include "utils.h"
+#include "../gui_utils/gui_util.h"
+#include "../utils/utils.h"
 
 #include "sounds.h"
 
-#include "geom.h"
+#include "../utils/geom.h"
 #include <vector>
 
 #include <stdio.h>

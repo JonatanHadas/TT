@@ -7,11 +7,11 @@
 #include <SDL2/SDL_mixer.h>
 #include <enet/enet.h>
 
-#include "gui.h"
-#include "texts.h"
+#include "gui_utils/gui.h"
+#include "gui_utils/texts.h"
 #include "keys.h"
-#include "sounds.h"
-#include "images.h"
+#include "game_gui/sounds.h"
+#include "game_gui/images.h"
 
 SDL_Window*  screen;
 SDL_Renderer* rend;

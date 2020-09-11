@@ -1,6 +1,6 @@
 #include "e_game_query.h"
 
-#include "geom.h"
+#include "../utils/geom.h"
 
 GameEQEventStartRnd::GameEQEventStartRnd(ExEventStartRnd* event){ e = event; }
 GameEQEventStartRnd::~GameEQEventStartRnd(){ delete e; }
