@@ -13,6 +13,8 @@
 #include "game_gui/sounds.h"
 #include "game_gui/images.h"
 
+#include "main_scr.h"
+
 SDL_Window*  screen;
 SDL_Renderer* rend;
 
@@ -21,6 +23,10 @@ void close_rend(){
 }
 void close_window(){
 	SDL_DestroyWindow(screen);
+}
+
+State* init_state(Main* gui){
+	new MainScr(gui, NULL);
 }
 
 int main(int argc, char* argv[]){
@@ -97,7 +103,7 @@ int main(int argc, char* argv[]){
 	SDL_SetHint(SDL_HINT_RENDER_SCALE_QUALITY, "best");
 	//SDL_RenderSetLogicalSize(rend, 1280, 960);
 
-	Main* m = new Main(rend);
+	Main* m = new Main(rend, init_state);
 	m->mainloop();
 	delete m;
 	

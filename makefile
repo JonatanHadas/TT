@@ -3,6 +3,7 @@ DEBUG = NO
 
 ADDIR = 
 
+
 ifeq ($(DEBUG),YES)
 DEBUG_FLG = -g
 ADDIR = $(DDIR)
@@ -52,13 +53,15 @@ HEADS = $(HEADS1) \
 game$(SEP)game_query.h \
 game$(SEP)game_consts.h \
 game$(SEP)ex_in_events.h \
+game$(SEP)game_consts.h
+
+DDIR = debug$(SEP)
 
 ifeq ($(SYS), WINDOWS64)
 #windows64
 CC = g++
 SEP = \\
 DIR = windows64$(SEP)
-DDIR = debug$(SEP)
 CEXEC = $(DIR)tanktrouble.exe
 SEXEC = $(DIR)tanktrouble_server.exe
 CLN = del
@@ -72,8 +75,8 @@ ifeq ($(SYS), WINDOWS)
 #windows
 SEP = \\
 CC = g++
+SEP = \\
 DIR = windows$(SEP)
-DDIR = debug$(SEP)
 CEXEC = $(DIR)tanktrouble.exe
 SEXEC = $(DIR)tanktrouble_server.exe
 CLN = del
@@ -87,8 +90,8 @@ ifeq ($(SYS), LINUX)
 #linux
 SEP = /
 CC = g++
+SEP = /
 DIR = linux$(SEP)
-DDIR = debug$(SEP)
 CEXEC = $(DIR)tanktrouble
 SEXEC = $(DIR)tanktrouble_server
 CLN = rm
@@ -112,7 +115,7 @@ $(CEXEC): $(COBJS)
 	$(CC) $(CMP_FLG) $^ -o $@ $(LNK_FLG)
 $(SEXEC): $(SOBJS)
 	$(CC) $(CMP_FLG) $^ -o $@ $(LNK_FLG)
-
+		
 
 $(DIR)main.o: $$(patsubst $(DIR)%.o, $(SOURCES_DIR)%.cpp, $$@) $(HEADS)
 	$(CC) $(CMP_FLG) -c $< -o $@
@@ -174,6 +177,6 @@ $(DIR)game$(SEP)net_ex.o: $$(patsubst $(DIR)%.o, $(SOURCES_DIR)%.cpp, $$@) $(HEA
 	$(CC) $(CMP_FLG) -c $< -o $@
 
 clean_all:
-	$(CLN) $(EXEC) $(COBJS) $(SOBJS)
+	$(CLN) $(CEXEC) $(SEXEC) $(COBJS) $(SOBJS)
 clean:
-	$(CLN) $(COBJS) $(SOBJS)
+	$(CLN) $(SOBJS) $(SOBJS)

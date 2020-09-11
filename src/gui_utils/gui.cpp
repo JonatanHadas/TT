@@ -2,14 +2,11 @@
 
 #define FPS 60
 
-#include "../main_scr.h"
-#include <stdio.h>
-
-Main::Main(SDL_Renderer* renderer){
+Main::Main(SDL_Renderer* renderer, state_init_f init){
 	rend = renderer;
 	for_del = NULL;
 	chng_sz = false;
-	state = new MainScr(this, NULL);
+	state = init(this);
 }
 Main::~Main(){
 	if(state) delete state;
