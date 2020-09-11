@@ -11,6 +11,9 @@
 #include "game_gui/images.h"
 #include "gui_utils/texts.h"
 
+#include "game_gui.h"
+#include "game/d_game_query.h"
+
 SDL_Window*  screen;
 SDL_Renderer* rend;
 
@@ -19,6 +22,20 @@ void close_rend(){
 }
 void close_window(){
 	SDL_DestroyWindow(screen);
+}
+
+State* init_state(Main* gui){
+	std::vector<int> img_inds;
+	for(int i = 0; i<30; i++) img_inds.push_back(i);
+	
+	GameConfig cf(12,4, UPG_MASK_MINE);
+	for(int i = 0; i<cf.tank_num; i++) cf.team_inds[i] = i/3;
+	cf.set.scr_mth = GameSettings::SCR_LAST;
+	cf.set.end_mth = GameSettings::END_NONE;
+	cf.set.lim = 10;
+	cf.set.allow_dif = 0;
+	
+	return new GameGui(new GameDQ(new Game(cf)),gui, img_inds);
 }
 
 int main(int argc, char* argv[]){
@@ -91,7 +108,7 @@ int main(int argc, char* argv[]){
 	SDL_SetHint(SDL_HINT_RENDER_SCALE_QUALITY, "best");
 	//SDL_RenderSetLogicalSize(rend, 1280, 960);
 
-	Main* m = new Main(rend);
+	Main* m = new Main(rend, init_state);
 	m->mainloop();
 	delete m;
 	
