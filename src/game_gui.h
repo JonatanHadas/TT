@@ -1,9 +1,9 @@
 #ifndef _GAME_GUI_H
 #define _GAME_GUI_H
 
-#include "gui.h"
-#include "game_draw.h"
-#include "game_query.h"
+#include "gui_utils/gui.h"
+#include "game_gui/game_draw.h"
+#include "game/game_query.h"
 
 class GameGui : public State{
 	GameQ* game;

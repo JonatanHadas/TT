@@ -2,7 +2,7 @@
 
 #include "game_consts.h"
 
-#include "geom.h"
+#include "../utils/geom.h"
 
 ExEventTankDeath::ExEventTankDeath(int i){
 	ind = i;

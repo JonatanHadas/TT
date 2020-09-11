@@ -7,6 +7,8 @@
 class Main;
 class State;
 
+typedef State*(*state_init_f)(Main*);
+
 class Main{
 	SDL_Renderer* rend;
 	State* state;
@@ -18,7 +20,7 @@ class Main{
 	bool chng_sz;
 	
 public:
-	Main(SDL_Renderer* rend);
+	Main(SDL_Renderer* rend, state_init_f init);
 	~Main();
 	void draw_back();
 	void mainloop();

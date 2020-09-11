@@ -2,31 +2,12 @@
 
 #define FPS 60
 
-#include "game_gui.h"
-#include "e_game_query.h"
-#include "game.h"
-#include "direct_ex.h"
-
-Main::Main(SDL_Renderer* renderer){
+Main::Main(SDL_Renderer* renderer, state_init_f init){
 	rend = renderer;
 	for_del = NULL;
 	chng_sz = false;
-	std::vector<int> img_inds;
-	for(int i = 0; i<30; i++) img_inds.push_back(i);
-	
-	GameConfig cf(12,4, UPG_MASK_MINE);
-	for(int i = 0; i<cf.tank_num; i++) cf.team_inds[i] = i/3;
-	cf.set.scr_mth = GameSettings::SCR_LAST;
-	cf.set.end_mth = GameSettings::END_NONE;
-	cf.set.lim = 10;
-	cf.set.allow_dif = 0;
-	
-	Game* g = new Game(cf);
-	ExInEvents* xq = new DirectEx(g);
-	GameExtrap* x = new GameExtrap(cf, xq);
-	GameQ* q = new GameEQ(x);
-	
-	state = new GameGui(q,this, img_inds);
+
+	state = init(this);
 }
 Main::~Main(){
 	if(state) delete state;
