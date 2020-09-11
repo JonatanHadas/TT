@@ -1,40 +1,48 @@
 SYS = WINDOWS64
 DEBUG = NO
 
+ADDIR = 
+
 ifeq ($(DEBUG),YES)
 DEBUG_FLG = -g
+ADDIR = $(DDIR)
 endif 
 
 DEF_CMP_FLG = $(DEBUG_FLG) $(INC_PTH)
 
-HEADS1 = utils.h \
-geom.h \
-gui.h \
-clock.h \
-game.h \
-game_draw.h \
-d_game_query.h \
+HEADS1 = \
+utils$(SEP)utils.h \
+utils$(SEP)geom.h \
+gui_utils$(SEP)gui.h \
+gui_utils$(SEP)clock.h \
+game$(SEP)game.h \
+game_gui$(SEP)game_draw.h \
+game$(SEP)d_game_query.h \
 game_gui.h \
-maze.h \
-images.h \
-gui_util.h \
-game_config.h \
-texts.h \
+game$(SEP)maze.h \
+game_gui$(SEP)images.h \
+gui_utils$(SEP)gui_util.h \
+game$(SEP)game_config.h \
+gui_utils$(SEP)texts.h \
 endgame.h \
 
 OBJ_NAMES = $(patsubst %.h,%.o, $(HEADS1))
 OBJ_NAMES += main.o
-OBJS = $(patsubst %.o, $(DIR)%.o, $(OBJ_NAMES))
+OBJS = $(patsubst %.o, $$(DIR)%.o, $(OBJ_NAMES))
+
+SOURCES_DIR = src
 
 HEADS = $(HEADS1) \
-game_query.h \
-game_consts.h
+game$(SEP)game_query.h \
+game$(SEP)game_consts.h
+
+DDIR = debug$(SEP)
 
 ifeq ($(SYS), WINDOWS64)
 #windows64
 CC = g++
-DIR = windows64/
-CDIR = windows64\\
+SEP = \\
+DIR = windows64$(SEP)
 EXEC = $(DIR)tanktrouble.exe
 CLN = del
 CMP_FLG = $(DEF_CMP_FLG)
@@ -46,8 +54,8 @@ else
 ifeq ($(SYS), WINDOWS)
 #windows
 CC = g++
-DIR = windows/
-CDIR = windows\\
+SEP = \\
+DIR = windows$(SEP)
 EXEC = $(DIR)tanktrouble.exe
 CLN = del
 CMP_FLG = -std=c++11 $(DEF_CMP_FLG)
@@ -59,8 +67,8 @@ else
 ifeq ($(SYS), LINUX)
 #linux
 CC = g++
-DIR = linux/
-CDIR = $(DIR)
+SEP = /
+DIR = linux$(SEP)
 EXEC = $(DIR)tanktrouble
 CLN = rm
 CMP_FLG = -std=c++11 $(DEF_CMP_FLG)
@@ -72,47 +80,48 @@ endif
 endif
 endif
 
+DIR := $(DIR)$(ADDIR)
+
+HEADS := $(patsubst %.h, $(SOURCES_DIR)$(SEP)%.h, $(HEADS))
+
 all: $(EXEC)
 
-$(EXEC): $(OBJS)
-	$(CC) $(CMP_FLG) $(OBJS) -o $(EXEC) $(LNK_FLG)
-
 .SECONDEXPANSION:
-$(DIR)main.o: $$(patsubst $(DIR)%.o, %.cpp, $$@) $(HEADS)
+$(EXEC): $(OBJS)
+	$(CC) $(CMP_FLG) $^ -o $@ $(LNK_FLG)
+		
+$(DIR)main.o: $$(patsubst $(DIR)%.o, $(SOURCES_DIR)$(SEP)%.cpp, $$@) $(HEADS)
 	$(CC) $(CMP_FLG) -c $< -o $@
-$(DIR)utils.o: $$(patsubst $(DIR)%.o, %.cpp, $$@) utils.h
+$(DIR)utils$(SEP)utils.o: $$(patsubst $(DIR)%.o, $(SOURCES_DIR)$(SEP)%.cpp, $$@) $(SOURCES_DIR)$(SEP)utils$(SEP)utils.h
 	$(CC) $(CMP_FLG) -c $< -o $@
-$(DIR)gui_util.o: $$(patsubst $(DIR)%.o, %.cpp, $$@) utils.h
+$(DIR)gui_utils$(SEP)gui_util.o: $$(patsubst $(DIR)%.o, $(SOURCES_DIR)$(SEP)%.cpp, $$@) $(SOURCES_DIR)$(SEP)gui_utils$(SEP)gui_util.h
 	$(CC) $(CMP_FLG) -c $< -o $@
-$(DIR)geom.o: $$(patsubst $(DIR)%.o, %.cpp, $$@) geom.h
+$(DIR)utils$(SEP)geom.o: $$(patsubst $(DIR)%.o, $(SOURCES_DIR)$(SEP)%.cpp, $$@) $(SOURCES_DIR)$(SEP)utils$(SEP)geom.h
 	$(CC) $(CMP_FLG) -c $< -o $@
-$(DIR)clock.o: $$(patsubst $(DIR)%.o, %.cpp, $$@) clock.h
+$(DIR)gui_utils$(SEP)clock.o: $$(patsubst $(DIR)%.o, $(SOURCES_DIR)$(SEP)%.cpp, $$@) $(SOURCES_DIR)$(SEP)gui_utils$(SEP)clock.h
 	$(CC) $(CMP_FLG) -c $< -o $@
-$(DIR)texts.o: $$(patsubst $(DIR)%.o, %.cpp, $$@) images.h
+$(DIR)gui_utils$(SEP)texts.o: $$(patsubst $(DIR)%.o, $(SOURCES_DIR)$(SEP)%.cpp, $$@) $(SOURCES_DIR)$(SEP)gui_utils$(SEP)texts.h
 	$(CC) $(CMP_FLG) -c $< -o $@
-$(DIR)images.o: $$(patsubst $(DIR)%.o, %.cpp, $$@) images.h
+$(DIR)game_gui$(SEP)images.o: $$(patsubst $(DIR)%.o, $(SOURCES_DIR)$(SEP)%.cpp, $$@) $(SOURCES_DIR)$(SEP)game_gui$(SEP)images.h
 	$(CC) $(CMP_FLG) -c $< -o $@
-$(DIR)maze.o: $$(patsubst $(DIR)%.o, %.cpp, $$@) maze.h
+$(DIR)game$(SEP)maze.o: $$(patsubst $(DIR)%.o, $(SOURCES_DIR)$(SEP)%.cpp, $$@) $(SOURCES_DIR)$(SEP)game$(SEP)maze.h
 	$(CC) $(CMP_FLG) -c $< -o $@
-$(DIR)game_config.o: $$(patsubst $(DIR)%.o, %.cpp, $$@) game_config.h
+$(DIR)game$(SEP)game_config.o: $$(patsubst $(DIR)%.o, $(SOURCES_DIR)$(SEP)%.cpp, $$@) $(SOURCES_DIR)$(SEP)game$(SEP)game_config.h
 	$(CC) $(CMP_FLG) -c $< -o $@
-$(DIR)gui.o: $$(patsubst $(DIR)%.o, %.cpp, $$@) $(HEADS)
+$(DIR)gui_utils$(SEP)gui.o: $$(patsubst $(DIR)%.o, $(SOURCES_DIR)$(SEP)%.cpp, $$@) $(HEADS)
 	$(CC) $(CMP_FLG) -c $< -o $@
-$(DIR)game.o: $$(patsubst $(DIR)%.o, %.cpp, $$@) $(HEADS)
+$(DIR)game$(SEP)game.o: $$(patsubst $(DIR)%.o, $(SOURCES_DIR)$(SEP)%.cpp, $$@) $(HEADS)
 	$(CC) $(CMP_FLG) -c $< -o $@
-$(DIR)d_game_query.o: $$(patsubst $(DIR)%.o, %.cpp, $$@) $(HEADS)
+$(DIR)game$(SEP)d_game_query.o: $$(patsubst $(DIR)%.o, $(SOURCES_DIR)$(SEP)%.cpp, $$@) $(HEADS)
 	$(CC) $(CMP_FLG) -c $< -o $@
-$(DIR)game_draw.o: $$(patsubst $(DIR)%.o, %.cpp, $$@) $(HEADS)
+$(DIR)game_gui$(SEP)game_draw.o: $$(patsubst $(DIR)%.o, $(SOURCES_DIR)$(SEP)%.cpp, $$@) $(HEADS)
 	$(CC) $(CMP_FLG) -c $< -o $@
-$(DIR)game_gui.o: $$(patsubst $(DIR)%.o, %.cpp, $$@) $(HEADS)
+$(DIR)game_gui.o: $$(patsubst $(DIR)%.o, $(SOURCES_DIR)$(SEP)%.cpp, $$@) $(HEADS)
 	$(CC) $(CMP_FLG) -c $< -o $@
-$(DIR)endgame.o: $$(patsubst $(DIR)%.o, %.cpp, $$@) $(HEADS)
+$(DIR)endgame.o: $$(patsubst $(DIR)%.o, $(SOURCES_DIR)$(SEP)%.cpp, $$@) $(HEADS)
 	$(CC) $(CMP_FLG) -c $< -o $@
-
-CEXEC = $(patsubst $(DIR)%,$(CDIR)%, $(EXEC))
-COBJS = $(patsubst $(DIR)%,$(CDIR)%, $(OBJS))
 
 clean_all:
-	$(CLN) $(CEXEC) $(COBJS)
+	$(CLN) $(EXEC) $(OBJS)
 clean:
-	$(CLN) $(COBJS)
+	$(CLN) $(OBJS)

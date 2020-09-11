@@ -2,8 +2,8 @@
 
 #define FPS 60
 
-#include "game_gui.h"
-#include "d_game_query.h"
+#include "../game_gui.h"
+#include "../game/d_game_query.h"
 
 Main::Main(SDL_Renderer* renderer){
 	rend = renderer;

@@ -7,9 +7,9 @@
 #include <SDL2/SDL_mixer.h>
 #include <enet/enet.h>
 
-#include "gui.h"
-#include "images.h"
-#include "texts.h"
+#include "gui_utils/gui.h"
+#include "game_gui/images.h"
+#include "gui_utils/texts.h"
 
 SDL_Window*  screen;
 SDL_Renderer* rend;

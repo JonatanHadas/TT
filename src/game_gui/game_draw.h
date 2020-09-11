@@ -2,9 +2,9 @@
 #define _GAME_DRAW_H
 
 #include <SDL2/SDL.h>
-#include "game_query.h"
+#include "../game/game_query.h"
 #include "images.h"
-#include "texts.h"
+#include "../gui_utils/texts.h"
 
 #define GSCR_W 1280
 #define GSCR_H 960
